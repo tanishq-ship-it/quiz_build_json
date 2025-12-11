@@ -113,13 +113,14 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
         gridTemplateRows: `repeat(${rows}, auto)`,
         gap,
         width: "100%",
         boxSizing: "border-box",
         justifyItems: "center",
         alignItems: "center",
+        overflow: "hidden",
       }}
     >
       {options.slice(0, rows * cols).map((option, index) => {
@@ -136,6 +137,7 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
           boxSizing: "border-box",
           transition: "border-color 0.15s ease",
           overflow: "hidden",
+          maxWidth: "100%",
         };
 
         return (

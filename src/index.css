@@ -176,7 +176,8 @@ button:focus-visible {
   width: 30vw;
   height: 80vh;
   height: 80dvh;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Laptop (small): 35% width */

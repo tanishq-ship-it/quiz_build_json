@@ -136,6 +136,9 @@ type SelectionItem = {
   responsePosition?: "top" | "bottom"; // Where to show the response card relative to selection
   // Response screens - replaces entire screen content when an option is selected
   responseScreens?: Record<string | number, ResponseScreenContent>;
+  // Position of the selection on screen: "top" (default), "middle", "bottom"
+  // If not specified and no button exists, defaults to "bottom"
+  position?: "top" | "middle" | "bottom";
 };
 
 // Card item types
@@ -212,19 +215,25 @@ const Screens: React.FC<ScreensProps> = ({
   // Filter out button from regular content
   const regularContent = content.filter((item) => item.type !== "button");
 
-  // If no button, separate selection from other content (selection goes to bottom)
-  const hasSelection = regularContent.some((item) => item.type === "selection");
-  const shouldMoveSelectionToBottom = !buttonItem && hasSelection;
-
-  // Top content: everything except selection (when moving selection to bottom)
-  const topContent = shouldMoveSelectionToBottom
+  // Find the selection item to check its position
+  const selectionItem = regularContent.find((item) => item.type === "selection") as SelectionItem | undefined;
+  
+  // Determine selection position:
+  // - If position is explicitly set, use it
+  // - If no button exists, default to "bottom"
+  // - Otherwise default to "top"
+  const selectionPosition = selectionItem?.position ?? (!buttonItem ? "bottom" : "top");
+  
+  // Separate content based on selection position
+  const topContent = selectionPosition !== "top" 
     ? regularContent.filter((item) => item.type !== "selection")
     : regularContent;
 
-  // Bottom content: selection only (when no button)
-  const bottomSelection = shouldMoveSelectionToBottom
-    ? (regularContent.find((item) => item.type === "selection") as SelectionItem | undefined)
-    : undefined;
+  // Middle content: selection when position is "middle"
+  const middleSelection = selectionPosition === "middle" ? selectionItem : undefined;
+
+  // Bottom content: selection when position is "bottom"
+  const bottomSelection = selectionPosition === "bottom" ? selectionItem : undefined;
 
   // Find the selection item index for state tracking
   const getSelectionIndex = (): number => {
@@ -527,7 +536,7 @@ const Screens: React.FC<ScreensProps> = ({
         backgroundColor: "transparent",
       }}
     >
-      {/* Top Content - headings, text, images (and selection if button exists) */}
+      {/* Top Content - headings, text, images (and selection if position is "top") */}
       <div
         style={{
           display: "flex",
@@ -542,7 +551,22 @@ const Screens: React.FC<ScreensProps> = ({
         {topContent.map((item, index) => renderContentItem(item, index))}
       </div>
 
-      {/* Bottom Area - either Selection (no button) or Button */}
+      {/* Middle Selection - when position is "middle" */}
+      {middleSelection && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            paddingTop: 16,
+            paddingBottom: 16,
+          }}
+        >
+          {renderContentItem(middleSelection, 998)}
+        </div>
+      )}
+
+      {/* Bottom Area - Selection (when position is "bottom") or Button */}
       {bottomSelection && (
         <div
           style={{

@@ -222,6 +222,7 @@ const FlatButton: React.FC<FlatButtonProps> = ({
       onClick={onClick}
       style={{
         width,
+        maxWidth: "100%",
         height,
         borderRadius,
         border: isLight ? "1px solid #e5e5e5" : "none",
@@ -235,15 +236,27 @@ const FlatButton: React.FC<FlatButtonProps> = ({
             : textAlign === "right"
             ? "flex-end"
             : "center",
-        paddingLeft: textAlign === "left" ? 20 : 0,
-        paddingRight: textAlign === "right" ? 20 : 0,
+        paddingLeft: textAlign === "left" ? 16 : 8,
+        paddingRight: textAlign === "right" ? 16 : 8,
         color: textColor,
         fontFamily: FONT_INTER,
         fontSize,
         fontWeight: 500,
+        overflow: "hidden",
+        boxSizing: "border-box",
       }}
     >
-      {text}
+      <span
+        style={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          width: "100%",
+          textAlign,
+        }}
+      >
+        {text}
+      </span>
     </button>
   );
 };
@@ -282,7 +295,7 @@ const Button: React.FC<ButtonProps> = (props) => {
       return (
         <SquareButton
           character={props.character || ""}
-          size={props.size}
+          size={typeof props.size === "number" ? props.size : undefined}
           onClick={props.onClick}
         />
       );

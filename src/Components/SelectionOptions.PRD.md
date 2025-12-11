@@ -24,10 +24,38 @@ import SelectionOptions from "./Components/SelectionOptions";
 | `selectedColor` | `string` | `"#2563eb"` | Border color for selected items |
 | `selectedBorderWidth` | `number` | `2` | Border width for selection |
 | `gap` | `number` | `8` | Gap between options in pixels |
+| `position` | `"top" \| "middle" \| "bottom"` | varies | Where selection appears on screen |
 | `onChange` | `(selected) => void` | - | Called when selection changes |
 | `onComplete` | `(selected) => void` | - | Called for radio auto-complete |
 | `autoComplete` | `boolean` | `false` | Enable auto-complete for radio |
 | `defaultSelected` | `(string \| number)[]` | `[]` | Pre-selected option IDs |
+
+---
+
+## Position Property
+
+The `position` prop controls where the selection options appear on the screen:
+
+| Position | Description | Default When |
+|----------|-------------|--------------|
+| `"top"` | Selection stays with heading/text at top | Button exists in content |
+| `"middle"` | Selection centered between content and bottom | Never (must be explicit) |
+| `"bottom"` | Selection at bottom of screen | No button in content |
+
+**Usage:**
+```tsx
+{
+  type: "selection",
+  mode: "radio",
+  layout: "1x5",
+  position: "middle",  // Explicit position
+  options: [...]
+}
+```
+
+**Default Behavior:**
+- If `position` is not specified and there's a **button** → defaults to `"top"`
+- If `position` is not specified and there's **no button** → defaults to `"bottom"`
 
 ---
 
@@ -107,6 +135,23 @@ Each option must specify a `variant` that matches Button variants:
 | `lg` | 280 | 60 | 18 |
 | `xl` | 340 | 72 | 22 |
 
+**Text Overflow:** Long text is automatically truncated with ellipsis (`...`) to prevent overlap.
+
+---
+
+## Grid Layout & Overflow Prevention
+
+The selection grid uses `minmax(0, 1fr)` columns to prevent buttons from overflowing their cells:
+
+```css
+grid-template-columns: repeat(cols, minmax(0, 1fr));
+```
+
+This ensures:
+- Buttons stay within their grid cells
+- Long text is truncated with ellipsis
+- No overlap between adjacent buttons
+
 ---
 
 ## Selection Behavior
@@ -125,7 +170,11 @@ Each option must specify a `variant` that matches Button variants:
 
 ## Auto-Complete Feature
 
-When a screen has **no button** and uses **radio mode**, clicking an option can trigger immediate completion:
+When a screen has **no button** and uses **radio mode**, clicking an option triggers completion:
+
+**Delay Behavior:**
+- With `responseCards` → **2 second delay** (so user can read the feedback message)
+- Without `responseCards` → **Immediate** (no delay)
 
 ```tsx
 {

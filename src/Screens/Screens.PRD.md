@@ -80,16 +80,22 @@ import Screens from "./Screens/Screens";
   selectedColor?: string;         // Default: "#2563eb"
   selectedBorderWidth?: number;   // Default: 2
   gap?: number;                   // Default: 8
+  position?: "top" | "middle" | "bottom";  // Where selection appears on screen
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void;  // Auto-fires for radio without button
   defaultSelected?: (string | number)[];
   // Response Cards Feature (inline card on same screen)
   responseCards?: Record<string | number, ResponseCard>;  // Map option values to cards
-  responsePosition?: "top" | "bottom";  // Default: "top"
+  responsePosition?: "top" | "bottom";  // Default: "top" (where response card appears)
   // Response Screens Feature (replaces entire screen)
   responseScreens?: Record<string | number, ResponseScreenContent>;  // Map option values to full screens
 }
 ```
+
+**Position Property:**
+- `"top"` - Selection stays with heading/text (default when button exists)
+- `"middle"` - Selection centered between content and button
+- `"bottom"` - Selection at bottom of screen (default when no button)
 
 ### Response Card Types
 
@@ -250,6 +256,12 @@ When a screen has:
 
 Then selecting an option **automatically calls `onComplete`**. Perfect for quick single-choice screens.
 
+**Delay Behavior:**
+| Has `responseCards`? | Delay |
+|----------------------|-------|
+| Yes | **2 seconds** (so user can read the feedback message) |
+| No | **Immediate** (no delay) |
+
 ```tsx
 // No button = auto-complete on radio select
 content={[
@@ -289,7 +301,7 @@ content={[
 └─────────────────────────────┘
 ```
 
-### Without Button (Selection moves to bottom)
+### Without Button (Selection moves to bottom) - Default: position="bottom"
 
 ```
 ┌─────────────────────────────┐
@@ -302,15 +314,57 @@ content={[
 │    └─────────────────┘      │
 │                             │
 │    ┌─────────────────┐      │
-│    │  [Selection]    │      │  ← Fixed at BOTTOM (replaces button)
+│    │  [Selection]    │      │  ← Fixed at BOTTOM (default)
 │    └─────────────────┘      │
+│                             │
+└─────────────────────────────┘
+```
+
+### With position="middle"
+
+```
+┌─────────────────────────────┐
+│         [padding]           │
+│                             │
+│    ┌─────────────────┐      │
+│    │     Content     │      │  ← Aligned to TOP
+│    │   (heading,     │      │
+│    │    text)        │      │
+│    └─────────────────┘      │
+│                             │
+│    ┌─────────────────┐      │
+│    │  [Selection]    │      │  ← Centered in MIDDLE
+│    └─────────────────┘      │
+│                             │
+│    ┌─────────────────┐      │
+│    │    [Button]     │      │  ← Fixed at BOTTOM (if exists)
+│    └─────────────────┘      │
+│                             │
+└─────────────────────────────┘
+```
+
+### With position="top" (No Button)
+
+```
+┌─────────────────────────────┐
+│         [padding]           │
+│                             │
+│    ┌─────────────────┐      │
+│    │     Content     │      │  ← Aligned to TOP
+│    │   (heading,     │      │
+│    │    text,        │      │
+│    │    selection)   │      │  ← Selection stays at TOP
+│    └─────────────────┘      │
+│                             │
+│                             │
 │                             │
 └─────────────────────────────┘
 ```
 
 **Key:** 
 - With button: Content (including selection) is at top, button pinned to bottom
-- **Without button:** Selection automatically moves to bottom position (where button would be)
+- **Without button:** Selection automatically moves to bottom position (unless `position` is explicitly set)
+- **With position prop:** Selection appears where specified regardless of button presence
 
 ---
 

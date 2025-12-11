@@ -238,9 +238,15 @@ User sees Screen → Interacts with Selection/Button → Next Screen
 | `gap` | `number` | `8` | Gap between options (px) |
 | `selectedColor` | `string` | `"#2563eb"` | Selection border color |
 | `selectedBorderWidth` | `number` | `2` | Selection border width |
+| `position` | `string` | varies | `"top"`, `"middle"`, or `"bottom"` - where selection appears on screen |
 | `responseCards` | `object` | - | Map value → card config |
 | `responseScreens` | `object` | - | Map value → screen content |
-| `responsePosition` | `string` | `"top"` | `top` or `bottom` |
+| `responsePosition` | `string` | `"top"` | `top` or `bottom` (for response card placement) |
+
+**Position Property:**
+- `"top"` - Selection stays with heading/text at top (default when button exists)
+- `"middle"` - Selection centered between content and button
+- `"bottom"` - Selection at bottom of screen (default when no button)
 
 ### Layout Formats
 
@@ -564,7 +570,7 @@ Shows a card on the **same screen** when an option is selected.
 └─────────────────────────────┘
 ```
 
-### Without Button (Auto-Complete)
+### Without Button (Auto-Complete) - Default: position="bottom"
 
 ```
 ┌─────────────────────────────┐
@@ -573,13 +579,46 @@ Shows a card on the **same screen** when an option is selected.
 │          text)              │
 │                             │
 │      ┌──────────────┐       │
-│      │  Selection   │       │  ← Moves to bottom
+│      │  Selection   │       │  ← Moves to bottom (default)
 │      └──────────────┘       │
 └─────────────────────────────┘
 ```
 
+### With position="middle"
+
+```
+┌─────────────────────────────┐
+│         [Content]           │  ← Top aligned
+│         (heading,           │
+│          text)              │
+│                             │
+│      ┌──────────────┐       │
+│      │  Selection   │       │  ← Centered in middle
+│      └──────────────┘       │
+│                             │
+│      ┌──────────────┐       │
+│      │    Button    │       │  ← Fixed bottom (if exists)
+│      └──────────────┘       │
+└─────────────────────────────┘
+```
+
+### With position="top" (No Button)
+
+```
+┌─────────────────────────────┐
+│         [Content]           │  ← Top aligned
+│         (heading,           │
+│          text,              │
+│          selection)         │  ← Selection stays at top
+│                             │
+│                             │
+│                             │
+└─────────────────────────────┘
+```
+
 **Auto-Complete Behavior:**
-- Radio mode + No button = Selection fires `onComplete` after 2.5s delay
+- Radio mode + No button + **has responseCards** = Selection fires `onComplete` after **2 second delay** (so user can read the message)
+- Radio mode + No button + **no responseCards** = Selection fires `onComplete` **immediately**
 - Checkbox mode always needs button
 
 ---
@@ -1388,7 +1427,7 @@ Shows a card on the **same screen** when an option is selected.
 
 ### 1. Auto-Complete Screens
 
-Remove the button for radio selections to trigger 2.5s delay auto-advance:
+Remove the button for radio selections to enable auto-advance:
 
 ```json
 {
@@ -1400,6 +1439,30 @@ Remove the button for radio selections to trigger 2.5s delay auto-advance:
   ]
 }
 ```
+
+**Delay Behavior:**
+- With `responseCards` → **2 second delay** (user reads message first)
+- Without `responseCards` → **Immediate** advance
+
+### 2. Selection Position Control
+
+Use `position` to control where selection appears on screen:
+
+```json
+{
+  "type": "selection",
+  "mode": "radio",
+  "layout": "1x5",
+  "position": "middle",  // "top", "middle", or "bottom"
+  "options": [...]
+}
+```
+
+| Position | When to Use |
+|----------|-------------|
+| `"top"` | Keep selection with heading/text (default with button) |
+| `"middle"` | Center selection between content and button |
+| `"bottom"` | Pin selection to bottom (default without button) |
 
 ### 2. Branching with Response Screens
 
@@ -1476,7 +1539,7 @@ src/
 | `heading` | `content`, `fontSize` |
 | `text` | `content`, `align`, `color` |
 | `button` | `text`, `bgColor` |
-| `selection` | `mode`, `layout`, `options` |
+| `selection` | `mode`, `layout`, `options`, `position` |
 | `card` | `variant`, + variant props |
 
 ### Selection Variants
@@ -1486,6 +1549,14 @@ src/
 | `square` | `character`, `size` |
 | `imageCard` | `imageSrc`, `text`, `width`, `imageShape`, `imageFill` |
 | `flat` | `text`, `size`, `width`, `height`, `bgColor` |
+
+### Selection Position
+
+| Position | Default When | Description |
+|----------|--------------|-------------|
+| `"top"` | Button exists | Selection with content at top |
+| `"middle"` | Never (explicit) | Selection centered |
+| `"bottom"` | No button | Selection pinned to bottom |
 
 ### Card Variants
 

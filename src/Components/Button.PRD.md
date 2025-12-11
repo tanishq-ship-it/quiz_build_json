@@ -153,6 +153,10 @@ A simple, full-width style button. Perfect for primary actions (Continue, Submit
 
 **Priority:** Custom props (`width`, `height`, `fontSize`) override preset values
 
+**Text Overflow:** Long text is automatically truncated with ellipsis (`...`) to prevent overflow.
+
+**Responsive:** Button has `maxWidth: 100%` so it won't exceed its container.
+
 **Note:** When `bgColor` is white, a subtle border is automatically added.
 
 **Examples:**
