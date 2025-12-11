@@ -1,12 +1,12 @@
 # Screen Layout System PRD
 
-A responsive full-viewport screen layout system for displaying mobile app screens in a preview frame.
+A responsive full-viewport screen layout system for displaying mobile app screens in a scrollable preview.
 
 ---
 
 ## Overview
 
-The Screen Layout System provides a fixed, full-viewport container that displays screen components (like `ShowcaseScreen`) inside a responsive mobile frame. The frame adapts its width based on the device viewport while maintaining a mobile-like preview on larger screens.
+The Screen Layout System provides a scrollable container that displays screen components inside responsive mobile frames. Multiple screens stack vertically with scroll-snap for smooth navigation.
 
 ---
 
@@ -14,19 +14,21 @@ The Screen Layout System provides a fixed, full-viewport container that displays
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  .app-container (100vw × 100vh)                             │
+│  .app-container (100vw, scrollable, snap-y)                 │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
-│  │  .screen-section (fixed, 100vw × 100vh, gray bg)      │  │
+│  │  .screen-section (100vh, relative)                    │  │
 │  │                                                       │  │
 │  │         ┌─────────────────────────┐                   │  │
 │  │         │   .mobile-frame         │                   │  │
 │  │         │   (responsive width)    │                   │  │
-│  │         │                         │                   │  │
 │  │         │   [Screen Component]    │                   │  │
-│  │         │                         │                   │  │
 │  │         └─────────────────────────┘                   │  │
 │  │                                                       │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  .screen-section (next screen...)                     │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
@@ -38,24 +40,26 @@ The Screen Layout System provides a fixed, full-viewport container that displays
 
 ### 1. `.app-container`
 
-The root container that takes full viewport with no scroll.
+Root container with vertical scrolling and scroll-snap.
 
 | Property | Value | Description |
 |----------|-------|-------------|
 | `width` | `100vw` | Full viewport width |
-| `height` | `100vh` / `100dvh` | Full viewport height (dynamic for mobile) |
-| `overflow` | `hidden` | No scrolling |
-| `margin` | `0` | No margins |
-| `padding` | `0` | No padding |
+| `min-height` | `100vh` / `100dvh` | At least full viewport |
+| `overflow-y` | `auto` | Vertical scrolling |
+| `overflow-x` | `hidden` | No horizontal scroll |
+| `scroll-snap-type` | `y mandatory` | Snap to each screen |
 
 ```css
 .app-container {
   width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
   margin: 0;
   padding: 0;
+  scroll-snap-type: y mandatory;
 }
 ```
 
@@ -63,25 +67,22 @@ The root container that takes full viewport with no scroll.
 
 ### 2. `.screen-section`
 
-The full-viewport section that holds each screen. Uses `position: fixed` to cover entire viewport.
+Each full-viewport section that holds a screen.
 
 | Property | Value | Description |
 |----------|-------|-------------|
-| `position` | `fixed` | Fixed to viewport |
-| `top` / `left` | `0` | Anchored to top-left |
+| `position` | `relative` | Normal flow (scrollable) |
 | `width` | `100vw` | Full viewport width |
 | `height` | `100vh` / `100dvh` | Full viewport height |
 | `display` | `flex` | Flexbox for centering |
 | `align-items` | `center` | Vertical center |
 | `justify-content` | `center` | Horizontal center |
 | `background-color` | `#e5e5e5` | Gray background |
-| `overflow` | `hidden` | No scrolling |
+| `scroll-snap-align` | `start` | Snap point at top |
 
 ```css
 .screen-section {
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100vw;
   height: 100vh;
   height: 100dvh;
@@ -91,6 +92,12 @@ The full-viewport section that holds each screen. Uses `position: fixed` to cove
   background-color: #e5e5e5;
   box-sizing: border-box;
   overflow: hidden;
+  scroll-snap-align: start;
+}
+
+/* Alternate background for visual distinction */
+.screen-section:nth-child(even) {
+  background-color: #f0f0f0;
 }
 ```
 
@@ -98,13 +105,13 @@ The full-viewport section that holds each screen. Uses `position: fixed` to cove
 
 ### 3. `.mobile-frame`
 
-The responsive container that holds the screen component. Width changes based on viewport.
+Responsive container holding the screen component.
 
 | Property | Value | Description |
 |----------|-------|-------------|
-| `width` | Responsive (see breakpoints) | Width based on device |
-| `height` | `80vh` / `80dvh` (desktop) or `100%` (mobile) | Height of frame |
-| `overflow` | `hidden` | Content clipped to frame |
+| `width` | Responsive | Based on viewport |
+| `height` | `80vh` / `100%` | Frame height |
+| `overflow` | `hidden` | Content clipped |
 
 ```css
 .mobile-frame {
@@ -119,8 +126,6 @@ The responsive container that holds the screen component. Width changes based on
 
 ## Responsive Breakpoints
 
-The mobile frame width adapts to different screen sizes:
-
 | Device | Breakpoint | Frame Width | Frame Height |
 |--------|------------|-------------|--------------|
 | Desktop (large) | ≥ 1440px | `30vw` | `80vh` |
@@ -128,15 +133,7 @@ The mobile frame width adapts to different screen sizes:
 | Tablet | 768px - 1023px | `50vw` | `80vh` |
 | Mobile | < 768px | `100%` | `100%` |
 
-### Media Queries
-
 ```css
-/* Desktop (large): 30% width - default */
-.mobile-frame {
-  width: 30vw;
-  height: 80vh;
-}
-
 /* Laptop (small): 35% width */
 @media (max-width: 1439px) {
   .mobile-frame { width: 35vw; }
@@ -158,45 +155,39 @@ The mobile frame width adapts to different screen sizes:
 
 ---
 
+## Scroll Snap Navigation
+
+The layout uses CSS scroll-snap for smooth full-screen scrolling:
+
+- **Container:** `scroll-snap-type: y mandatory`
+- **Each Section:** `scroll-snap-align: start`
+
+**Result:** Scrolling snaps to each screen, one at a time.
+
+---
+
 ## Visual Representation
 
-### Desktop View (≥ 1440px)
+### Desktop View (Multiple Screens)
+
 ```
+Screen 1 (visible)
 ┌────────────────────────────────────────────────────────┐
 │                     Gray (#e5e5e5)                     │
-│                                                        │
 │              ┌──────────────────┐                      │
-│              │                  │                      │
-│              │   Screen (30%)   │  ← 80vh height       │
-│              │                  │                      │
+│              │   Screen (30%)   │                      │
 │              └──────────────────┘                      │
-│                                                        │
 └────────────────────────────────────────────────────────┘
-```
-
-### Tablet View (768px - 1023px)
-```
-┌──────────────────────────────────┐
-│          Gray (#e5e5e5)          │
-│                                  │
-│     ┌──────────────────────┐     │
-│     │                      │     │
-│     │   Screen (50%)       │     │
-│     │                      │     │
-│     └──────────────────────┘     │
-│                                  │
-└──────────────────────────────────┘
-```
-
-### Mobile View (< 768px)
-```
-┌────────────────────┐
-│                    │
-│                    │
-│   Screen (100%)    │  ← Full viewport
-│                    │
-│                    │
-└────────────────────┘
+                        ↓ scroll
+Screen 2
+┌────────────────────────────────────────────────────────┐
+│                   Light Gray (#f0f0f0)                 │
+│              ┌──────────────────┐                      │
+│              │   Screen (30%)   │                      │
+│              └──────────────────┘                      │
+└────────────────────────────────────────────────────────┘
+                        ↓ scroll
+Screen 3 ...
 ```
 
 ---
@@ -206,7 +197,7 @@ The mobile frame width adapts to different screen sizes:
 ### Basic Structure (App.tsx)
 
 ```tsx
-import ShowcaseScreen from "./Screens/ShowcaseScreen";
+import Screens from "./Screens/Screens";
 
 function App() {
   return (
@@ -214,66 +205,71 @@ function App() {
       {/* Screen 1 */}
       <section className="screen-section">
         <div className="mobile-frame">
-          <ShowcaseScreen
-            content={[...]}
-            buttonText="Get Started"
+          <Screens
+            content={[
+              { type: "heading", content: "Welcome!" },
+              { type: "button", text: "Get Started" },
+            ]}
           />
         </div>
       </section>
+
+      {/* Screen 2 */}
+      <section className="screen-section">
+        <div className="mobile-frame">
+          <Screens
+            content={[
+              { type: "heading", content: "Select your age" },
+              { type: "selection", mode: "radio", layout: "4x1", options: [...] },
+            ]}
+          />
+        </div>
+      </section>
+
+      {/* More screens... */}
     </div>
   );
 }
 ```
 
-### Adding Multiple Screens
-
-For multiple screens (with navigation/routing), each screen uses the same structure:
-
-```tsx
-<div className="app-container">
-  {/* Each screen section covers full viewport */}
-  {currentScreen === 1 && (
-    <section className="screen-section">
-      <div className="mobile-frame">
-        <ShowcaseScreen content={[...]} />
-      </div>
-    </section>
-  )}
-  
-  {currentScreen === 2 && (
-    <section className="screen-section">
-      <div className="mobile-frame">
-        <AnotherScreen content={[...]} />
-      </div>
-    </section>
-  )}
-</div>
-```
-
----
-
-## Design Tokens
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| Section Background | `#e5e5e5` | Gray backdrop behind mobile frame |
-| Frame Width (Desktop) | `30vw` | Mobile preview width on large screens |
-| Frame Width (Laptop) | `35vw` | Mobile preview width on laptops |
-| Frame Width (Tablet) | `50vw` | Mobile preview width on tablets |
-| Frame Width (Mobile) | `100%` | Full width on mobile devices |
-| Frame Height (Desktop) | `80vh` / `80dvh` | Preview height on larger screens |
-| Frame Height (Mobile) | `100%` | Full height on mobile devices |
-
 ---
 
 ## Key Features
 
-1. **Full Viewport Coverage** - Section always covers 100% of viewport
-2. **Dynamic Viewport Height** - Uses `dvh` unit for proper mobile browser support
-3. **Responsive Mobile Frame** - Width scales from 30% to 100% based on device
-4. **No Scroll** - `overflow: hidden` prevents any scrolling
-5. **Fixed Position** - Screen section stays fixed, no layout shift
-6. **Centered Content** - Mobile frame is always centered in viewport
+1. **Scrollable Screens** — Multiple screens stack vertically
+2. **Scroll Snap** — Smooth full-screen transitions
+3. **Responsive Frame** — Width scales 30% → 100% based on device
+4. **Dynamic Viewport** — Uses `dvh` for mobile browser compatibility
+5. **Alternating Backgrounds** — Even screens have slightly different color
+6. **No Focus Outline** — Browser focus ring disabled on buttons
+
+---
+
+## Body & Root Styles
+
+```css
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#root {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* No focus outline on buttons */
+button:focus,
+button:focus-visible {
+  outline: none;
+}
+```
 
 ---
 
@@ -281,27 +277,6 @@ For multiple screens (with navigation/routing), each screen uses the same struct
 
 | File | Purpose |
 |------|---------|
-| `src/index.css` | Contains `.app-container`, `.screen-section`, `.mobile-frame` classes |
-| `src/App.tsx` | Root component using the layout structure |
-| `src/Screens/*.tsx` | Screen components rendered inside `.mobile-frame` |
-
----
-
-## Screen Components
-
-Screen components should:
-- Use `height: 100%` to fill the mobile frame
-- Have transparent background (inherits from parent)
-- Be self-contained with their own content and button
-
-Currently available:
-- `ShowcaseScreen` - Flexible content display with heading/image/text + button
-
----
-
-## Notes
-
-- The `100dvh` (dynamic viewport height) is used alongside `100vh` for mobile browser compatibility
-- On mobile devices (< 768px), the gray background is hidden since the frame takes 100%
-- Multiple screens should be conditionally rendered, not stacked
-- For scrollable multi-screen flows, implement navigation state
+| `src/index.css` | Layout classes and responsive styles |
+| `src/App.tsx` | Root component with screen sections |
+| `src/Screens/Screens.tsx` | Screen component |

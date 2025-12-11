@@ -48,6 +48,7 @@ interface ImageCardButtonProps {
   textBgColor?: string;
   textColor?: string;
   imageShape?: "none" | "circle";
+  imageFill?: boolean; // New: fill entire image area
   onClick?: () => void;
 }
 
@@ -55,15 +56,26 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
   imageSrc,
   text,
   width = 150,
-  textAlign = "left",
-  textBgColor = "#2563eb",
-  textColor = "#fff",
+  textAlign = "center",
+  textBgColor,
+  textColor = "#333",
   imageShape = "none",
+  imageFill = false,
   onClick,
 }) => {
-  const height = width * 0.7;
-  const borderRadius = width * 0.08;
-  const imageSize = width * 0.5;
+  const borderRadius = 16;
+  const imageSize = width * 0.55;
+
+  // Check if text is provided
+  const hasText = text && text.trim() !== "";
+
+  // If no text, make it a square with 5% padding
+  const height = hasText ? width * 0.85 : width;
+  const imagePadding = hasText ? (imageFill ? 0 : 12) : width * 0.05;
+
+  // Use provided textBgColor, or default to transparent (no colored footer)
+  const finalTextBgColor = textBgColor || "transparent";
+  const hasTextBg = textBgColor && textBgColor !== "transparent";
 
   return (
     <button
@@ -72,8 +84,8 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
         width,
         height,
         borderRadius,
-        border: "2px solid #2563eb",
-        backgroundColor: "#fff",
+        border: "none",
+        backgroundColor: "#f5f5f5",
         cursor: "pointer",
         padding: 0,
         overflow: "hidden",
@@ -89,9 +101,21 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
+          padding: imagePadding,
         }}
       >
-        {imageShape === "circle" ? (
+        {(imageFill || !hasText) ? (
+          // Full area image (covers entire image section, or image-only mode)
+          <img
+            src={imageSrc}
+            alt={text || "image"}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: hasText ? "cover" : "contain",
+            }}
+          />
+        ) : imageShape === "circle" ? (
           <div
             style={{
               width: imageSize,
@@ -101,6 +125,7 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              backgroundColor: "#fff",
             }}
           >
             <img
@@ -118,30 +143,32 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
             src={imageSrc}
             alt={text}
             style={{
-              maxWidth: "80%",
-              maxHeight: "80%",
+              maxWidth: "85%",
+              maxHeight: "85%",
               objectFit: "contain",
             }}
           />
         )}
       </div>
 
-      {/* Text Section */}
-      <div
-        style={{
-          backgroundColor: textBgColor || "transparent",
-          padding: "8px 12px",
-          textAlign,
-          color: textColor,
-          fontFamily: FONT_INTER,
-          fontSize: width * 0.1,
-          fontWeight: 500,
-          borderBottomLeftRadius: borderRadius - 2,
-          borderBottomRightRadius: borderRadius - 2,
-        }}
-      >
-        {text}
-      </div>
+      {/* Text Section - only render if text is provided */}
+      {hasText && (
+        <div
+          style={{
+            backgroundColor: finalTextBgColor,
+            padding: "10px 8px",
+            textAlign,
+            color: hasTextBg ? textColor : "#333",
+            fontFamily: FONT_INTER,
+            fontSize: Math.max(12, width * 0.1),
+            fontWeight: 500,
+            borderBottomLeftRadius: borderRadius,
+            borderBottomRightRadius: borderRadius,
+          }}
+        >
+          {text}
+        </div>
+      )}
     </button>
   );
 };
@@ -216,6 +243,7 @@ interface ButtonProps {
   textBgColor?: string;
   textColor?: string;
   imageShape?: "none" | "circle";
+  imageFill?: boolean;
   // Flat button props
   bgColor?: string;
   // Common
@@ -244,6 +272,7 @@ const Button: React.FC<ButtonProps> = (props) => {
           textBgColor={props.textBgColor}
           textColor={props.textColor}
           imageShape={props.imageShape}
+          imageFill={props.imageFill}
           onClick={props.onClick}
         />
       );

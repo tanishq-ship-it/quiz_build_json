@@ -40,85 +40,86 @@ A small square button with a single character inside. Perfect for option selecto
 // Default 30x30 with letter
 <Button variant="square" character="A" />
 
-// Numbers
-<Button variant="square" character="1" />
-<Button variant="square" character="2" />
-
-// Different sizes
-<Button variant="square" character="S" size={25} />
-<Button variant="square" character="M" size={35} />
-<Button variant="square" character="L" size={45} />
-<Button variant="square" character="X" size={55} />
-
-// With click handler
-<Button 
-  variant="square" 
-  character="C" 
-  size={40} 
-  onClick={() => console.log("clicked")} 
-/>
+// Larger size for grids
+<Button variant="square" character="A" size={70} />
 ```
 
 ---
 
 ### 2. Image Card Button (`variant="imageCard"`)
 
-A card-style button with an image on top and text label at the bottom. Great for selection cards like gender, categories, or profiles.
+A card-style button with an image on top and optional text label at the bottom. Great for selection cards like categories, profiles, or image-only options.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `imageSrc` | `string` | required | Image URL |
-| `text` | `string` | required | Label text |
-| `width` | `number` | `150` | Button width (height auto = 70% of width) |
-| `textAlign` | `"left" \| "center" \| "right"` | `"left"` | Text alignment |
-| `textBgColor` | `string` | `"#2563eb"` | Background color for text section |
-| `textColor` | `string` | `"#fff"` | Text color |
+| `text` | `string` | `""` | Label text (empty = image-only mode) |
+| `width` | `number` | `150` | Button width |
+| `textAlign` | `"left" \| "center" \| "right"` | `"center"` | Text alignment |
+| `textBgColor` | `string` | `undefined` | Background color for text section |
+| `textColor` | `string` | `"#333"` | Text color |
 | `imageShape` | `"none" \| "circle"` | `"none"` | Image display style |
+| `imageFill` | `boolean` | `false` | **NEW:** Fill entire image area edge-to-edge |
 | `onClick` | `() => void` | - | Click handler |
+
+**Height Calculation:**
+- With text: `width × 0.85`
+- Without text: `width` (square)
+
+**Special Behaviors:**
+
+1. **Image-only mode (no text):**
+   - When `text` is empty or not provided
+   - Card becomes square (`width × width`)
+   - Image fills area with 5% padding
+   - No text section rendered
+
+2. **imageFill mode:**
+   - When `imageFill: true`
+   - Image covers entire image section (edge-to-edge)
+   - Uses `object-fit: cover`
+
+3. **Default (neutral) styling:**
+   - Background: Light gray (`#f5f5f5`)
+   - No colored border by default
+   - Border radius: 16px
 
 **Examples:**
 
 ```tsx
-// Basic usage
+// With colored text background
 <Button 
   variant="imageCard" 
-  imageSrc="/male-avatar.png" 
-  text="Male" 
-/>
-
-// Centered text, larger size
-<Button 
-  variant="imageCard" 
-  imageSrc="/female-avatar.png" 
-  text="Female"
-  width={200}
-  textAlign="center"
-/>
-
-// Circular image frame
-<Button 
-  variant="imageCard" 
-  imageSrc="/profile.jpg" 
-  text="John"
-  imageShape="circle"
-/>
-
-// Custom colors
-<Button 
-  variant="imageCard" 
-  imageSrc="/icon.png" 
-  text="Option 1"
-  textBgColor="#16a34a"
+  imageSrc="/design.png" 
+  text="Design"
+  textBgColor="#2563eb"
   textColor="#fff"
 />
 
-// No background on text
+// Image fills entire area
 <Button 
   variant="imageCard" 
-  imageSrc="/icon.png" 
-  text="Option 2"
-  textBgColor="transparent"
-  textColor="#333"
+  imageSrc="/photo.jpg" 
+  text="Photo"
+  imageFill={true}
+  textBgColor="#10b981"
+  textColor="#fff"
+/>
+
+// Image-only (no text) - becomes square with 5% padding
+<Button 
+  variant="imageCard" 
+  imageSrc="/gallery.jpg" 
+  text=""
+  width={100}
+/>
+
+// Circle image inside card
+<Button 
+  variant="imageCard" 
+  imageSrc="/avatar.jpg" 
+  text="John"
+  imageShape="circle"
 />
 ```
 
@@ -131,22 +132,19 @@ A simple, full-width style button. Perfect for primary actions (Continue, Submit
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `text` | `string` | required | Button label |
-| `width` | `number` | `300` | Button width (height auto = 20% of width) |
+| `width` | `number` | `300` | Button width (height = 20% of width) |
 | `textAlign` | `"left" \| "center" \| "right"` | `"center"` | Text alignment |
 | `bgColor` | `string` | `"#2563eb"` | Background color |
 | `textColor` | `string` | `"#fff"` | Text color |
 | `onClick` | `() => void` | - | Click handler |
 
-**Note:** When `bgColor` is white (`#fff`, `white`, `#ffffff`), a subtle border is automatically added.
+**Note:** When `bgColor` is white, a subtle border is automatically added.
 
 **Examples:**
 
 ```tsx
 // Primary action button (blue, centered)
-<Button 
-  variant="flat" 
-  text="Continue" 
-/>
+<Button variant="flat" text="Continue" />
 
 // Selection option (white, left-aligned)
 <Button 
@@ -155,36 +153,23 @@ A simple, full-width style button. Perfect for primary actions (Continue, Submit
   bgColor="#fff"
   textColor="#333"
   textAlign="left"
+  width={300}
 />
 
-// Custom width
+// With emoji
 <Button 
   variant="flat" 
-  text="Submit"
-  width={400}
-/>
-
-// Right-aligned text
-<Button 
-  variant="flat" 
-  text="Next →"
-  textAlign="right"
-/>
-
-// Custom color
-<Button 
-  variant="flat" 
-  text="Delete"
-  bgColor="#dc2626"
-  textColor="#fff"
+  text="🚀 Leadership"
+  bgColor="#fff"
+  textColor="#333"
+  textAlign="left"
+  width={145}
 />
 ```
 
 ---
 
 ## Common Props
-
-These props are available across all variants:
 
 | Prop | Type | Description |
 |------|------|-------------|
@@ -197,11 +182,13 @@ These props are available across all variants:
 
 | Token | Value | Used In |
 |-------|-------|---------|
-| Primary Blue | `#2563eb` | Default backgrounds, borders |
-| White | `#fff` | Light backgrounds |
-| Dark Text | `#333` | Square button text, flat button light mode text |
-| Light Border | `#e5e5e5` | Flat button light mode border |
-| Gray Border | `#ccc` | Square button border |
+| Primary Blue | `#2563eb` | Default flat button bg, selection highlight |
+| Light Gray | `#f5f5f5` | ImageCard background |
+| White | `#fff` | Square/Flat light backgrounds |
+| Dark Text | `#333` | Default text color |
+| Border Radius (ImageCard) | `16px` | Rounded corners |
+| Border Radius (Flat) | `12px` | Rounded corners |
+| Border Radius (Square) | `6px` | Slight rounding |
 
 ---
 
@@ -209,22 +196,7 @@ These props are available across all variants:
 
 | Variant | Ratio | Example |
 |---------|-------|---------|
-| Square | 1:1 | 30×30, 50×50 |
-| Image Card | width : 70% height | 150×105, 200×140 |
-| Flat | width : 20% height | 300×60, 400×80 |
-
----
-
-## Adding New Variants
-
-To add a new button variant:
-
-1. Create the internal component with its own interface
-2. Add the variant name to `ButtonVariant` type
-3. Add props to `ButtonProps` interface
-4. Add a case in the switch statement
-
-```tsx
-// Example: Adding a new "icon" variant
-type ButtonVariant = "square" | "imageCard" | "flat" | "icon";
-```
+| Square | 1:1 | 70×70 |
+| Image Card (with text) | width : 85% height | 150×127 |
+| Image Card (no text) | 1:1 | 100×100 |
+| Flat | width : 20% height | 300×60 |
