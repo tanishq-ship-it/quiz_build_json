@@ -188,7 +188,7 @@ function App() {
         </div>
       </section>
 
-      {/* Screen 7: Image-only Cards (no text) - NO BUTTON */}
+      {/* Screen 7: Image-only Cards (no text) - WITH BUTTON */}
       <section className="screen-section">
         <div className="mobile-frame">
           <Screens
@@ -219,6 +219,67 @@ function App() {
                 onChange: () => {},
               },
               { type: "button", text: "Continue", onClick: () => {} },
+            ]}
+          />
+        </div>
+      </section>
+
+      {/* Screen 8: NO BUTTON - Yes/No with Size Presets */}
+      <section className="screen-section">
+        <div className="mobile-frame">
+          <Screens
+            content={[
+              { type: "heading", content: "Do you agree?" },
+              {
+                type: "text",
+                content: "Select one option to continue",
+                align: "center",
+                color: "#666",
+              },
+              {
+                type: "selection",
+                mode: "radio",
+                layout: "1x2",
+                gap: 10,
+                options: [
+                  { variant: "flat", text: "Yes", size: "sm", bgColor: "#fff", textColor: "#333" },
+                  { variant: "flat", text: "No", size: "sm", bgColor: "#fff", textColor: "#333" },
+                ],
+                onComplete: () => {},
+              },
+              // NO BUTTON - Selection moves to bottom automatically
+            ]}
+          />
+        </div>
+      </section>
+
+      {/* Screen 9: 1x5 Rating - 5 Square Buttons in 1 Row */}
+      <section className="screen-section">
+        <div className="mobile-frame">
+          <Screens
+            content={[
+              { type: "heading", content: "Rate your experience" },
+              {
+                type: "text",
+                content: "1 = Poor, 5 = Excellent",
+                align: "center",
+                color: "#666",
+              },
+              {
+                type: "selection",
+                mode: "radio",
+                layout: "1x5",
+                gap: 12,
+                options: [
+                  { variant: "square", character: "1", size: 55 },
+                  { variant: "square", character: "2", size: 55 },
+                  { variant: "square", character: "3", size: 55 },
+                  { variant: "square", character: "4", size: 55 },
+                  { variant: "square", character: "5", size: 55 },
+                ],
+                onComplete: () => {},
+              },
+              // NO BUTTON - Selection auto-completes
             ]}
           />
         </div>

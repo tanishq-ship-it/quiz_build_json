@@ -63,10 +63,13 @@ type ImageCardOption = {
 type FlatOption = {
   variant: "flat";
   text: string;
+  size?: "xs" | "sm" | "md" | "lg" | "xl"; // Preset size
   width?: number;
+  height?: number;
   textAlign?: "left" | "center" | "right";
   bgColor?: string;
   textColor?: string;
+  fontSize?: number;
   id?: string | number;
   value?: string | number;
 };
@@ -115,6 +118,94 @@ const Screens: React.FC<ScreensProps> = ({
   // Filter out button from regular content
   const regularContent = content.filter((item) => item.type !== "button");
 
+  // If no button, separate selection from other content (selection goes to bottom)
+  const hasSelection = regularContent.some((item) => item.type === "selection");
+  const shouldMoveSelectionToBottom = !buttonItem && hasSelection;
+
+  // Top content: everything except selection (when moving selection to bottom)
+  const topContent = shouldMoveSelectionToBottom
+    ? regularContent.filter((item) => item.type !== "selection")
+    : regularContent;
+
+  // Bottom content: selection only (when no button)
+  const bottomSelection = shouldMoveSelectionToBottom
+    ? (regularContent.find((item) => item.type === "selection") as SelectionItem | undefined)
+    : undefined;
+
+  const renderContentItem = (item: ContentItem, index: number) => {
+    if (item.type === "image") {
+      return (
+        <Image
+          key={index}
+          src={item.src}
+          alt={item.alt}
+          width={item.width}
+          shape={item.shape}
+          border={item.border}
+          borderColor={item.borderColor}
+          borderWidth={item.borderWidth}
+          align={item.align}
+        />
+      );
+    }
+
+    if (item.type === "text") {
+      return (
+        <Text
+          key={index}
+          content={item.content}
+          align={item.align}
+          fontSize={item.fontSize}
+          color={item.color}
+          fontWeight={item.fontWeight}
+          lineHeight={item.lineHeight}
+        />
+      );
+    }
+
+    if (item.type === "heading") {
+      return (
+        <h2
+          key={index}
+          style={{
+            margin: 0,
+            fontFamily: FONT_INTER,
+            fontSize: item.fontSize ?? 28,
+            fontWeight: item.fontWeight ?? 700,
+            color: item.color ?? "#333",
+            textAlign: item.align ?? "center",
+            width: "100%",
+          }}
+        >
+          {item.content}
+        </h2>
+      );
+    }
+
+    if (item.type === "selection") {
+      // Auto-complete for radio mode when no button exists
+      const autoComplete = item.mode === "radio" && !buttonItem;
+      
+      return (
+        <SelectionOptions
+          key={index}
+          mode={item.mode}
+          layout={item.layout}
+          options={item.options}
+          selectedColor={item.selectedColor}
+          selectedBorderWidth={item.selectedBorderWidth}
+          gap={item.gap}
+          onChange={item.onChange}
+          onComplete={item.onComplete}
+          autoComplete={autoComplete}
+          defaultSelected={item.defaultSelected}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div
       style={{
@@ -128,7 +219,7 @@ const Screens: React.FC<ScreensProps> = ({
         backgroundColor: "transparent",
       }}
     >
-      {/* Content Items - aligned to top */}
+      {/* Top Content - headings, text, images (and selection if button exists) */}
       <div
         style={{
           display: "flex",
@@ -140,82 +231,21 @@ const Screens: React.FC<ScreensProps> = ({
           paddingTop: 16,
         }}
       >
-        {regularContent.map((item, index) => {
-          if (item.type === "image") {
-            return (
-              <Image
-                key={index}
-                src={item.src}
-                alt={item.alt}
-                width={item.width}
-                shape={item.shape}
-                border={item.border}
-                borderColor={item.borderColor}
-                borderWidth={item.borderWidth}
-                align={item.align}
-              />
-            );
-          }
-
-          if (item.type === "text") {
-            return (
-              <Text
-                key={index}
-                content={item.content}
-                align={item.align}
-                fontSize={item.fontSize}
-                color={item.color}
-                fontWeight={item.fontWeight}
-                lineHeight={item.lineHeight}
-              />
-            );
-          }
-
-          if (item.type === "heading") {
-            return (
-              <h2
-                key={index}
-                style={{
-                  margin: 0,
-                  fontFamily: FONT_INTER,
-                  fontSize: item.fontSize ?? 28,
-                  fontWeight: item.fontWeight ?? 700,
-                  color: item.color ?? "#333",
-                  textAlign: item.align ?? "center",
-                  width: "100%",
-                }}
-              >
-                {item.content}
-              </h2>
-            );
-          }
-
-          if (item.type === "selection") {
-            // Auto-complete for radio mode when no button exists
-            const autoComplete = item.mode === "radio" && !buttonItem;
-            
-            return (
-              <SelectionOptions
-                key={index}
-                mode={item.mode}
-                layout={item.layout}
-                options={item.options}
-                selectedColor={item.selectedColor}
-                selectedBorderWidth={item.selectedBorderWidth}
-                gap={item.gap}
-                onChange={item.onChange}
-                onComplete={item.onComplete}
-                autoComplete={autoComplete}
-                defaultSelected={item.defaultSelected}
-              />
-            );
-          }
-
-          return null;
-        })}
+        {topContent.map((item, index) => renderContentItem(item, index))}
       </div>
 
-      {/* Bottom Button - only render if button exists in content */}
+      {/* Bottom Area - either Selection (no button) or Button */}
+      {bottomSelection && (
+        <div
+          style={{
+            paddingTop: 16,
+            paddingBottom: 16,
+          }}
+        >
+          {renderContentItem(bottomSelection, 999)}
+        </div>
+      )}
+
       {buttonItem && (
         <div
           style={{

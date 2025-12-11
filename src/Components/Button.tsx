@@ -174,24 +174,46 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
 };
 
 // 3. Flat Button
+type FlatButtonSize = "xs" | "sm" | "md" | "lg" | "xl";
+
+// Predefined sizes: { width, height, fontSize }
+const FLAT_BUTTON_SIZES: Record<FlatButtonSize, { width: number; height: number; fontSize: number }> = {
+  xs: { width: 120, height: 36, fontSize: 12 },
+  sm: { width: 150, height: 44, fontSize: 14 },
+  md: { width: 200, height: 52, fontSize: 16 },
+  lg: { width: 280, height: 60, fontSize: 18 },
+  xl: { width: 340, height: 72, fontSize: 22 },
+};
+
 interface FlatButtonProps {
   text: string;
+  size?: FlatButtonSize; // Preset size: xs, sm, md, lg, xl
   width?: number;
+  height?: number;
   textAlign?: "left" | "center" | "right";
   bgColor?: string;
   textColor?: string;
+  fontSize?: number;
   onClick?: () => void;
 }
 
 const FlatButton: React.FC<FlatButtonProps> = ({
   text,
-  width = 300,
+  size,
+  width: customWidth,
+  height: customHeight,
   textAlign = "center",
   bgColor = "#2563eb",
   textColor = "#fff",
+  fontSize: customFontSize,
   onClick,
 }) => {
-  const height = width * 0.2;
+  // Use preset size if provided, otherwise use custom values or defaults
+  const preset = size ? FLAT_BUTTON_SIZES[size] : null;
+  const width = customWidth ?? preset?.width ?? 300;
+  const height = customHeight ?? preset?.height ?? width * 0.2;
+  const fontSize = customFontSize ?? preset?.fontSize ?? height * 0.35;
+  
   const borderRadius = 12;
   const isLight = bgColor === "#fff" || bgColor === "white" || bgColor === "#ffffff";
 
@@ -217,7 +239,7 @@ const FlatButton: React.FC<FlatButtonProps> = ({
         paddingRight: textAlign === "right" ? 20 : 0,
         color: textColor,
         fontFamily: FONT_INTER,
-        fontSize: height * 0.35,
+        fontSize,
         fontWeight: 500,
       }}
     >
@@ -234,11 +256,12 @@ interface ButtonProps {
   variant: ButtonVariant;
   // Square button props
   character?: string;
-  size?: number;
+  size?: number | FlatButtonSize; // number for square, string for flat preset
   // Image card button props
   imageSrc?: string;
   text?: string;
   width?: number;
+  height?: number; // For flat button custom height
   textAlign?: "left" | "center" | "right";
   textBgColor?: string;
   textColor?: string;
@@ -246,6 +269,7 @@ interface ButtonProps {
   imageFill?: boolean;
   // Flat button props
   bgColor?: string;
+  fontSize?: number; // For flat button custom font size
   // Common
   onClick?: () => void;
 }
@@ -280,10 +304,13 @@ const Button: React.FC<ButtonProps> = (props) => {
       return (
         <FlatButton
           text={props.text || ""}
+          size={typeof props.size === "string" ? props.size : undefined}
           width={props.width}
+          height={props.height}
           textAlign={props.textAlign}
           bgColor={props.bgColor}
           textColor={props.textColor}
+          fontSize={props.fontSize}
           onClick={props.onClick}
         />
       );

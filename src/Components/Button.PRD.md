@@ -132,38 +132,57 @@ A simple, full-width style button. Perfect for primary actions (Continue, Submit
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `text` | `string` | required | Button label |
-| `width` | `number` | `300` | Button width (height = 20% of width) |
+| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | - | **Preset size** (optional) |
+| `width` | `number` | `300` | Custom width (overrides size) |
+| `height` | `number` | `width * 0.2` | Custom height (overrides size) |
 | `textAlign` | `"left" \| "center" \| "right"` | `"center"` | Text alignment |
 | `bgColor` | `string` | `"#2563eb"` | Background color |
 | `textColor` | `string` | `"#fff"` | Text color |
+| `fontSize` | `number` | `height * 0.35` | Custom font size (overrides size) |
 | `onClick` | `() => void` | - | Click handler |
+
+**Size Presets:**
+
+| Size | Width | Height | Font Size |
+|------|-------|--------|-----------|
+| `xs` | 120 | 36 | 12 |
+| `sm` | 150 | 44 | 14 |
+| `md` | 200 | 52 | 16 |
+| `lg` | 280 | 60 | 18 |
+| `xl` | 340 | 72 | 22 |
+
+**Priority:** Custom props (`width`, `height`, `fontSize`) override preset values
 
 **Note:** When `bgColor` is white, a subtle border is automatically added.
 
 **Examples:**
 
 ```tsx
-// Primary action button (blue, centered)
-<Button variant="flat" text="Continue" />
+// Using preset sizes (simple!)
+<Button variant="flat" text="Yes" size="xs" bgColor="#fff" textColor="#333" />
+<Button variant="flat" text="Continue" size="sm" />
+<Button variant="flat" text="Submit" size="md" />
+<Button variant="flat" text="Get Started" size="lg" />
+<Button variant="flat" text="Create Account" size="xl" />
 
-// Selection option (white, left-aligned)
+// Custom dimensions (override preset)
 <Button 
   variant="flat" 
   text="18-24"
+  width={300}
   bgColor="#fff"
   textColor="#333"
   textAlign="left"
-  width={300}
 />
 
 // With emoji
 <Button 
   variant="flat" 
   text="🚀 Leadership"
+  size="sm"
   bgColor="#fff"
   textColor="#333"
   textAlign="left"
-  width={145}
 />
 ```
 

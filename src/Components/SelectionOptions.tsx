@@ -23,10 +23,13 @@ type ImageCardOption = {
 type FlatOption = {
   variant: "flat";
   text: string;
+  size?: "xs" | "sm" | "md" | "lg" | "xl"; // Preset size
   width?: number;
+  height?: number;
   textAlign?: "left" | "center" | "right";
   bgColor?: string;
   textColor?: string;
+  fontSize?: number;
 };
 
 type OptionItem = (SquareOption | ImageCardOption | FlatOption) & {
@@ -165,10 +168,13 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
               <Button
                 variant="flat"
                 text={option.text}
-                width={option.width ?? 280}
+                size={option.size}
+                width={option.width}
+                height={option.height}
                 textAlign={option.textAlign}
                 bgColor={option.bgColor}
                 textColor={option.textColor}
+                fontSize={option.fontSize}
               />
             )}
           </div>

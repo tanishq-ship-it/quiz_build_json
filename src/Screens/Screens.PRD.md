@@ -137,6 +137,8 @@ content={[
 
 ## Layout Structure
 
+### With Button (Selection stays with content)
+
 ```
 ┌─────────────────────────────┐
 │         [padding]           │
@@ -149,13 +151,34 @@ content={[
 │    └─────────────────┘      │
 │                             │
 │    ┌─────────────────┐      │
-│    │  [Button]       │      │  ← Fixed at BOTTOM (if exists)
+│    │  [Button]       │      │  ← Fixed at BOTTOM
 │    └─────────────────┘      │
 │                             │
 └─────────────────────────────┘
 ```
 
-**Key:** Content is at the top, button is always pinned to the bottom (using `justify-content: space-between`).
+### Without Button (Selection moves to bottom)
+
+```
+┌─────────────────────────────┐
+│         [padding]           │
+│                             │
+│    ┌─────────────────┐      │
+│    │     Content     │      │  ← Aligned to TOP
+│    │   (heading,     │      │
+│    │    text)        │      │
+│    └─────────────────┘      │
+│                             │
+│    ┌─────────────────┐      │
+│    │  [Selection]    │      │  ← Fixed at BOTTOM (replaces button)
+│    └─────────────────┘      │
+│                             │
+└─────────────────────────────┘
+```
+
+**Key:** 
+- With button: Content (including selection) is at top, button pinned to bottom
+- **Without button:** Selection automatically moves to bottom position (where button would be)
 
 ---
 
@@ -277,9 +300,9 @@ See `SelectionOptions.PRD.md` for full option documentation. Quick reference:
 
 | Variant | Key Props |
 |---------|-----------|
-| `square` | `character`, `size` |
+| `square` | `character`, `size` (number) |
 | `imageCard` | `imageSrc`, `text`, `width`, `textBgColor`, `imageFill`, `imageShape` |
-| `flat` | `text`, `width`, `bgColor`, `textColor`, `textAlign` |
+| `flat` | `text`, `size` (xs/sm/md/lg/xl), `bgColor`, `textColor`, `textAlign` |
 
 ---
 

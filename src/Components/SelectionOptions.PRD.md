@@ -85,14 +85,27 @@ Each option must specify a `variant` that matches Button variants:
 {
   variant: "flat";
   text: string;
-  width?: number;         // Default: 280
+  size?: "xs" | "sm" | "md" | "lg" | "xl";  // Preset size
+  width?: number;         // Overrides preset
+  height?: number;        // Overrides preset
   textAlign?: "left" | "center" | "right";
   bgColor?: string;
   textColor?: string;
+  fontSize?: number;      // Overrides preset
   id?: string | number;
   value?: string | number;
 }
 ```
+
+**Size Presets:**
+
+| Size | Width | Height | Font Size |
+|------|-------|--------|-----------|
+| `xs` | 120 | 36 | 12 |
+| `sm` | 150 | 44 | 14 |
+| `md` | 200 | 52 | 16 |
+| `lg` | 280 | 60 | 18 |
+| `xl` | 340 | 72 | 22 |
 
 ---
 
@@ -222,6 +235,20 @@ When a screen has **no button** and uses **radio mode**, clicking an option can 
     { variant: "imageCard", imageSrc: img2, text: "", width: 100 },
     { variant: "imageCard", imageSrc: img3, text: "", width: 100 },
     // ... more images
+  ]}
+/>
+```
+
+### Yes/No with Preset Size (1x2 Radio)
+
+```tsx
+<SelectionOptions
+  mode="radio"
+  layout="1x2"
+  gap={10}
+  options={[
+    { variant: "flat", text: "Yes", size: "sm", bgColor: "#fff", textColor: "#333" },
+    { variant: "flat", text: "No", size: "sm", bgColor: "#fff", textColor: "#333" },
   ]}
 />
 ```
