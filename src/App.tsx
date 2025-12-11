@@ -1,12 +1,10 @@
-import { useState } from "react";
-import Screens from "./Screens/Screens";
+import ScreenRouter, { type ScreenData } from "./services/ScreenRouter";
 import qtImage from "./assests/qt.svg";
 
 // ============================================================
-// SCREENS JSON - Pure JSON definition of all 10 screens
+// SCREENS JSON - Pure JSON definition of all screens
 // ============================================================
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SCREENS_JSON: any[] = [
+const SCREENS_JSON: ScreenData[] = [
   {
     "id": "screen-1-gender",
       "content": [
@@ -664,79 +662,30 @@ const SCREENS_JSON: any[] = [
 ];
 
 // ============================================================
-// APP - Renders screens from JSON
+// PLACEHOLDERS - Map placeholder strings to actual assets
+// ============================================================
+const PLACEHOLDERS: Record<string, string> = {
+  "{{image}}": qtImage,
+};
+
+// ============================================================
+// APP - Renders screens from JSON using ScreenRouter
 // ============================================================
 function App() {
-  const [index, setIndex] = useState(0);
-
-  const next = () => setIndex((i) => Math.min(i + 1, SCREENS_JSON.length - 1));
-  const reset = () => setIndex(0);
-
-  // Delayed next (2 sec) - for radio with responseCards so user can read the message
-  const delayedNext = () => {
-    setTimeout(() => {
-      next();
-    }, 2000);
-  };
-
-  // Replace placeholders and inject callbacks
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const processContent = (content: any[], isLast: boolean): any[] => {
-    return content.map((item) => {
-      const copy = { ...item };
-
-      // Replace image placeholders
-      if (copy.src === "{{image}}") copy.src = qtImage;
-      if (copy.imageSrc === "{{image}}") copy.imageSrc = qtImage;
-
-      // Button: add onClick
-      if (copy.type === "button") {
-        copy.onClick = isLast ? reset : next;
-      }
-
-      // Selection: add callbacks
-      if (copy.type === "selection") {
-        copy.onChange = () => {};
-        // If radio mode with responseCards, add 2sec delay so user can read the message
-        // Otherwise go to next screen immediately
-        const hasResponseCards = copy.responseCards && Object.keys(copy.responseCards).length > 0;
-        const isRadio = copy.mode === "radio";
-        copy.onComplete = (isRadio && hasResponseCards) ? delayedNext : next;
-        if (copy.options) {
-          copy.options = copy.options.map((o: { imageSrc?: string }) =>
-            o.imageSrc === "{{image}}" ? { ...o, imageSrc: qtImage } : o
-          );
-        }
-        if (copy.responseScreens) {
-          for (const key of Object.keys(copy.responseScreens)) {
-            copy.responseScreens[key].content = processContent(copy.responseScreens[key].content, isLast);
-          }
-        }
-      }
-
-      // Card info: replace images
-      if (copy.type === "card" && copy.variant === "info" && copy.content) {
-        copy.content = copy.content.map((c: { src?: string }) =>
-          c.src === "{{image}}" ? { ...c, src: qtImage } : c
-        );
-      }
-
-      return copy;
-    });
-  };
-
-  const screen = SCREENS_JSON[index];
-  const isLast = index === SCREENS_JSON.length - 1;
-  const content = processContent(screen.content, isLast);
-
   return (
-    <div className="app-container">
-      <section className="screen-section">
-        <div className="mobile-frame">
-          <Screens key={screen.id} content={content} />
-        </div>
-      </section>
-    </div>
+    <ScreenRouter
+      config={{
+        screens: SCREENS_JSON,
+        placeholders: PLACEHOLDERS,
+        delayForResponseCards: 2000,
+        onScreenChange: (index, screenId) => {
+          console.log(`Screen changed to: ${index} (${screenId})`);
+        },
+        onComplete: () => {
+          console.log("Quiz completed!");
+        },
+      }}
+    />
   );
 }
 
