@@ -236,7 +236,7 @@ function App() {
         </div>
       </section>
 
-      {/* Screen 8: NO BUTTON - Yes/No with Size Presets */}
+      {/* Screen 8: Yes/No with Response Screens - Clicking navigates to a different screen */}
       <section className="screen-section">
         <div className="mobile-frame">
           <Screens
@@ -254,12 +254,51 @@ function App() {
                 layout: "1x2",
                 gap: 10,
                 options: [
-                  { variant: "flat", text: "Yes", size: "sm", bgColor: "#fff", textColor: "#333" },
-                  { variant: "flat", text: "No", size: "sm", bgColor: "#fff", textColor: "#333" },
+                  { variant: "flat", text: "Yes", size: "sm", bgColor: "#fff", textColor: "#333", value: "yes" },
+                  { variant: "flat", text: "No", size: "sm", bgColor: "#fff", textColor: "#333", value: "no" },
                 ],
-                onComplete: () => {},
+                // Response Screens - clicking an option shows a completely different screen
+                responseScreens: {
+                  "yes": {
+                    content: [
+                      { type: "heading", content: "Great! 🎉" },
+                      {
+                        type: "card",
+                        variant: "info",
+                        bgColor: "#ecfdf5",
+                        content: [
+                          { type: "text", content: "✅ **Thank you for agreeing!**", align: "center", fontSize: 18 },
+                          { type: "text", content: "We're excited to have you on board.", align: "center", color: "#166534" },
+                        ],
+                      },
+                      { type: "image", src: qtImage, width: "40%", shape: "circle" },
+                      { type: "text", content: "Let's get started with your journey!", align: "center", color: "#666" },
+                      { type: "button", text: "Continue", onClick: () => {} },
+                    ],
+                  },
+                  "no": {
+                    content: [
+                      { type: "heading", content: "No problem! 👋" },
+                      {
+                        type: "card",
+                        variant: "quotation",
+                        quote: "Every journey begins when you're ready.",
+                        author: "Wise Words",
+                        bgColor: "#fef3c7",
+                      },
+                      {
+                        type: "card",
+                        variant: "message",
+                        message: "We respect your decision. Feel free to come back anytime!\n\n**We'll be here when you need us.**",
+                        bgColor: "#fff",
+                      },
+                      { type: "button", text: "Maybe Later", onClick: () => {} },
+                    ],
+                  },
+                },
+                onChange: () => {},
               },
-              // NO BUTTON - Selection moves to bottom automatically
+              // NO BUTTON on main screen - clicking option triggers response screen
             ]}
           />
         </div>

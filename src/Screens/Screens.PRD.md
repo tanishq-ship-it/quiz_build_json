@@ -83,9 +83,11 @@ import Screens from "./Screens/Screens";
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void;  // Auto-fires for radio without button
   defaultSelected?: (string | number)[];
-  // Response Cards Feature
+  // Response Cards Feature (inline card on same screen)
   responseCards?: Record<string | number, ResponseCard>;  // Map option values to cards
   responsePosition?: "top" | "bottom";  // Default: "top"
+  // Response Screens Feature (replaces entire screen)
+  responseScreens?: Record<string | number, ResponseScreenContent>;  // Map option values to full screens
 }
 ```
 
@@ -128,6 +130,39 @@ Response cards are shown dynamically based on which option is selected. They sup
   bgColor?: string;
   gap?: number;
   padding?: number;
+}
+```
+
+### Response Screen Type
+
+Response screens replace the entire screen content when an option is selected. They contain a full content array just like the main Screens component:
+
+```tsx
+{
+  content: ContentItem[];  // Full screen content (headings, cards, images, text, button)
+  gap?: number;            // Gap between items (inherits from parent if not set)
+  padding?: number;        // Screen padding (inherits from parent if not set)
+}
+```
+
+**Example:**
+```tsx
+responseScreens: {
+  "yes": {
+    content: [
+      { type: "heading", content: "Great! 🎉" },
+      { type: "card", variant: "info", content: [...] },
+      { type: "image", src: img, width: "40%" },
+      { type: "button", text: "Continue", onClick: () => {} },
+    ],
+  },
+  "no": {
+    content: [
+      { type: "heading", content: "No problem!" },
+      { type: "card", variant: "quotation", quote: "...", author: "..." },
+      { type: "button", text: "Maybe Later", onClick: () => {} },
+    ],
+  },
 }
 ```
 
@@ -333,6 +368,106 @@ Response cards allow you to show dynamic content (quotation, message, or info ca
 │   │ 1 │  │ 2 │  │ 3 │      │  ← Selection (at bottom)
 │   └───┘  └───┘  └───┘      │
 └─────────────────────────────┘
+```
+
+---
+
+## Response Screens Feature
+
+Response screens allow you to **replace the entire screen content** when an option is selected. This is perfect for:
+- Branching flows based on user choices
+- Showing detailed confirmation screens
+- Creating Yes/No decision points with different outcomes
+- Multi-path quiz or survey experiences
+
+### How It Works
+
+1. Add `value` to each option to identify it
+2. Define `responseScreens` as a map of option values → full screen content
+3. When user selects an option, the entire screen is replaced with the response screen
+4. The response screen's button resets back to the original screen when clicked
+
+### Comparison: responseCards vs responseScreens
+
+| Feature | `responseCards` | `responseScreens` |
+|---------|-----------------|-------------------|
+| **What happens** | Card appears inline | Entire screen is replaced |
+| **Content** | Single card | Full screen (heading, cards, images, button) |
+| **Original content** | Remains visible | Hidden until button clicked |
+| **Use case** | Quick inline feedback | Branching flows, detailed responses |
+
+### Layout Flow
+
+```
+┌─────────────────────────────┐      ┌─────────────────────────────┐
+│      Do you agree?          │      │        Great! 🎉            │
+│                             │      │                             │
+│   ┌─────┐    ┌─────┐       │      │   ┌─────────────────────┐   │
+│   │ Yes │    │ No  │       │ ──►  │   │ Thank you for       │   │
+│   └─────┘    └─────┘       │ click │   │ agreeing!           │   │
+│                             │ Yes  │   └─────────────────────┘   │
+│                             │      │         [Image]             │
+│                             │      │      ┌──────────────┐       │
+│                             │      │      │  Continue    │       │
+└─────────────────────────────┘      └─────────────────────────────┘
+       Original Screen                    Response Screen (Yes)
+```
+
+### Example
+
+```tsx
+<Screens
+  content={[
+    { type: "heading", content: "Do you agree?" },
+    { type: "text", content: "Select one option", align: "center", color: "#666" },
+    {
+      type: "selection",
+      mode: "radio",
+      layout: "1x2",
+      gap: 10,
+      options: [
+        { variant: "flat", text: "Yes", size: "sm", bgColor: "#fff", textColor: "#333", value: "yes" },
+        { variant: "flat", text: "No", size: "sm", bgColor: "#fff", textColor: "#333", value: "no" },
+      ],
+      responseScreens: {
+        "yes": {
+          content: [
+            { type: "heading", content: "Great! 🎉" },
+            {
+              type: "card",
+              variant: "info",
+              bgColor: "#ecfdf5",
+              content: [
+                { type: "text", content: "✅ **Thank you!**", align: "center", fontSize: 18 },
+                { type: "text", content: "We're excited to have you.", align: "center", color: "#166534" },
+              ],
+            },
+            { type: "image", src: successImg, width: "40%", shape: "circle" },
+            { type: "button", text: "Continue", onClick: () => {} },
+          ],
+        },
+        "no": {
+          content: [
+            { type: "heading", content: "No problem! 👋" },
+            {
+              type: "card",
+              variant: "quotation",
+              quote: "Every journey begins when you're ready.",
+              author: "Wise Words",
+              bgColor: "#fef3c7",
+            },
+            {
+              type: "card",
+              variant: "message",
+              message: "Feel free to come back anytime!\n\n**We'll be here.**",
+            },
+            { type: "button", text: "Maybe Later", onClick: () => {} },
+          ],
+        },
+      },
+    },
+  ]}
+/>
 ```
 
 ---

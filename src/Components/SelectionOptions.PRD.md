@@ -148,18 +148,20 @@ When a screen has **no button** and uses **radio mode**, clicking an option can 
 
 ---
 
-## Response Cards Feature
+## Response Cards & Screens Features
 
-The `Screens` component supports **response cards** that appear dynamically based on selection. This feature is configured at the `Screens` level, not directly in `SelectionOptions`.
+The `Screens` component supports **two response features** that react dynamically based on selection. These are configured at the `Screens` level, not directly in `SelectionOptions`.
 
-See **Screens.PRD.md** for full documentation. Quick overview:
+See **Screens.PRD.md** for full documentation.
+
+### responseCards (Inline Cards)
+
+Shows a card on the same screen when an option is selected.
 
 | Prop | Type | Description |
 |------|------|-------------|
 | `responseCards` | `Record<string \| number, ResponseCard>` | Maps option values to card configs |
-| `responsePosition` | `"top" \| "bottom"` | Where to show the response card |
-
-### Example
+| `responsePosition` | `"top" \| "bottom"` | Where to show the card |
 
 ```tsx
 {
@@ -169,18 +171,60 @@ See **Screens.PRD.md** for full documentation. Quick overview:
   options: [
     { variant: "square", character: "1", size: 55, value: 1 },
     { variant: "square", character: "2", size: 55, value: 2 },
-    // ...
   ],
   responseCards: {
-    1: { variant: "message", message: "😢 Sorry to hear that!", bgColor: "#fef2f2" },
-    2: { variant: "quotation", quote: "Thanks for feedback!", author: "Team" },
-    // ...
+    1: { variant: "message", message: "😢 Sorry!", bgColor: "#fef2f2" },
+    2: { variant: "quotation", quote: "Thanks!", author: "Team" },
   },
   responsePosition: "top",
 }
 ```
 
-**Key:** Add `value` to each option to map it to a response card.
+### responseScreens (Full Screen Replacement)
+
+Replaces the entire screen content when an option is selected. Perfect for branching flows.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `responseScreens` | `Record<string \| number, ResponseScreenContent>` | Maps option values to full screen content |
+
+```tsx
+{
+  type: "selection",
+  mode: "radio",
+  layout: "1x2",
+  options: [
+    { variant: "flat", text: "Yes", value: "yes" },
+    { variant: "flat", text: "No", value: "no" },
+  ],
+  responseScreens: {
+    "yes": {
+      content: [
+        { type: "heading", content: "Great! 🎉" },
+        { type: "card", variant: "info", content: [...] },
+        { type: "button", text: "Continue", onClick: () => {} },
+      ],
+    },
+    "no": {
+      content: [
+        { type: "heading", content: "No problem!" },
+        { type: "card", variant: "quotation", quote: "...", author: "..." },
+        { type: "button", text: "Maybe Later", onClick: () => {} },
+      ],
+    },
+  },
+}
+```
+
+### Comparison
+
+| Feature | `responseCards` | `responseScreens` |
+|---------|-----------------|-------------------|
+| **Behavior** | Card appears inline | Entire screen replaced |
+| **Content** | Single card | Full screen with multiple items |
+| **Use case** | Quick feedback | Branching flows |
+
+**Key:** Add `value` to each option to map it to a response.
 
 ---
 

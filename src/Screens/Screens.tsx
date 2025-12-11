@@ -113,6 +113,13 @@ type ResponseInfoCard = {
 
 type ResponseCard = ResponseQuotationCard | ResponseMessageCard | ResponseInfoCard;
 
+// Response screen content - a full screen that replaces the current screen
+type ResponseScreenContent = {
+  content: ContentItem[];
+  gap?: number;
+  padding?: number;
+};
+
 type SelectionItem = {
   type: "selection";
   mode: "radio" | "checkbox";
@@ -124,9 +131,11 @@ type SelectionItem = {
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void; // Auto-fires for radio when no button
   defaultSelected?: (string | number)[];
-  // Response cards - shown when an option is selected
+  // Response cards - shown inline when an option is selected (stays on same screen)
   responseCards?: Record<string | number, ResponseCard>;
   responsePosition?: "top" | "bottom"; // Where to show the response card relative to selection
+  // Response screens - replaces entire screen content when an option is selected
+  responseScreens?: Record<string | number, ResponseScreenContent>;
 };
 
 // Card item types
@@ -193,6 +202,9 @@ const Screens: React.FC<ScreensProps> = ({
 }) => {
   // State to track selected values for response cards
   const [selectionState, setSelectionState] = useState<Record<number, (string | number)[]>>({});
+  
+  // State to track active response screen (when an option triggers a full screen change)
+  const [activeResponseScreen, setActiveResponseScreen] = useState<ResponseScreenContent | null>(null);
 
   // Extract button from content (if exists)
   const buttonItem = content.find((item) => item.type === "button") as ButtonItem | undefined;
@@ -343,12 +355,22 @@ const Screens: React.FC<ScreensProps> = ({
       const responsePosition = item.responsePosition ?? "top";
       const responseCard = getCurrentResponseCard(item, selectionIndex);
 
-      // Handle selection change to update state for response cards
+      // Handle selection change to update state for response cards/screens
       const handleSelectionChange = (selected: (string | number)[]) => {
         setSelectionState((prev) => ({
           ...prev,
           [selectionIndex]: selected,
         }));
+        
+        // Check if there's a response screen for the selected option
+        if (item.responseScreens && selected.length > 0) {
+          const selectedValue = selected[selected.length - 1];
+          const responseScreen = item.responseScreens[selectedValue];
+          if (responseScreen) {
+            setActiveResponseScreen(responseScreen);
+          }
+        }
+        
         item.onChange?.(selected);
       };
       
@@ -426,6 +448,71 @@ const Screens: React.FC<ScreensProps> = ({
 
     return null;
   };
+
+  // If a response screen is active, render it instead of the original content
+  if (activeResponseScreen) {
+    const responseContent = activeResponseScreen.content;
+    const responseGap = activeResponseScreen.gap ?? gap;
+    const responsePadding = activeResponseScreen.padding ?? padding;
+    
+    // Extract button from response content
+    const responseButtonItem = responseContent.find((item) => item.type === "button") as ButtonItem | undefined;
+    const responseRegularContent = responseContent.filter((item) => item.type !== "button");
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: responsePadding,
+          height: "100%",
+          boxSizing: "border-box",
+          backgroundColor: "transparent",
+        }}
+      >
+        {/* Response Screen Content */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: responseGap,
+            width: "100%",
+            maxWidth: 500,
+            paddingTop: 16,
+          }}
+        >
+          {responseRegularContent.map((item, index) => renderContentItem(item, index))}
+        </div>
+
+        {/* Response Screen Button */}
+        {responseButtonItem && (
+          <div
+            style={{
+              paddingTop: 16,
+              paddingBottom: 16,
+            }}
+          >
+            <Button
+              variant="flat"
+              text={responseButtonItem.text}
+              width={responseButtonItem.width ?? 300}
+              bgColor={responseButtonItem.bgColor ?? "#2563eb"}
+              textColor={responseButtonItem.textColor ?? "#fff"}
+              textAlign="center"
+              onClick={() => {
+                // Reset response screen and call the button's onClick
+                setActiveResponseScreen(null);
+                responseButtonItem.onClick?.();
+              }}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
