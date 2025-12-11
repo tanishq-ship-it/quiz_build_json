@@ -189,47 +189,34 @@ import ShowcaseScreen from "./Screens/ShowcaseScreen";
 
 ---
 
-## Screen Preview Layout (App.tsx)
+## Screen Layout Integration
 
-For previewing screens in a mobile-like frame:
+This component is designed to work with the **Screen Layout System**. See `ScreenLayout.PRD.md` for full documentation.
+
+### Quick Usage
 
 ```tsx
-{/* Screen Preview Section */}
-<section
-  style={{
-    width: "100vw",
-    height: "100vh",
-    marginLeft: -40,  // offset parent padding
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#e5e5e5",
-  }}
->
-  {/* Mobile Frame */}
-  <div
-    style={{
-      width: "33.33vw",
-      height: "80vh",
-    }}
-  >
-    <ShowcaseScreen
-      content={[...]}
-      buttonText="Get Started"
-    />
+<div className="app-container">
+  <section className="screen-section">
+    <div className="mobile-frame">
+      <ShowcaseScreen
+        content={[...]}
+        buttonText="Get Started"
+      />
   </div>
 </section>
 ```
 
-### Preview Layout Details
+### Responsive Mobile Frame
 
-| Element | Size |
-|---------|------|
-| Section | `100vw` × `100vh` (full viewport) |
-| Mobile Frame | `33.33vw` × `80vh` (1/3 width, 80% height) |
-| Background | `#e5e5e5` (gray) |
+| Device | Breakpoint | Frame Width | Frame Height |
+|--------|------------|-------------|--------------|
+| Desktop | ≥ 1440px | `30vw` | `80vh` |
+| Laptop | 1024px - 1439px | `35vw` | `80vh` |
+| Tablet | 768px - 1023px | `50vw` | `80vh` |
+| Mobile | < 768px | `100%` | `100%` |
 
-This creates a scrollable list of screen previews. Each screen section takes the full viewport, and screens can be added vertically.
+For full layout documentation, see `ScreenLayout.PRD.md`.
 
 ---
 
@@ -239,3 +226,12 @@ Uses existing components:
 - `Image` - For image items
 - `Text` - For text items (with markdown)
 - `Button` - Flat variant for action button (12px border-radius)
+
+---
+
+## Related Documentation
+
+- `ScreenLayout.PRD.md` - Full-viewport screen layout system
+- `Button.PRD.md` - Button component variants
+- `Image.PRD.md` - Image component with shapes
+- `Text.PRD.md` - Markdown text component

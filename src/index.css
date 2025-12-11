@@ -86,10 +86,17 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 h1 {
@@ -126,5 +133,63 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+/* ========== Screen Preview - Mobile Frame ========== */
+
+/* App container - full viewport, no scroll */
+.app-container {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Screen preview section - ALWAYS full viewport height */
+.screen-section {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e5e5e5;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Mobile Frame - default for large screens */
+.mobile-frame {
+  width: 30vw;
+  height: 80vh;
+  height: 80dvh;
+  overflow: hidden;
+}
+
+/* Laptop (small): 35% width */
+@media (max-width: 1439px) {
+  .mobile-frame {
+    width: 35vw;
+  }
+}
+
+/* Tablet: 50% width */
+@media (max-width: 1023px) {
+  .mobile-frame {
+    width: 50vw;
+  }
+}
+
+/* Mobile: Full width and full height */
+@media (max-width: 767px) {
+  .mobile-frame {
+    width: 100%;
+    height: 100%;
   }
 }
