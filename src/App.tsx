@@ -56,7 +56,7 @@ function App() {
         </div>
       </section>
 
-      {/* Screen 3: 3x3 Square Buttons */}
+      {/* Screen 3: 3x3 Square Buttons WITH BUTTON + Response Cards */}
       <section className="screen-section">
         <div className="mobile-frame">
           <Screens
@@ -74,16 +74,28 @@ function App() {
                 layout: "3x3",
                 gap: 6,
                 options: [
-                  { variant: "square", character: "A", size: 70 },
-                  { variant: "square", character: "B", size: 70 },
-                  { variant: "square", character: "C", size: 70 },
-                  { variant: "square", character: "D", size: 70 },
-                  { variant: "square", character: "E", size: 70 },
-                  { variant: "square", character: "F", size: 70 },
-                  { variant: "square", character: "G", size: 70 },
-                  { variant: "square", character: "H", size: 70 },
-                  { variant: "square", character: "I", size: 70 },
+                  { variant: "square", character: "A", size: 70, value: "A" },
+                  { variant: "square", character: "B", size: 70, value: "B" },
+                  { variant: "square", character: "C", size: 70, value: "C" },
+                  { variant: "square", character: "D", size: 70, value: "D" },
+                  { variant: "square", character: "E", size: 70, value: "E" },
+                  { variant: "square", character: "F", size: 70, value: "F" },
+                  { variant: "square", character: "G", size: 70, value: "G" },
+                  { variant: "square", character: "H", size: 70, value: "H" },
+                  { variant: "square", character: "I", size: 70, value: "I" },
                 ],
+                responseCards: {
+                  "A": { variant: "message", message: "You selected **A** - First letter!", bgColor: "#dbeafe" },
+                  "B": { variant: "message", message: "You selected **B** - Good choice!", bgColor: "#dcfce7" },
+                  "C": { variant: "quotation", quote: "C is for Courage!", author: "Quiz Master", bgColor: "#fef3c7" },
+                  "D": { variant: "message", message: "**D** - Determined!", bgColor: "#f3e8ff" },
+                  "E": { variant: "message", message: "**E** - Excellent!", bgColor: "#ecfdf5" },
+                  "F": { variant: "message", message: "**F** - Fantastic!", bgColor: "#fef2f2" },
+                  "G": { variant: "message", message: "**G** - Great!", bgColor: "#f0fdf4" },
+                  "H": { variant: "message", message: "**H** - Heroic!", bgColor: "#eff6ff" },
+                  "I": { variant: "message", message: "**I** - Incredible!", bgColor: "#fdf4ff" },
+                },
+                responsePosition: "bottom", // Card appears AFTER options, before button
                 onChange: () => {},
               },
               { type: "button", text: "Submit", onClick: () => {} },
@@ -253,7 +265,7 @@ function App() {
         </div>
       </section>
 
-      {/* Screen 9: 1x5 Rating - 5 Square Buttons in 1 Row */}
+      {/* Screen 9: 1x5 Rating with Response Cards - Shows different card for each rating */}
       <section className="screen-section">
         <div className="mobile-frame">
           <Screens
@@ -271,12 +283,23 @@ function App() {
                 layout: "1x5",
                 gap: 12,
                 options: [
-                  { variant: "square", character: "1", size: 55 },
-                  { variant: "square", character: "2", size: 55 },
-                  { variant: "square", character: "3", size: 55 },
-                  { variant: "square", character: "4", size: 55 },
-                  { variant: "square", character: "5", size: 55 },
+                  { variant: "square", character: "1", size: 55, value: 1 },
+                  { variant: "square", character: "2", size: 55, value: 2 },
+                  { variant: "square", character: "3", size: 55, value: 3 },
+                  { variant: "square", character: "4", size: 55, value: 4 },
+                  { variant: "square", character: "5", size: 55, value: 5 },
                 ],
+                responseCards: {
+                  1: { variant: "message", message: "😢 We're sorry to hear that! We'll work hard to improve.", bgColor: "#fef2f2" },
+                  2: { variant: "message", message: "🙁 Thanks for your honesty. We'll do better!", bgColor: "#fef3c7" },
+                  3: { variant: "quotation", quote: "Every journey starts with a single step.", author: "Lao Tzu", bgColor: "#f0fdf4" },
+                  4: { variant: "message", message: "😊 Great! We're glad you had a good experience!", bgColor: "#ecfdf5" },
+                  5: { variant: "info", bgColor: "#eff6ff", content: [
+                    { type: "text", content: "🎉 **Perfect Score!**", align: "center", fontSize: 18, fontWeight: 700 },
+                    { type: "text", content: "Thank you so much for the amazing rating!", align: "center", color: "#1d4ed8" },
+                  ]},
+                },
+                responsePosition: "top",
                 onComplete: () => {},
               },
               // NO BUTTON - Selection auto-completes

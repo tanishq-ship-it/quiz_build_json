@@ -148,6 +148,42 @@ When a screen has **no button** and uses **radio mode**, clicking an option can 
 
 ---
 
+## Response Cards Feature
+
+The `Screens` component supports **response cards** that appear dynamically based on selection. This feature is configured at the `Screens` level, not directly in `SelectionOptions`.
+
+See **Screens.PRD.md** for full documentation. Quick overview:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `responseCards` | `Record<string \| number, ResponseCard>` | Maps option values to card configs |
+| `responsePosition` | `"top" \| "bottom"` | Where to show the response card |
+
+### Example
+
+```tsx
+{
+  type: "selection",
+  mode: "radio",
+  layout: "1x5",
+  options: [
+    { variant: "square", character: "1", size: 55, value: 1 },
+    { variant: "square", character: "2", size: 55, value: 2 },
+    // ...
+  ],
+  responseCards: {
+    1: { variant: "message", message: "😢 Sorry to hear that!", bgColor: "#fef2f2" },
+    2: { variant: "quotation", quote: "Thanks for feedback!", author: "Team" },
+    // ...
+  },
+  responsePosition: "top",
+}
+```
+
+**Key:** Add `value` to each option to map it to a response card.
+
+---
+
 ## Examples
 
 ### Age Selection (4x1 Radio - Vertical List)

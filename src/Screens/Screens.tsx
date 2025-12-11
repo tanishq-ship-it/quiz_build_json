@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Image from "../Components/Image";
 import Text from "../Components/Text";
 import Button from "../Components/Button";
@@ -77,6 +77,42 @@ type FlatOption = {
 
 type SelectionOptionItem = SquareOption | ImageCardOption | FlatOption;
 
+// Response card types (without "type: card" since it's implied)
+type ResponseQuotationCard = {
+  variant: "quotation";
+  quote: string;
+  author?: string;
+  authorAlign?: "left" | "center" | "right";
+  width?: string | number;
+  bgColor?: string;
+  quoteColor?: string;
+  authorColor?: string;
+  quoteSymbolColor?: string;
+  fontSize?: number;
+  authorFontSize?: number;
+};
+
+type ResponseMessageCard = {
+  variant: "message";
+  message: string;
+  width?: string | number;
+  bgColor?: string;
+  textColor?: string;
+  fontSize?: number;
+  align?: "left" | "center" | "right";
+};
+
+type ResponseInfoCard = {
+  variant: "info";
+  content: InfoContentItem[];
+  width?: string | number;
+  bgColor?: string;
+  gap?: number;
+  padding?: number;
+};
+
+type ResponseCard = ResponseQuotationCard | ResponseMessageCard | ResponseInfoCard;
+
 type SelectionItem = {
   type: "selection";
   mode: "radio" | "checkbox";
@@ -88,6 +124,9 @@ type SelectionItem = {
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void; // Auto-fires for radio when no button
   defaultSelected?: (string | number)[];
+  // Response cards - shown when an option is selected
+  responseCards?: Record<string | number, ResponseCard>;
+  responsePosition?: "top" | "bottom"; // Where to show the response card relative to selection
 };
 
 // Card item types
@@ -152,6 +191,9 @@ const Screens: React.FC<ScreensProps> = ({
   gap = 16,
   padding = 24,
 }) => {
+  // State to track selected values for response cards
+  const [selectionState, setSelectionState] = useState<Record<number, (string | number)[]>>({});
+
   // Extract button from content (if exists)
   const buttonItem = content.find((item) => item.type === "button") as ButtonItem | undefined;
   
@@ -171,6 +213,78 @@ const Screens: React.FC<ScreensProps> = ({
   const bottomSelection = shouldMoveSelectionToBottom
     ? (regularContent.find((item) => item.type === "selection") as SelectionItem | undefined)
     : undefined;
+
+  // Find the selection item index for state tracking
+  const getSelectionIndex = (): number => {
+    return content.findIndex((item) => item.type === "selection");
+  };
+
+  // Render a response card based on selection
+  const renderResponseCard = (responseCard: ResponseCard, key: string) => {
+    if (responseCard.variant === "quotation") {
+      return (
+        <Card
+          key={key}
+          variant="quotation"
+          quote={responseCard.quote}
+          author={responseCard.author}
+          authorAlign={responseCard.authorAlign}
+          width={responseCard.width}
+          bgColor={responseCard.bgColor}
+          quoteColor={responseCard.quoteColor}
+          authorColor={responseCard.authorColor}
+          quoteSymbolColor={responseCard.quoteSymbolColor}
+          fontSize={responseCard.fontSize}
+          authorFontSize={responseCard.authorFontSize}
+        />
+      );
+    }
+    if (responseCard.variant === "message") {
+      return (
+        <Card
+          key={key}
+          variant="message"
+          message={responseCard.message}
+          width={responseCard.width}
+          bgColor={responseCard.bgColor}
+          textColor={responseCard.textColor}
+          fontSize={responseCard.fontSize}
+          align={responseCard.align}
+        />
+      );
+    }
+    if (responseCard.variant === "info") {
+      return (
+        <Card
+          key={key}
+          variant="info"
+          content={responseCard.content}
+          width={responseCard.width}
+          bgColor={responseCard.bgColor}
+          gap={responseCard.gap}
+          padding={responseCard.padding}
+        />
+      );
+    }
+    return null;
+  };
+
+  // Get the current response card for a selection
+  const getCurrentResponseCard = (selectionItem: SelectionItem, selectionIndex: number) => {
+    if (!selectionItem.responseCards) return null;
+    
+    const selectedValues = selectionState[selectionIndex] || [];
+    if (selectedValues.length === 0) return null;
+
+    // For radio mode, use the single selected value
+    // For checkbox mode, use the last selected value
+    const currentValue = selectedValues[selectedValues.length - 1];
+    const responseCard = selectionItem.responseCards[currentValue];
+    
+    if (!responseCard) return null;
+    
+    return renderResponseCard(responseCard, `response-${selectionIndex}-${currentValue}`);
+  };
 
   const renderContentItem = (item: ContentItem, index: number) => {
     if (item.type === "image") {
@@ -225,21 +339,40 @@ const Screens: React.FC<ScreensProps> = ({
     if (item.type === "selection") {
       // Auto-complete for radio mode when no button exists
       const autoComplete = item.mode === "radio" && !buttonItem;
+      const selectionIndex = getSelectionIndex();
+      const responsePosition = item.responsePosition ?? "top";
+      const responseCard = getCurrentResponseCard(item, selectionIndex);
+
+      // Handle selection change to update state for response cards
+      const handleSelectionChange = (selected: (string | number)[]) => {
+        setSelectionState((prev) => ({
+          ...prev,
+          [selectionIndex]: selected,
+        }));
+        item.onChange?.(selected);
+      };
       
       return (
-        <SelectionOptions
-          key={index}
-          mode={item.mode}
-          layout={item.layout}
-          options={item.options}
-          selectedColor={item.selectedColor}
-          selectedBorderWidth={item.selectedBorderWidth}
-          gap={item.gap}
-          onChange={item.onChange}
-          onComplete={item.onComplete}
-          autoComplete={autoComplete}
-          defaultSelected={item.defaultSelected}
-        />
+        <div key={index} style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", width: "100%" }}>
+          {/* Response card above selection */}
+          {responsePosition === "top" && responseCard}
+          
+          <SelectionOptions
+            mode={item.mode}
+            layout={item.layout}
+            options={item.options}
+            selectedColor={item.selectedColor}
+            selectedBorderWidth={item.selectedBorderWidth}
+            gap={item.gap}
+            onChange={handleSelectionChange}
+            onComplete={item.onComplete}
+            autoComplete={autoComplete}
+            defaultSelected={item.defaultSelected}
+          />
+          
+          {/* Response card below selection */}
+          {responsePosition === "bottom" && responseCard}
+        </div>
       );
     }
 

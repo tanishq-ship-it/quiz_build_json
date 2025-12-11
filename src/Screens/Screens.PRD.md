@@ -83,6 +83,51 @@ import Screens from "./Screens/Screens";
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void;  // Auto-fires for radio without button
   defaultSelected?: (string | number)[];
+  // Response Cards Feature
+  responseCards?: Record<string | number, ResponseCard>;  // Map option values to cards
+  responsePosition?: "top" | "bottom";  // Default: "top"
+}
+```
+
+### Response Card Types
+
+Response cards are shown dynamically based on which option is selected. They support all three Card variants:
+
+```tsx
+// Quotation Response Card
+{
+  variant: "quotation";
+  quote: string;
+  author?: string;
+  authorAlign?: "left" | "center" | "right";
+  width?: string | number;
+  bgColor?: string;
+  quoteColor?: string;
+  authorColor?: string;
+  quoteSymbolColor?: string;
+  fontSize?: number;
+  authorFontSize?: number;
+}
+
+// Message Response Card
+{
+  variant: "message";
+  message: string;              // Supports markdown
+  width?: string | number;
+  bgColor?: string;
+  textColor?: string;
+  fontSize?: number;
+  align?: "left" | "center" | "right";
+}
+
+// Info Response Card
+{
+  variant: "info";
+  content: InfoContentItem[];   // Array of image/text items
+  width?: string | number;
+  bgColor?: string;
+  gap?: number;
+  padding?: number;
 }
 ```
 
@@ -231,6 +276,64 @@ content={[
 **Key:** 
 - With button: Content (including selection) is at top, button pinned to bottom
 - **Without button:** Selection automatically moves to bottom position (where button would be)
+
+---
+
+## Response Cards Feature
+
+Response cards allow you to show dynamic content (quotation, message, or info cards) based on which option the user selects. This is perfect for:
+- Showing feedback based on rating selections
+- Displaying different messages for different quiz answers
+- Providing contextual information based on choices
+
+### How It Works
+
+1. Add `value` to each option to identify it
+2. Define `responseCards` as a map of option values → card configurations
+3. Set `responsePosition` to control where the card appears (`"top"` or `"bottom"`)
+4. When user selects an option, the corresponding card appears
+
+### Layout with Response Cards
+
+#### With Button + Response Cards (responsePosition: "bottom")
+
+```
+┌─────────────────────────────┐
+│        Heading              │
+│        Text                 │
+│                             │
+│   ┌───┐  ┌───┐  ┌───┐      │
+│   │ 1 │  │ 2 │  │ 3 │      │  ← Selection Options
+│   └───┘  └───┘  └───┘      │
+│                             │
+│  ┌─────────────────────────┐│
+│  │  Response Card appears  ││  ← Card (below options)
+│  │  based on selection     ││
+│  └─────────────────────────┘│
+│                             │
+│      ┌──────────────┐       │
+│      │    Submit    │       │  ← Button (always at bottom)
+│      └──────────────┘       │
+└─────────────────────────────┘
+```
+
+#### Without Button + Response Cards (responsePosition: "top")
+
+```
+┌─────────────────────────────┐
+│        Heading              │
+│        Text                 │
+│                             │
+│  ┌─────────────────────────┐│
+│  │  Response Card appears  ││  ← Card (above options)
+│  │  based on selection     ││
+│  └─────────────────────────┘│
+│                             │
+│   ┌───┐  ┌───┐  ┌───┐      │
+│   │ 1 │  │ 2 │  │ 3 │      │  ← Selection (at bottom)
+│   └───┘  └───┘  └───┘      │
+└─────────────────────────────┘
+```
 
 ---
 
@@ -395,6 +498,85 @@ content={[
       ],
     },
     { type: "button", text: "Continue", onClick: () => {} },
+  ]}
+/>
+```
+
+### Rating with Response Cards (No Button, Auto-Complete)
+
+```tsx
+<Screens
+  content={[
+    { type: "heading", content: "Rate your experience" },
+    { type: "text", content: "1 = Poor, 5 = Excellent", align: "center", color: "#666" },
+    {
+      type: "selection",
+      mode: "radio",
+      layout: "1x5",
+      gap: 12,
+      options: [
+        { variant: "square", character: "1", size: 55, value: 1 },
+        { variant: "square", character: "2", size: 55, value: 2 },
+        { variant: "square", character: "3", size: 55, value: 3 },
+        { variant: "square", character: "4", size: 55, value: 4 },
+        { variant: "square", character: "5", size: 55, value: 5 },
+      ],
+      responseCards: {
+        1: { variant: "message", message: "😢 We're sorry! We'll improve.", bgColor: "#fef2f2" },
+        2: { variant: "message", message: "🙁 Thanks for your honesty.", bgColor: "#fef3c7" },
+        3: { variant: "quotation", quote: "Every journey starts with a single step.", author: "Lao Tzu", bgColor: "#f0fdf4" },
+        4: { variant: "message", message: "😊 Glad you had a good experience!", bgColor: "#ecfdf5" },
+        5: { variant: "info", bgColor: "#eff6ff", content: [
+          { type: "text", content: "🎉 **Perfect Score!**", align: "center", fontSize: 18 },
+          { type: "text", content: "Thank you so much!", align: "center", color: "#1d4ed8" },
+        ]},
+      },
+      responsePosition: "top",
+      onComplete: (selected) => { /* Navigate to next screen */ },
+    },
+    // No button - auto-complete on selection
+  ]}
+/>
+```
+
+### Quiz with Response Cards + Button
+
+```tsx
+<Screens
+  content={[
+    { type: "heading", content: "Choose your answer" },
+    { type: "text", content: "Pick the correct option", align: "center", color: "#666" },
+    {
+      type: "selection",
+      mode: "radio",
+      layout: "3x3",
+      gap: 6,
+      options: [
+        { variant: "square", character: "A", size: 70, value: "A" },
+        { variant: "square", character: "B", size: 70, value: "B" },
+        { variant: "square", character: "C", size: 70, value: "C" },
+        { variant: "square", character: "D", size: 70, value: "D" },
+        { variant: "square", character: "E", size: 70, value: "E" },
+        { variant: "square", character: "F", size: 70, value: "F" },
+        { variant: "square", character: "G", size: 70, value: "G" },
+        { variant: "square", character: "H", size: 70, value: "H" },
+        { variant: "square", character: "I", size: 70, value: "I" },
+      ],
+      responseCards: {
+        "A": { variant: "message", message: "You selected **A** - First letter!", bgColor: "#dbeafe" },
+        "B": { variant: "message", message: "You selected **B** - Good choice!", bgColor: "#dcfce7" },
+        "C": { variant: "quotation", quote: "C is for Courage!", author: "Quiz Master", bgColor: "#fef3c7" },
+        "D": { variant: "message", message: "**D** - Determined!", bgColor: "#f3e8ff" },
+        "E": { variant: "message", message: "**E** - Excellent!", bgColor: "#ecfdf5" },
+        "F": { variant: "message", message: "**F** - Fantastic!", bgColor: "#fef2f2" },
+        "G": { variant: "message", message: "**G** - Great!", bgColor: "#f0fdf4" },
+        "H": { variant: "message", message: "**H** - Heroic!", bgColor: "#eff6ff" },
+        "I": { variant: "message", message: "**I** - Incredible!", bgColor: "#fdf4ff" },
+      },
+      responsePosition: "bottom", // Card appears after options, before button
+      onChange: () => {},
+    },
+    { type: "button", text: "Submit", onClick: () => {} },
   ]}
 />
 ```
