@@ -116,8 +116,11 @@ import {
 All components use Inter font by default:
 
 - ✅ Button (all variants)
+- ✅ Card (all variants)
 - ✅ ListBlock
 - ✅ Text
+- ✅ SelectionOptions
+- ✅ Screens (headings)
 
 ---
 

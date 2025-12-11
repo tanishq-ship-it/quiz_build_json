@@ -285,6 +285,90 @@ function App() {
         </div>
       </section>
 
+      {/* ========== CARD COMPONENT DEMOS ========== */}
+
+      {/* Screen 10: Quotation Card */}
+      <section className="screen-section">
+        <div className="mobile-frame">
+          <Screens
+            content={[
+              { type: "heading", content: "Words of Wisdom", fontSize: 24 },
+              {
+                type: "card",
+                variant: "quotation",
+                quote: "Stay hungry, stay foolish.",
+                author: "Steve Jobs",
+                authorAlign: "left",
+              },
+              {
+                type: "card",
+                variant: "quotation",
+                quote: "The only way to do great work is to love what you do.",
+                author: "Steve Jobs",
+                authorAlign: "right",
+                quoteSymbolColor: "#2563eb",
+              },
+              { type: "button", text: "Continue", onClick: () => {} },
+            ]}
+          />
+        </div>
+      </section>
+
+      {/* Screen 11: Message Card - Markdown Support */}
+      <section className="screen-section">
+        <div className="mobile-frame">
+          <Screens
+            content={[
+              { type: "heading", content: "Important Message", fontSize: 24 },
+              {
+                type: "card",
+                variant: "message",
+                message: "## Welcome! 👋\n\nThis is a **message card** with full markdown support.\n\n- ✅ Bold and *italic* text\n- ✅ Lists and headings\n- ✅ Links and `code`",
+              },
+              {
+                type: "card",
+                variant: "message",
+                message: "### Quick Tip 💡\n\nYou can customize the **background color**, text color, and alignment!",
+                bgColor: "#fef3c7",
+                align: "center",
+              },
+              { type: "button", text: "Got it!", onClick: () => {} },
+            ]}
+          />
+        </div>
+      </section>
+
+      {/* Screen 12: Info Card - Flexible Content */}
+      <section className="screen-section">
+        <div className="mobile-frame">
+          <Screens
+            content={[
+              { type: "heading", content: "Meet Your Guide", fontSize: 24 },
+              {
+                type: "card",
+                variant: "info",
+                content: [
+                  { type: "image", src: qtImage, width: "50%", shape: "circle", align: "center" },
+                  { type: "text", content: "**John Doe**", align: "center", fontSize: 18, fontWeight: 600 },
+                  { type: "text", content: "Software Engineer", align: "center", color: "#666" },
+                ],
+              },
+              {
+                type: "card",
+                variant: "info",
+                bgColor: "#f0fdf4",
+                content: [
+                  { type: "text", content: "🎉 **Achievement Unlocked!**", align: "center", fontSize: 16 },
+                  { type: "image", src: qtImage, width: "40%", shape: "rounded", align: "center" },
+                  { type: "text", content: "You completed your first quiz!", align: "center", color: "#166534" },
+                ],
+              },
+              { type: "button", text: "Let's Go!", onClick: () => {} },
+            ]}
+          />
+        </div>
+      </section>
+
     </div>
   );
 }

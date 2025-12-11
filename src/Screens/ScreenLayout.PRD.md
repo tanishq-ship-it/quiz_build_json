@@ -226,6 +226,19 @@ function App() {
         </div>
       </section>
 
+      {/* Screen 3 - Card Example */}
+      <section className="screen-section">
+        <div className="mobile-frame">
+          <Screens
+            content={[
+              { type: "heading", content: "Words of Wisdom" },
+              { type: "card", variant: "quotation", quote: "Stay hungry, stay foolish.", author: "Steve Jobs" },
+              { type: "button", text: "Continue" },
+            ]}
+          />
+        </div>
+      </section>
+
       {/* More screens... */}
     </div>
   );

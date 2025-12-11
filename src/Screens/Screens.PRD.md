@@ -86,7 +86,7 @@ import Screens from "./Screens/Screens";
 }
 ```
 
-### Button Item (NEW - Data-Driven)
+### Button Item
 
 ```tsx
 {
@@ -97,6 +97,58 @@ import Screens from "./Screens/Screens";
   textColor?: string;       // Default: "#fff"
   width?: number;           // Default: 300
 }
+```
+
+### Card Item (Quotation)
+
+```tsx
+{
+  type: "card";
+  variant: "quotation";
+  quote: string;              // Required - The quote text
+  author?: string;            // Author attribution
+  authorAlign?: "left" | "center" | "right";  // Default: "left"
+  width?: string | number;    // Default: "80%"
+  bgColor?: string;           // Default: "#fff"
+  quoteColor?: string;        // Default: "#333"
+  authorColor?: string;       // Default: "#666"
+  quoteSymbolColor?: string;  // Default: "#e5e5e5"
+  fontSize?: number;          // Default: 18
+  authorFontSize?: number;    // Default: 14
+}
+```
+
+### Card Item (Message)
+
+```tsx
+{
+  type: "card";
+  variant: "message";
+  message: string;            // Required - Markdown text
+  width?: string | number;    // Default: "80%"
+  bgColor?: string;           // Default: "#fff"
+  textColor?: string;         // Default: "#333"
+  fontSize?: number;          // Default: 16
+  align?: "left" | "center" | "right";  // Default: "left"
+}
+```
+
+### Card Item (Info)
+
+```tsx
+{
+  type: "card";
+  variant: "info";
+  content: InfoContentItem[]; // Required - Array of image/text items
+  width?: string | number;    // Default: "80%"
+  bgColor?: string;           // Default: "#fff"
+  gap?: number;               // Default: 12
+  padding?: number;           // Default: 20
+}
+
+// InfoContentItem types:
+{ type: "image"; src: string; width?: string | number; shape?: "none" | "circle" | "rounded" | "blob"; align?: "left" | "center" | "right"; }
+{ type: "text"; content: string; align?: "left" | "center" | "right"; fontSize?: number; color?: string; fontWeight?: number; }
 ```
 
 ---
@@ -292,6 +344,61 @@ content={[
 />
 ```
 
+### Quotation Card Screen
+
+```tsx
+<Screens
+  content={[
+    { type: "heading", content: "Words of Wisdom" },
+    {
+      type: "card",
+      variant: "quotation",
+      quote: "Stay hungry, stay foolish.",
+      author: "Steve Jobs",
+      authorAlign: "left",
+    },
+    { type: "button", text: "Continue", onClick: () => {} },
+  ]}
+/>
+```
+
+### Message Card Screen
+
+```tsx
+<Screens
+  content={[
+    { type: "heading", content: "Important" },
+    {
+      type: "card",
+      variant: "message",
+      message: "## Welcome! 👋\n\nThis is a **message card** with markdown support.\n\n- ✅ Bold and *italic*\n- ✅ Lists and headings",
+      bgColor: "#fef3c7",
+    },
+    { type: "button", text: "Got it!", onClick: () => {} },
+  ]}
+/>
+```
+
+### Info Card Screen (Profile)
+
+```tsx
+<Screens
+  content={[
+    { type: "heading", content: "Meet Your Guide" },
+    {
+      type: "card",
+      variant: "info",
+      content: [
+        { type: "image", src: avatarImg, width: "50%", shape: "circle", align: "center" },
+        { type: "text", content: "**John Doe**", align: "center", fontSize: 18 },
+        { type: "text", content: "Software Engineer", align: "center", color: "#666" },
+      ],
+    },
+    { type: "button", text: "Continue", onClick: () => {} },
+  ]}
+/>
+```
+
 ---
 
 ## Selection Option Types
@@ -324,6 +431,7 @@ See `SelectionOptions.PRD.md` for full option documentation. Quick reference:
 - `Text` component (markdown support)
 - `Button` component
 - `SelectionOptions` component
+- `Card` component (quotation, message, info variants)
 
 ---
 

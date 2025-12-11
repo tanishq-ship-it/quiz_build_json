@@ -3,6 +3,7 @@ import Image from "../Components/Image";
 import Text from "../Components/Text";
 import Button from "../Components/Button";
 import SelectionOptions from "../Components/SelectionOptions";
+import Card, { type InfoContentItem } from "../Components/Card";
 import { FONT_INTER } from "../styles/fonts";
 
 // Content item types
@@ -89,6 +90,45 @@ type SelectionItem = {
   defaultSelected?: (string | number)[];
 };
 
+// Card item types
+type QuotationCardItem = {
+  type: "card";
+  variant: "quotation";
+  quote: string;
+  author?: string;
+  authorAlign?: "left" | "center" | "right";
+  width?: string | number;
+  bgColor?: string;
+  quoteColor?: string;
+  authorColor?: string;
+  quoteSymbolColor?: string;
+  fontSize?: number;
+  authorFontSize?: number;
+};
+
+type MessageCardItem = {
+  type: "card";
+  variant: "message";
+  message: string;
+  width?: string | number;
+  bgColor?: string;
+  textColor?: string;
+  fontSize?: number;
+  align?: "left" | "center" | "right";
+};
+
+type InfoCardItem = {
+  type: "card";
+  variant: "info";
+  content: InfoContentItem[];
+  width?: string | number;
+  bgColor?: string;
+  gap?: number;
+  padding?: number;
+};
+
+type CardItem = QuotationCardItem | MessageCardItem | InfoCardItem;
+
 // Button item for bottom CTA
 type ButtonItem = {
   type: "button";
@@ -99,7 +139,7 @@ type ButtonItem = {
   width?: number;
 };
 
-type ContentItem = ImageItem | TextItem | HeadingItem | SelectionItem | ButtonItem;
+type ContentItem = ImageItem | TextItem | HeadingItem | SelectionItem | CardItem | ButtonItem;
 
 interface ScreensProps {
   content: ContentItem[];
@@ -201,6 +241,54 @@ const Screens: React.FC<ScreensProps> = ({
           defaultSelected={item.defaultSelected}
         />
       );
+    }
+
+    if (item.type === "card") {
+      if (item.variant === "quotation") {
+        return (
+          <Card
+            key={index}
+            variant="quotation"
+            quote={item.quote}
+            author={item.author}
+            authorAlign={item.authorAlign}
+            width={item.width}
+            bgColor={item.bgColor}
+            quoteColor={item.quoteColor}
+            authorColor={item.authorColor}
+            quoteSymbolColor={item.quoteSymbolColor}
+            fontSize={item.fontSize}
+            authorFontSize={item.authorFontSize}
+          />
+        );
+      }
+      if (item.variant === "message") {
+        return (
+          <Card
+            key={index}
+            variant="message"
+            message={item.message}
+            width={item.width}
+            bgColor={item.bgColor}
+            textColor={item.textColor}
+            fontSize={item.fontSize}
+            align={item.align}
+          />
+        );
+      }
+      if (item.variant === "info") {
+        return (
+          <Card
+            key={index}
+            variant="info"
+            content={item.content}
+            width={item.width}
+            bgColor={item.bgColor}
+            gap={item.gap}
+            padding={item.padding}
+          />
+        );
+      }
     }
 
     return null;
