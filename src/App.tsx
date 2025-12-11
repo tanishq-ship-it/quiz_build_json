@@ -2,11 +2,12 @@ import Button from "./Components/Button";
 import ListBlock from "./Components/listBock";
 import Text from "./Components/Text";
 import Image from "./Components/Image";
+import ShowcaseScreen from "./Screens/ShowcaseScreen";
 import qtImage from "./assests/qt.svg";
 
 function App() {
   return (
-    <div style={{ padding: 40, display: "flex", flexDirection: "column", gap: 40 }}>
+    <div style={{ padding: 40, display: "flex", flexDirection: "column", gap: 40 ,backgroundColor: "#f5f5f5"}}>
       {/* Section 1: Square Buttons */}
       <section>
         <h2 style={{ marginBottom: 16 }}>1. Square Buttons</h2>
@@ -296,6 +297,48 @@ This is a paragraph with **bold** and *italic*.
           </div>
         </div>
       </section>
+
+      {/* ========== SCREEN PREVIEWS (Mobile View) ========== */}
+      
+      {/* Screen 1: Showcase Screen */}
+      <section
+        style={{
+          width: "100vw",
+          height: "100vh",
+          marginLeft: -40,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#e5e5e5",
+        }}
+      >
+        {/* Mobile Frame */}
+        <div
+          style={{
+            width: "33.33vw",
+            height: "80vh",
+          }}
+        >
+          <ShowcaseScreen
+            content={[
+              { type: "image", src: qtImage, width: "50%", shape: "rounded" },
+              { type: "heading", content: "Welcome to the App!" },
+              {
+                type: "text",
+                content: "Start your journey with us today.",
+                align: "center",
+                color: "#666",
+              },
+              { type: "image", src: qtImage, width: "30%", shape: "circle" },
+            ]}
+            buttonText="Get Started"
+            onButtonClick={() => console.log("Button clicked!")}
+          />
+        </div>
+      </section>
+
+      {/* Add more screen sections below - they will stack vertically */}
+      
     </div>
   );
 }
