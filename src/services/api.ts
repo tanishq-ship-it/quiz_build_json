@@ -12,6 +12,7 @@ export interface QuizDto {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: any;
   live: boolean;
+  deletion: boolean;
   createdAt: string;
 }
 
@@ -19,6 +20,7 @@ export interface QuizDto {
 export interface AppendScreensPayload { screens: any[] }
 export interface ReplaceScreensPayload { screens: any[] }
 export interface UpdateQuizLivePayload { live: boolean }
+export interface UpdateQuizDeletionPayload { deletion: boolean }
 
 export const createQuiz = async (payload: CreateQuizPayload): Promise<QuizDto> => {
   const response = await fetch(`${API_BASE_URL}/quizzes`, {
@@ -105,6 +107,23 @@ export const updateQuizLive = async (id: string, payload: UpdateQuizLivePayload)
   if (!response.ok) {
     const message = await response.text();
     throw new Error(message || "Failed to update live status");
+  }
+
+  return response.json() as Promise<QuizDto>;
+};
+
+export const updateQuizDeletion = async (id: string, payload: UpdateQuizDeletionPayload): Promise<QuizDto> => {
+  const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/deletion`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "Failed to update deletion status");
   }
 
   return response.json() as Promise<QuizDto>;

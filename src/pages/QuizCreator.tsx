@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Radio, Zap } from "lucide-react";
-import { createQuiz, getQuizzes, updateQuizLive } from "../services/api";
+import { Plus, Pencil, Eye, Radio, Trash2, Zap } from "lucide-react";
+import Lottie from "lottie-react";
+import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive } from "../services/api";
+import loadingAnimation from "../assests/Loding.json";
 
 type QuizListItem = {
   id: string;
@@ -21,6 +23,7 @@ function QuizCreator() {
   const [isCreating, setIsCreating] = useState(false);
   const [dialogError, setDialogError] = useState<string | null>(null);
   const [updatingLiveId, setUpdatingLiveId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleToggleLive = async (quizId: string, currentLive: boolean) => {
     try {
@@ -48,6 +51,23 @@ function QuizCreator() {
     }
   };
 
+  const handleDeleteQuiz = async (quizId: string) => {
+    try {
+      setDeletingId(quizId);
+      setLoadError(null);
+
+      await updateQuizDeletion(quizId, { deletion: true });
+
+      setQuizzes((current) => current.filter((quiz) => quiz.id !== quizId));
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to delete quiz.";
+      setLoadError(message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -61,11 +81,13 @@ function QuizCreator() {
         if (cancelled) return;
 
         setQuizzes(
-          quizzesFromApi.map((quiz) => ({
-            id: quiz.id,
-            name: quiz.title,
-            status: { live: quiz.live },
-          })),
+          quizzesFromApi
+            .filter((quiz) => !quiz.deletion)
+            .map((quiz) => ({
+              id: quiz.id,
+              name: quiz.title,
+              status: { live: quiz.live },
+            })),
         );
       } catch (error) {
         if (cancelled) return;
@@ -116,15 +138,17 @@ function QuizCreator() {
         // content can be filled later from the Preview editor
       });
 
-      // Optimistically add to local list
-      setQuizzes((current) => [
-        {
-          id: quiz.id,
-          name: quiz.title,
-          status: { live: quiz.live },
-        },
-        ...current,
-      ]);
+      // Optimistically add to local list if not deleted
+      if (!quiz.deletion) {
+        setQuizzes((current) => [
+          {
+            id: quiz.id,
+            name: quiz.title,
+            status: { live: quiz.live },
+          },
+          ...current,
+        ]);
+      }
 
       setIsDialogOpen(false);
 
@@ -202,7 +226,11 @@ function QuizCreator() {
           {/* Quiz List */}
           <div className="flex flex-col gap-3">
             {isLoading && (
-              <div className="text-xs text-slate-500">Loading quizzes...</div>
+              <div className="flex items-center justify-center py-6">
+                <div className="w-80 h-80">
+                  <Lottie animationData={loadingAnimation} loop autoplay />
+                </div>
+              </div>
             )}
 
             {loadError && !isLoading && (
@@ -243,8 +271,8 @@ function QuizCreator() {
                   <div className="flex items-center gap-2">
                     {/* Edit */}
                     <button
-                    type="button"
-                    onClick={() => navigate(`/editorion/${quiz.id}`)}
+                      type="button"
+                      onClick={() => navigate(`/editorion/${quiz.id}`)}
                       className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors px-2.5"
                       title="Edit"
                     >
@@ -254,8 +282,8 @@ function QuizCreator() {
 
                     {/* Preview */}
                     <button
-                    type="button"
-                    onClick={() => navigate(`/preview-play/${quiz.id}`)}
+                      type="button"
+                      onClick={() => navigate(`/preview-play/${quiz.id}`)}
                       className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50/80 text-sky-700 hover:bg-sky-100 hover:border-sky-200 transition-colors px-2.5"
                       title="Preview"
                     >
@@ -265,21 +293,33 @@ function QuizCreator() {
 
                     {/* Live */}
                     <button
-                    type="button"
-                    onClick={() => handleToggleLive(quiz.id, quiz.status.live)}
-                    disabled={updatingLiveId === quiz.id}
-                    className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-inter-medium transition-colors ${
-                      quiz.status.live
-                        ? "border-emerald-100 bg-emerald-50/90 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-200"
-                        : "border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
-                    } disabled:opacity-60 disabled:cursor-not-allowed`}
-                    title={quiz.status.live ? "Set as not live" : "Make live"}
-                  >
-                    <Radio className="w-4 h-4" />
-                    <span className="hidden md:inline text-[11px]">
-                      {quiz.status.live ? "Unlive" : "Make live"}
-                    </span>
-                  </button>
+                      type="button"
+                      onClick={() => handleToggleLive(quiz.id, quiz.status.live)}
+                      disabled={updatingLiveId === quiz.id}
+                      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-inter-medium transition-colors ${
+                        quiz.status.live
+                          ? "border-emerald-100 bg-emerald-50/90 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-200"
+                          : "border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
+                      } disabled:opacity-60 disabled:cursor-not-allowed`}
+                      title={quiz.status.live ? "Set as not live" : "Make live"}
+                    >
+                      <Radio className="w-4 h-4" />
+                      <span className="hidden md:inline text-[11px]">
+                        {quiz.status.live ? "Unlive" : "Make live"}
+                      </span>
+                    </button>
+
+                    {/* Delete (soft delete) */}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteQuiz(quiz.id)}
+                      disabled={deletingId === quiz.id}
+                      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-rose-100 bg-rose-50/90 text-rose-600 hover:bg-rose-100 hover:border-rose-200 transition-colors px-2.5 disabled:opacity-60 disabled:cursor-not-allowed"
+                      title="Delete quiz"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="hidden md:inline text-[11px]">Delete</span>
+                    </button>
                   </div>
                 </div>
               ))}
