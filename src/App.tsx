@@ -3,6 +3,7 @@ import QuizCreator from "./pages/QuizCreator";
 import NotFound from "./pages/NotFound";
 import Preview from "./pages/preview";
 import PreviewPlay from "./pages/PreviewPlay";
+import Editorial from "./pages/Editorial";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Route path="/preview" element={<Preview />} />
       <Route path="/preview/:quizId" element={<Preview />} />
       <Route path="/preview-play/:quizId" element={<PreviewPlay />} />
+      <Route path="/editorion/:quizId" element={<Editorial />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

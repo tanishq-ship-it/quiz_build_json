@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Moon, Play, Plus, Sun, Zap } from "lucide-react";
+import { ArrowLeft, Moon, Play, Plus, Sun, Zap } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
@@ -262,6 +262,16 @@ const Preview: React.FC = () => {
         }}
       />
 
+      {/* Back button - top left */}
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        className="fixed top-5 left-5 z-50 inline-flex items-center gap-2 h-8 px-3 rounded-md bg-white/80 border border-slate-200 text-xs text-slate-700 shadow-sm hover:bg-white"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </button>
+
       {/* Global theme toggle - top right */}
       <button
         type="button"
@@ -500,6 +510,21 @@ const Preview: React.FC = () => {
                     onClick={() => setPreviewTheme("dark")}
                   >
                     Dark
+                  </button>
+                  <button
+                    type="button"
+                    className={`inline-flex items-center justify-center h-6 px-2.5 rounded-md text-[11px] font-medium transition-all duration-200 ${
+                      isDark
+                        ? "text-white/60 hover:text-white"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                    onClick={() => {
+                      if (quizId) {
+                        navigate(`/editorion/${quizId}`);
+                      }
+                    }}
+                  >
+                    Edit screens
                   </button>
                 </div>
               </div>

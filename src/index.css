@@ -219,6 +219,25 @@ button:focus-visible {
   overflow-x: hidden;
 }
 
+/* Editorial full-bleed preview overrides */
+.editorial-preview .app-container {
+  width: 100%;
+  height: 100%;
+}
+
+.editorial-preview .screen-section {
+  width: 100%;
+  height: 100%;
+  align-items: stretch;
+  justify-content: stretch;
+  background-color: transparent;
+}
+
+.editorial-preview .mobile-frame {
+  width: 100%;
+  height: 100%;
+}
+
 /* Themed backgrounds for embedded preview */
 .preview-embedded.preview-theme-dark .screen-section {
   background-color: #020617; /* slate-950 */

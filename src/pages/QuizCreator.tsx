@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Upload, Radio, Zap } from "lucide-react";
-import { createQuiz, getQuizzes } from "../services/api";
+import { Plus, Pencil, Eye, Radio, Zap } from "lucide-react";
+import { createQuiz, getQuizzes, updateQuizLive } from "../services/api";
 
 type QuizListItem = {
   id: string;
@@ -20,6 +20,33 @@ function QuizCreator() {
   const [quizTitle, setQuizTitle] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [dialogError, setDialogError] = useState<string | null>(null);
+  const [updatingLiveId, setUpdatingLiveId] = useState<string | null>(null);
+
+  const handleToggleLive = async (quizId: string, currentLive: boolean) => {
+    try {
+      setUpdatingLiveId(quizId);
+      setLoadError(null);
+
+      const updated = await updateQuizLive(quizId, { live: !currentLive });
+
+      setQuizzes((current) =>
+        current.map((quiz) =>
+          quiz.id === quizId
+            ? {
+                ...quiz,
+                status: { ...quiz.status, live: updated.live },
+              }
+            : quiz,
+        ),
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to update live status.";
+      setLoadError(message);
+    } finally {
+      setUpdatingLiveId(null);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -216,6 +243,8 @@ function QuizCreator() {
                   <div className="flex items-center gap-2">
                     {/* Edit */}
                     <button
+                    type="button"
+                    onClick={() => navigate(`/editorion/${quiz.id}`)}
                       className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors px-2.5"
                       title="Edit"
                     >
@@ -225,6 +254,8 @@ function QuizCreator() {
 
                     {/* Preview */}
                     <button
+                    type="button"
+                    onClick={() => navigate(`/preview-play/${quiz.id}`)}
                       className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50/80 text-sky-700 hover:bg-sky-100 hover:border-sky-200 transition-colors px-2.5"
                       title="Preview"
                     >
@@ -232,23 +263,23 @@ function QuizCreator() {
                       <span className="hidden md:inline text-[11px]">Preview</span>
                     </button>
 
-                    {/* Upload */}
-                    <button
-                      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors px-2.5"
-                      title="Upload"
-                    >
-                      <Upload className="w-4 h-4" />
-                      <span className="hidden md:inline text-[11px]">Upload</span>
-                    </button>
-
                     {/* Live */}
                     <button
-                      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50/90 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-200 transition-colors px-2.5"
-                      title="Go Live"
-                    >
-                      <Radio className="w-4 h-4" />
-                      <span className="hidden md:inline text-[11px]">Live</span>
-                    </button>
+                    type="button"
+                    onClick={() => handleToggleLive(quiz.id, quiz.status.live)}
+                    disabled={updatingLiveId === quiz.id}
+                    className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-inter-medium transition-colors ${
+                      quiz.status.live
+                        ? "border-emerald-100 bg-emerald-50/90 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-200"
+                        : "border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
+                    } disabled:opacity-60 disabled:cursor-not-allowed`}
+                    title={quiz.status.live ? "Set as not live" : "Make live"}
+                  >
+                    <Radio className="w-4 h-4" />
+                    <span className="hidden md:inline text-[11px]">
+                      {quiz.status.live ? "Unlive" : "Make live"}
+                    </span>
+                  </button>
                   </div>
                 </div>
               ))}
