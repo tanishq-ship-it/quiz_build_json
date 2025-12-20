@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Moon, Play, Plus, Sun, Zap } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
 import { appendQuizScreens, getQuiz, type AppendScreensPayload } from "../services/api";
@@ -43,6 +43,7 @@ const MAX_PANEL_WIDTH = 70;
 
 const Preview: React.FC = () => {
   const { quizId } = useParams<{ quizId?: string }>();
+  const navigate = useNavigate();
   const [rawJson, setRawJson] = useState<string>(DEFAULT_JSON);
   const [parsedScreens, setParsedScreens] = useState<ScreenData[]>(DEFAULT_SCREENS);
   const [inputMode, setInputMode] = useState<InputMode>("single");
@@ -120,38 +121,12 @@ const Preview: React.FC = () => {
 
     const loadQuiz = async () => {
       try {
-        const quiz = await getQuiz(quizId);
-        const contentFromDb = quiz.content;
-
-        // For screen-by-screen authoring, we only show the last saved screen (if any)
-        let editableContent: unknown;
-        if (Array.isArray(contentFromDb) && contentFromDb.length > 0) {
-          editableContent = contentFromDb[contentFromDb.length - 1];
-        } else if (contentFromDb) {
-          editableContent = contentFromDb;
-        } else {
-          editableContent = DEFAULT_SCREEN;
-        }
-
-        const jsonValue = JSON.stringify(editableContent, null, 2);
-
-        if (cancelled) return;
-
-        setRawJson(jsonValue);
-
-        try {
-          const { screens, mode } = normalizeScreensInput(editableContent);
-          setParsedScreens(screens);
-          setInputMode(mode);
-          setError(null);
-        } catch (parseError) {
-          const message =
-            parseError instanceof Error ? parseError.message : "Invalid quiz content";
-          setError(message);
-        }
+        // We just ensure the quiz exists; editor is always for a single screen JSON,
+        // so we do NOT pre-fill the textarea with the whole content array.
+        await getQuiz(quizId);
       } catch {
         if (cancelled) return;
-        // If loading fails, keep the local default JSON/preview
+        setSaveError("Failed to load quiz. You can still edit JSON, but saving may fail.");
       }
     };
 
@@ -164,6 +139,7 @@ const Preview: React.FC = () => {
 
   const handleJsonChange = (value: string) => {
     setRawJson(value);
+    setSaveError(null);
 
     try {
       const parsed = JSON.parse(value);
@@ -191,19 +167,25 @@ const Preview: React.FC = () => {
       return;
     }
 
+    const trimmed = rawJson.trim();
+    if (!trimmed) {
+      setSaveError("Please enter screen JSON before adding.");
+      return;
+    }
+
     try {
       setIsSaving(true);
       setSaveError(null);
 
-      const parsed = JSON.parse(rawJson) as unknown;
+      const parsed = JSON.parse(trimmed) as unknown;
       const { screens } = normalizeScreensInput(parsed);
 
       const payload: AppendScreensPayload = { screens };
       await appendQuizScreens(quizId, payload);
 
-      // After adding, reset editor to a fresh screen so user can design the next one
-      setRawJson(DEFAULT_JSON);
-      setParsedScreens(DEFAULT_SCREENS);
+      // After adding, clear editor so user can type the next screen
+      setRawJson("");
+      setParsedScreens([]);
       setInputMode("single");
       setError(null);
     } catch (err) {
@@ -378,8 +360,8 @@ const Preview: React.FC = () => {
                 disabled={isSaving || !!error}
                 className={`inline-flex items-center justify-center h-7 px-3 rounded-md text-[11px] font-medium transition-all duration-200 ${
                   isDark
-                    ? "bg-white/5 text-slate-100 border border-white/15 hover:bg-white/10 disabled:opacity-50"
-                    : "bg-purple-50 text-purple-800 border border-purple-100 shadow-sm shadow-purple-100/70 hover:bg-purple-100 disabled:opacity-50"
+                    ? "bg-white/5 text-slate-100 border border-white/15 hover:bg-white/10 disabled:opacity-40"
+                    : "bg-purple-50 text-purple-800 border border-purple-100 shadow-sm shadow-purple-100/70 hover:bg-purple-100 disabled:opacity-40"
                 }`}
               >
                 <Plus className="w-3.5 h-3.5 mr-1.5" />
@@ -388,6 +370,7 @@ const Preview: React.FC = () => {
             </div>
 
             <div className="relative flex-1 p-4">
+              
               <textarea
                 className={`w-full h-full font-mono text-[13px] leading-[1.7] rounded-xl p-4 resize-none transition-all duration-300 focus:outline-none ${
                   isDark
@@ -469,6 +452,11 @@ const Preview: React.FC = () => {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
+                  onClick={() => {
+                    if (quizId) {
+                      navigate(`/preview-play/${quizId}`);
+                    }
+                  }}
                   className={`inline-flex items-center justify-center h-7 px-3 rounded-md text-[11px] font-medium transition-all duration-200 ${
                     isDark
                       ? "bg-purple-800/80 text-white/90 shadow-sm shadow-purple-950/60 hover:bg-purple-900/80"
