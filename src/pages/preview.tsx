@@ -3,7 +3,7 @@ import { Moon, Play, Plus, Sun, Zap } from "lucide-react";
 import { useParams } from "react-router-dom";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
-import { getQuiz } from "../services/api";
+import { appendQuizScreens, getQuiz, type AppendScreensPayload } from "../services/api";
 
 type InputMode = "single" | "array" | "config";
 
@@ -47,6 +47,8 @@ const Preview: React.FC = () => {
   const [parsedScreens, setParsedScreens] = useState<ScreenData[]>(DEFAULT_SCREENS);
   const [inputMode, setInputMode] = useState<InputMode>("single");
   const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const [editorWidth, setEditorWidth] = useState<number>(40);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [hasMounted, setHasMounted] = useState<boolean>(false);
@@ -119,16 +121,26 @@ const Preview: React.FC = () => {
     const loadQuiz = async () => {
       try {
         const quiz = await getQuiz(quizId);
-        const content = quiz.content ?? DEFAULT_SCREEN;
+        const contentFromDb = quiz.content;
 
-        const jsonValue = JSON.stringify(content, null, 2);
+        // For screen-by-screen authoring, we only show the last saved screen (if any)
+        let editableContent: unknown;
+        if (Array.isArray(contentFromDb) && contentFromDb.length > 0) {
+          editableContent = contentFromDb[contentFromDb.length - 1];
+        } else if (contentFromDb) {
+          editableContent = contentFromDb;
+        } else {
+          editableContent = DEFAULT_SCREEN;
+        }
+
+        const jsonValue = JSON.stringify(editableContent, null, 2);
 
         if (cancelled) return;
 
         setRawJson(jsonValue);
 
         try {
-          const { screens, mode } = normalizeScreensInput(content);
+          const { screens, mode } = normalizeScreensInput(editableContent);
           setParsedScreens(screens);
           setInputMode(mode);
           setError(null);
@@ -170,6 +182,37 @@ const Preview: React.FC = () => {
     setParsedScreens(DEFAULT_SCREENS);
     setInputMode("single");
     setError(null);
+    setSaveError(null);
+  };
+
+  const handleAddScreens = async () => {
+    if (!quizId) {
+      setSaveError("Quiz ID is missing. Open this preview from a specific quiz.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+
+      const parsed = JSON.parse(rawJson) as unknown;
+      const { screens } = normalizeScreensInput(parsed);
+
+      const payload: AppendScreensPayload = { screens };
+      await appendQuizScreens(quizId, payload);
+
+      // After adding, reset editor to a fresh screen so user can design the next one
+      setRawJson(DEFAULT_JSON);
+      setParsedScreens(DEFAULT_SCREENS);
+      setInputMode("single");
+      setError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to add screens to this quiz.";
+      setSaveError(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const calculateWidthFromClientX = (clientX: number) => {
@@ -331,19 +374,20 @@ const Preview: React.FC = () => {
               </span>
               <button
                 type="button"
+                onClick={handleAddScreens}
+                disabled={isSaving || !!error}
                 className={`inline-flex items-center justify-center h-7 px-3 rounded-md text-[11px] font-medium transition-all duration-200 ${
                   isDark
-                    ? "bg-white/5 text-slate-100 border border-white/15 hover:bg-white/10"
-                    : "bg-purple-50 text-purple-800 border border-purple-100 shadow-sm shadow-purple-100/70 hover:bg-purple-100"
+                    ? "bg-white/5 text-slate-100 border border-white/15 hover:bg-white/10 disabled:opacity-50"
+                    : "bg-purple-50 text-purple-800 border border-purple-100 shadow-sm shadow-purple-100/70 hover:bg-purple-100 disabled:opacity-50"
                 }`}
               >
                 <Plus className="w-3.5 h-3.5 mr-1.5" />
-                Add
+                {isSaving ? "Adding..." : "Add"}
               </button>
             </div>
 
             <div className="relative flex-1 p-4">
-              
               <textarea
                 className={`w-full h-full font-mono text-[13px] leading-[1.7] rounded-xl p-4 resize-none transition-all duration-300 focus:outline-none ${
                   isDark
@@ -367,6 +411,20 @@ const Preview: React.FC = () => {
                   }`}
                 >
                   {error}
+                </div>
+              </div>
+            )}
+
+            {saveError && !error && (
+              <div className="px-4 pb-4">
+                <div
+                  className={`text-xs rounded-lg px-4 py-3 ${
+                    isDark
+                      ? "bg-red-500/10 text-red-300/90 border border-red-500/20"
+                      : "bg-red-50 text-red-600 border border-red-100"
+                  }`}
+                >
+                  {saveError}
                 </div>
               </div>
             )}

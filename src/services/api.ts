@@ -15,6 +15,9 @@ export interface QuizDto {
   createdAt: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface AppendScreensPayload { screens: any[] }
+
 export const createQuiz = async (payload: CreateQuizPayload): Promise<QuizDto> => {
   const response = await fetch(`${API_BASE_URL}/quizzes`, {
     method: "POST",
@@ -52,6 +55,23 @@ export const getQuizzes = async (): Promise<QuizDto[]> => {
   }
 
   return response.json() as Promise<QuizDto[]>;
+};
+
+export const appendQuizScreens = async (id: string, payload: AppendScreensPayload): Promise<QuizDto> => {
+  const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/screens`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "Failed to add screens");
+  }
+
+  return response.json() as Promise<QuizDto>;
 };
 
 
