@@ -89,9 +89,85 @@ User sees Screen → Interacts with Selection/Button → Next Screen
 | Property | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
 | `id` | `string` | Yes | - | Unique screen identifier |
+| `category` | `string` | No | - | Optional category/tag for organizing screens (not used in UI rendering) |
 | `content` | `ContentItem[]` | Yes | - | Array of content items |
 | `gap` | `number` | No | `16` | Gap between items (px) |
 | `padding` | `number` | No | `24` | Screen padding (px) |
+
+### Screen Categories (`category`)
+
+The optional `category` field lets you **label and group screens by their purpose**, without changing how they look or behave in the UI.
+
+- **Why it exists**
+  - Helps product/ops **organize large quizzes** (50–60+ screens).
+  - Allows you to later:
+    - Filter screens by type (e.g. profile vs core questions).
+    - Run analytics by category (e.g. “how many profile questions?”).
+    - Build flows that can **skip or reorder categories** (e.g. skip all `profile` questions for returning users).
+
+- **Important:**  
+  - `category` is **not read by the `Screens` renderer**.
+  - It **does not affect layout, navigation, or scoring** by itself.
+  - It is pure metadata that the backend and tools can use for management and analysis.
+
+#### Recommended category values
+
+You can use any string, but for consistency it’s recommended to use a small controlled set, for example:
+
+- `"profile"` – basic user information (age, gender, lifestyle, onboarding questions).
+- `"core-quiz"` – main quiz questions that drive logic, scoring, or branching.
+- `"diagnostic"` – deeper assessment questions used for advanced insights.
+- `"results"` – result/summary/result‑explanation screens.
+- `"completion"` – final thank‑you, end‑of‑flow, or “start using the product” screens.
+- `"system"` – internal/utility screens (error states, maintenance messages, etc).
+
+You can always extend this list (e.g. `"onboarding"`, `"follow-up"`, `"upsell"`) as your product grows.
+
+#### Example: Profile vs Core Quiz screens
+
+```json
+{
+  "id": "profile-age",
+  "category": "profile",
+  "content": [
+    { "type": "heading", "content": "What's your age?" },
+    { "type": "text", "content": "Select one to continue", "align": "center", "color": "#555" },
+    {
+      "type": "selection",
+      "mode": "radio",
+      "layout": "4x1",
+      "options": [
+        { "variant": "flat", "text": "18-24", "value": "18-24" },
+        { "variant": "flat", "text": "25-34", "value": "25-34" },
+        { "variant": "flat", "text": "35-44", "value": "35-44" },
+        { "variant": "flat", "text": "45+", "value": "45+" }
+      ]
+    }
+  ]
+}
+```
+
+```json
+{
+  "id": "core-q1-reading",
+  "category": "core-quiz",
+  "content": [
+    { "type": "heading", "content": "How often do you read books?", "fontSize": 24 },
+    {
+      "type": "selection",
+      "mode": "radio",
+      "layout": "5x1",
+      "options": [
+        { "variant": "flat", "text": "Never", "value": "never" },
+        { "variant": "flat", "text": "Rarely", "value": "rarely" },
+        { "variant": "flat", "text": "Sometimes", "value": "sometimes" },
+        { "variant": "flat", "text": "Often", "value": "often" },
+        { "variant": "flat", "text": "Daily", "value": "daily" }
+      ]
+    }
+  ]
+}
+```
 
 ---
 

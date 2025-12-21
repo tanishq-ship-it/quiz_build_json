@@ -53,10 +53,35 @@ Defines the structure for each screen in the flow.
 
 ```tsx
 interface ScreenData {
-  id: string;           // Unique screen identifier
-  content: ContentItem[]; // Array of content items (see Screens.PRD.md)
+  id: string;              // Unique screen identifier
+  category?: string;       // Optional category for organizing/analytics (not used in UI rendering)
+  content: ContentItem[];  // Array of content items (see Screens.PRD.md)
 }
 ```
+
+#### Category usage
+
+The `category` field is a **pure metadata label** on each screen:
+
+- It is **not read by `ScreenRouter` or `Screens`** to decide layout, navigation, or scoring.
+- It is **passed through unchanged** as part of `ScreenData`, so:
+  - `currentScreen.category` is available when you use `useScreenRouter`.
+  - You can use it for **analytics, filtering, and management tools**.
+
+Typical use‑cases:
+
+- Grouping screens into high‑level buckets:
+  - `"profile"` – demographic / onboarding questions (age, gender, lifestyle).
+  - `"core-quiz"` – main quiz/assessment questions that drive results.
+  - `"results"` – result, summary and explanation screens.
+  - `"completion"` – final thank‑you / CTA screens.
+  - `"system"` – error, empty, or technical screens.
+- Later, product/ops can:
+  - Count how many screens are in each category.
+  - Build editors that **filter or sort by category**.
+  - Implement flows that **skip or re‑order entire categories** (e.g. skip all `"profile"` for returning users).
+
+**Important:** `category` is optional; existing JSON without a category continues to work exactly the same.
 
 ### ScreenRouterConfig
 

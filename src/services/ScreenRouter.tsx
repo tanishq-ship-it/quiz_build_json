@@ -6,6 +6,11 @@ import Screens from "../Screens/Screens";
 // ============================================================
 export interface ScreenData {
   id: string;
+  /**
+   * Optional category label for this screen.
+   * Not used by the UI renderer; useful for organizing/analytics.
+   */
+  category?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: any[];
 }
