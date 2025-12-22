@@ -46,7 +46,6 @@ const Preview: React.FC = () => {
   const navigate = useNavigate();
   const [rawJson, setRawJson] = useState<string>(DEFAULT_JSON);
   const [parsedScreens, setParsedScreens] = useState<ScreenData[]>(DEFAULT_SCREENS);
-  const [inputMode, setInputMode] = useState<InputMode>("single");
   const [error, setError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -143,22 +142,13 @@ const Preview: React.FC = () => {
 
     try {
       const parsed = JSON.parse(value);
-      const { screens, mode } = normalizeScreensInput(parsed);
+      const { screens } = normalizeScreensInput(parsed);
       setParsedScreens(screens);
-      setInputMode(mode);
       setError(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Invalid JSON";
       setError(message);
     }
-  };
-
-  const handleResetExample = () => {
-    setRawJson(DEFAULT_JSON);
-    setParsedScreens(DEFAULT_SCREENS);
-    setInputMode("single");
-    setError(null);
-    setSaveError(null);
   };
 
   const handleAddScreens = async () => {
@@ -186,7 +176,6 @@ const Preview: React.FC = () => {
       // After adding, clear editor so user can type the next screen
       setRawJson("");
       setParsedScreens([]);
-      setInputMode("single");
       setError(null);
     } catch (err) {
       const message =

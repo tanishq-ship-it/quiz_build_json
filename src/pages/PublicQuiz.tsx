@@ -104,7 +104,6 @@ const PublicQuiz: React.FC = () => {
   const [currentScreenIndex, setCurrentScreenIndex] = useState<number>(0);
   const [currentScreenId, setCurrentScreenId] = useState<string | null>(null);
   const [screenEnteredAt, setScreenEnteredAt] = useState<number | null>(null);
-  const [responsesByIndex, setResponsesByIndex] = useState<Record<number, unknown>>({});
   const responsesByIndexRef = useRef<Record<number, unknown>>({});
 
   useEffect(() => {
@@ -125,7 +124,6 @@ const PublicQuiz: React.FC = () => {
         setCurrentScreenIndex(0);
         setCurrentScreenId(null);
         setScreenEnteredAt(null);
-        setResponsesByIndex({});
         responsesByIndexRef.current = {};
 
         const quiz = await getQuiz(quizId);
@@ -223,18 +221,12 @@ const PublicQuiz: React.FC = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     response: any;
   }): void => {
-    setResponsesByIndex((prev) => {
-      const previous = (prev[params.index] ?? {}) as Record<string, unknown>;
-      const merged = {
-        ...previous,
-        ...(params.response as Record<string, unknown>),
-      };
-      responsesByIndexRef.current[params.index] = merged;
-      return {
-        ...prev,
-        [params.index]: merged,
-      };
-    });
+    const previous = (responsesByIndexRef.current[params.index] ?? {}) as Record<string, unknown>;
+    const merged = {
+      ...previous,
+      ...(params.response as Record<string, unknown>),
+    };
+    responsesByIndexRef.current[params.index] = merged;
   };
 
   const isDark = theme === "dark";

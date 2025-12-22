@@ -270,8 +270,6 @@ const InfoCard: React.FC<InfoCardProps> = ({
 
 // ========== MAIN CARD COMPONENT ==========
 
-type CardVariant = "quotation" | "message" | "info";
-
 // Quotation card props
 type QuotationCardFullProps = {
   variant: "quotation";
