@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Radio, Trash2, Zap } from "lucide-react";
+import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2 } from "lucide-react";
 import Lottie from "lottie-react";
 import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive } from "../services/api";
 import loadingAnimation from "../assests/Loding.json";
@@ -289,6 +289,17 @@ function QuizCreator() {
                     >
                       <Eye className="w-4 h-4" />
                       <span className="hidden md:inline text-[11px]">Preview</span>
+                    </button>
+
+                    {/* Public quiz */}
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/${quiz.id}`)}
+                      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-indigo-100 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-200 transition-colors px-2.5"
+                      title="Open public quiz"
+                    >
+                      <Link2 className="w-4 h-4" />
+                      <span className="hidden md:inline text-[11px]">Public link</span>
                     </button>
 
                     {/* Live */}

@@ -22,6 +22,9 @@ export interface ScreenRouterConfig {
   onScreenChange?: (index: number, screenId: string) => void;
   onComplete?: () => void;
   delayForResponseCards?: number;
+  // Called when a screen produces a response (e.g., selection choices)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onScreenResponse?: (params: { index: number; screenId: string; response: any }) => void;
 }
 
 interface ScreenRouterProps {
@@ -388,7 +391,23 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
               paddingTop: showCategoryHeader ? 50 : 0,
             }}
           >
-            <Screens key={currentScreen.id} content={processedContent} />
+            <Screens
+              key={currentScreen.id}
+              content={processedContent}
+              screenIndex={currentIndex}
+              screenId={currentScreen.id}
+              onScreenResponse={
+                config.onScreenResponse
+                  ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (response: any) =>
+                      config.onScreenResponse?.({
+                        index: currentIndex,
+                        screenId: currentScreen.id,
+                        response,
+                      })
+                  : undefined
+              }
+            />
           </div>
         </div>
       </section>

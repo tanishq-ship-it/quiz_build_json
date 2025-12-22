@@ -22,6 +22,19 @@ export interface ReplaceScreensPayload { screens: any[] }
 export interface UpdateQuizLivePayload { live: boolean }
 export interface UpdateQuizDeletionPayload { deletion: boolean }
 
+export interface ScreenResponseItem {
+  screenId: string;
+  index: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  response: any;
+  timeTakenMs: number;
+  enteredAt: string;
+  exitedAt: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface QuizResponseDto { id: string; quizId: string; content: any; createdAt: string }
+
 export const createQuiz = async (payload: CreateQuizPayload): Promise<QuizDto> => {
   const response = await fetch(`${API_BASE_URL}/quizzes`, {
     method: "POST",
@@ -127,6 +140,38 @@ export const updateQuizDeletion = async (id: string, payload: UpdateQuizDeletion
   }
 
   return response.json() as Promise<QuizDto>;
+};
+
+export const createQuizResponse = async (quizId: string): Promise<QuizResponseDto> => {
+  const response = await fetch(`${API_BASE_URL}/quiz-responses`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ quizId }),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "Failed to create quiz response");
+  }
+
+  return response.json() as Promise<QuizResponseDto>;
+};
+
+export const appendQuizScreenResponse = async (id: string, screen: ScreenResponseItem): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/quiz-responses/${encodeURIComponent(id)}/screens`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ screen }),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "Failed to append screen response");
+  }
 };
 
 

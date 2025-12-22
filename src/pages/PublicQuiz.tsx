@@ -1,11 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Moon, Sun } from "lucide-react";
 import Lottie from "lottie-react";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
 import sandyLoading from "../assests/Sandy Loading.json";
-import { getQuiz } from "../services/api";
+import {
+  getQuiz,
+  createQuizResponse,
+  appendQuizScreenResponse,
+  type ScreenResponseItem,
+} from "../services/api";
 
 type InputMode = "single" | "array" | "config";
 
@@ -95,6 +100,12 @@ const PublicQuiz: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [isLive, setIsLive] = useState<boolean | null>(null);
+  const [quizResponseId, setQuizResponseId] = useState<string | null>(null);
+  const [currentScreenIndex, setCurrentScreenIndex] = useState<number>(0);
+  const [currentScreenId, setCurrentScreenId] = useState<string | null>(null);
+  const [screenEnteredAt, setScreenEnteredAt] = useState<number | null>(null);
+  const [responsesByIndex, setResponsesByIndex] = useState<Record<number, unknown>>({});
+  const responsesByIndexRef = useRef<Record<number, unknown>>({});
 
   useEffect(() => {
     if (!quizId) {
@@ -110,17 +121,41 @@ const PublicQuiz: React.FC = () => {
         setIsLoading(true);
         setError(null);
 
+        setQuizResponseId(null);
+        setCurrentScreenIndex(0);
+        setCurrentScreenId(null);
+        setScreenEnteredAt(null);
+        setResponsesByIndex({});
+        responsesByIndexRef.current = {};
+
         const quiz = await getQuiz(quizId);
         const rawContent = quiz.content ?? DEFAULT_SCREENS;
 
         if (cancelled) return;
 
         // Only allow playing when the quiz is live and not soft-deleted
-        setIsLive(quiz.live && !quiz.deletion);
+        const quizIsLive = quiz.live && !quiz.deletion;
+        setIsLive(quizIsLive);
 
         try {
           const { screens: parsedScreens } = normalizeScreensInput(rawContent);
           setScreens(parsedScreens);
+
+          if (quizIsLive) {
+            try {
+              const quizResponse = await createQuizResponse(quiz.id);
+              if (!cancelled) {
+                setQuizResponseId(quizResponse.id);
+                setCurrentScreenIndex(0);
+                setCurrentScreenId(parsedScreens[0]?.id ?? null);
+                setScreenEnteredAt(Date.now());
+              }
+            } catch {
+              // If creating a response fails, we still allow viewing the quiz
+              // eslint-disable-next-line no-console
+              console.error("Failed to create quiz response");
+            }
+          }
         } catch (parseError) {
           const message =
             parseError instanceof Error ? parseError.message : "Invalid quiz content.";
@@ -144,6 +179,63 @@ const PublicQuiz: React.FC = () => {
       cancelled = true;
     };
   }, [quizId]);
+
+  const appendCurrentScreenIfNeeded = async (): Promise<void> => {
+    if (!quizResponseId || screenEnteredAt == null || currentScreenId == null) {
+      return;
+    }
+
+    const now = Date.now();
+    const baseResponse = responsesByIndexRef.current[currentScreenIndex] ?? null;
+
+    const screenItem: ScreenResponseItem = {
+      screenId: currentScreenId,
+      index: currentScreenIndex,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      response: baseResponse as any,
+      timeTakenMs: now - screenEnteredAt,
+      enteredAt: new Date(screenEnteredAt).toISOString(),
+      exitedAt: new Date(now).toISOString(),
+    };
+
+    try {
+      await appendQuizScreenResponse(quizResponseId, screenItem);
+    } catch {
+      // eslint-disable-next-line no-console
+      console.error("Failed to append screen response");
+    }
+  };
+
+  const handleScreenChange = (index: number, screenId: string): void => {
+    void appendCurrentScreenIfNeeded();
+    setCurrentScreenIndex(index);
+    setCurrentScreenId(screenId);
+    setScreenEnteredAt(Date.now());
+  };
+
+  const handleComplete = (): void => {
+    void appendCurrentScreenIfNeeded();
+  };
+
+  const handleScreenResponse = (params: {
+    index: number;
+    screenId: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    response: any;
+  }): void => {
+    setResponsesByIndex((prev) => {
+      const previous = (prev[params.index] ?? {}) as Record<string, unknown>;
+      const merged = {
+        ...previous,
+        ...(params.response as Record<string, unknown>),
+      };
+      responsesByIndexRef.current[params.index] = merged;
+      return {
+        ...prev,
+        [params.index]: merged,
+      };
+    });
+  };
 
   const isDark = theme === "dark";
 
@@ -189,6 +281,9 @@ const PublicQuiz: React.FC = () => {
             config={{
               screens,
               placeholders: PLACEHOLDERS,
+              onScreenChange: handleScreenChange,
+              onComplete: handleComplete,
+              onScreenResponse: handleScreenResponse,
             }}
           />
         ) : (

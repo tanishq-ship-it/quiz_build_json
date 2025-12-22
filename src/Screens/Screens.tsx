@@ -196,12 +196,19 @@ interface ScreensProps {
   content: ContentItem[];
   gap?: number;
   padding?: number;
+  screenIndex?: number;
+  screenId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onScreenResponse?: (response: any) => void;
 }
 
 const Screens: React.FC<ScreensProps> = ({
   content,
   gap = 16,
   padding = 24,
+  screenIndex,
+  screenId,
+  onScreenResponse,
 }) => {
   // State to track selected values for response cards
   const [selectionState, setSelectionState] = useState<Record<number, (string | number)[]>>({});
@@ -372,14 +379,23 @@ const Screens: React.FC<ScreensProps> = ({
         }));
         
         // Check if there's a response screen for the selected option
+        let branchValue: string | number | undefined;
         if (item.responseScreens && selected.length > 0) {
           const selectedValue = selected[selected.length - 1];
           const responseScreen = item.responseScreens[selectedValue];
           if (responseScreen) {
             setActiveResponseScreen(responseScreen);
           }
+          branchValue = selectedValue;
         }
-        
+
+        if (onScreenResponse && screenIndex != null && screenId) {
+          onScreenResponse({
+            selected,
+            ...(branchValue !== undefined ? { branch: branchValue } : {}),
+          });
+        }
+
         item.onChange?.(selected);
       };
       
@@ -512,6 +528,13 @@ const Screens: React.FC<ScreensProps> = ({
               textColor={responseButtonItem.textColor ?? "#fff"}
               textAlign="center"
               onClick={() => {
+                if (onScreenResponse && screenIndex != null && screenId) {
+                  onScreenResponse({
+                    button: {
+                      text: responseButtonItem.text,
+                    },
+                  });
+                }
                 // Reset response screen and call the button's onClick
                 setActiveResponseScreen(null);
                 responseButtonItem.onClick?.();
@@ -592,7 +615,16 @@ const Screens: React.FC<ScreensProps> = ({
             bgColor={buttonItem.bgColor ?? "#2563eb"}
             textColor={buttonItem.textColor ?? "#fff"}
             textAlign="center"
-            onClick={buttonItem.onClick}
+            onClick={() => {
+              if (onScreenResponse && screenIndex != null && screenId) {
+                onScreenResponse({
+                  button: {
+                    text: buttonItem.text,
+                  },
+                });
+              }
+              buttonItem.onClick?.();
+            }}
           />
         </div>
       )}
