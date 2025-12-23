@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Play, Plus, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Play, Plus, Save, Trash2 } from "lucide-react";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
-import { getQuiz, replaceQuizScreens, type ReplaceScreensPayload } from "../services/api";
+import { deleteQuizScreen, getQuiz, replaceQuizScreens, type ReplaceScreensPayload } from "../services/api";
 
 type InputMode = "single" | "array" | "config";
 
@@ -212,6 +212,45 @@ const Editorial: React.FC = () => {
     navigate(`/preview-play/${quizId}`);
   };
 
+  const handleDeleteScreen = async (e: React.MouseEvent, screenId: string, index: number) => {
+    e.stopPropagation(); // Prevent selecting the screen when clicking delete
+    if (!quizId) return;
+    
+    // Optional: Confirm with user? For now, direct delete as per request to "give a delete button icon"
+    if (!window.confirm("Are you sure you want to delete this screen?")) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const updatedQuiz = await deleteQuizScreen(quizId, screenId);
+      const allScreens = normalizeScreensArray(updatedQuiz.content);
+      setScreens(allScreens);
+
+      // Adjust selected index if needed
+      if (allScreens.length === 0) {
+        setSelectedIndex(0);
+        setEditorJson("");
+        setPreviewScreen(null);
+      } else if (index === selectedIndex) {
+        // If we deleted the selected screen, select the first one (or previous)
+        const newIndex = 0;
+        setSelectedIndex(newIndex);
+        setEditorJson(JSON.stringify(allScreens[newIndex], null, 2));
+        setPreviewScreen(allScreens[newIndex]);
+      } else if (index < selectedIndex) {
+        // If we deleted a screen before the selected one, decrement index
+        setSelectedIndex(selectedIndex - 1);
+      }
+    } catch (err) {
+      setError("Failed to delete screen.");
+      // eslint-disable-next-line no-console
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#f9fafb] via-[#eef2ff] to-[#e0f2fe]">
       {/* Back */}
@@ -283,6 +322,20 @@ const Editorial: React.FC = () => {
                     <span className="truncate">
                       {index + 1}. {screen.id}
                     </span>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => handleDeleteScreen(e, screen.id, index)}
+                      onKeyDown={(e) => {
+                         if (e.key === "Enter" || e.key === " ") {
+                           handleDeleteScreen(e as unknown as React.MouseEvent, screen.id, index);
+                         }
+                      }}
+                      className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded"
+                      title="Delete screen"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </div>
                   </button>
                 ))}
                 {screens.length === 0 && (

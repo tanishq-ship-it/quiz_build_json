@@ -176,3 +176,16 @@ export const appendQuizScreenResponse = async (id: string, screen: ScreenRespons
 
 
 
+
+export const deleteQuizScreen = async (id: string, screenId: string): Promise<QuizDto> => {
+  const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/screens/${encodeURIComponent(screenId)}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "Failed to delete screen");
+  }
+
+  return response.json() as Promise<QuizDto>;
+};
