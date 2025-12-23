@@ -177,8 +177,13 @@ export const appendQuizScreenResponse = async (id: string, screen: ScreenRespons
 
 
 
-export const deleteQuizScreen = async (id: string, screenId: string): Promise<QuizDto> => {
-  const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/screens/${encodeURIComponent(screenId)}`, {
+export const deleteQuizScreen = async (id: string, screenId: string, index?: number): Promise<QuizDto> => {
+  let url = `${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/screens/${encodeURIComponent(screenId)}`;
+  if (index !== undefined) {
+    url += `?index=${index}`;
+  }
+
+  const response = await fetch(url, {
     method: "DELETE",
   });
 

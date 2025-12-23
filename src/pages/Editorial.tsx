@@ -223,7 +223,7 @@ const Editorial: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const updatedQuiz = await deleteQuizScreen(quizId, screenId);
+      const updatedQuiz = await deleteQuizScreen(quizId, screenId, index);
       const allScreens = normalizeScreensArray(updatedQuiz.content);
       setScreens(allScreens);
 
