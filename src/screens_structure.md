@@ -12,7 +12,7 @@
 4. [Content Types Reference](#content-types-reference)
 5. [Selection System](#selection-system)
 6. [Card System](#card-system)
-7. [Response System](#response-system)
+7. Conditional System](#response-system)
 8. [Layout Patterns](#layout-patterns)
 9. [Design Tokens](#design-tokens)
 10. [50+ Screen Examples](#screen-examples)
@@ -301,7 +301,7 @@ You can always extend this list (e.g. `"onboarding"`, `"follow-up"`, `"upsell"`)
   "gap": 12,
   "options": [...],
   "responseCards": {...},
-  "responseScreens": {...},
+  "conditionalScreens": {...},
   "responsePosition": "bottom"
 }
 ```
@@ -315,8 +315,9 @@ You can always extend this list (e.g. `"onboarding"`, `"follow-up"`, `"upsell"`)
 | `selectedColor` | `string` | `"#2563eb"` | Selection border color |
 | `selectedBorderWidth` | `number` | `2` | Selection border width |
 | `position` | `string` | varies | `"top"`, `"middle"`, or `"bottom"` - where selection appears on screen |
+| `responseKey` | `string` | - | Optional key for tracking answer in analytics |
 | `responseCards` | `object` | - | Map value → card config |
-| `responseScreens` | `object` | - | Map value → screen content |
+| `conditionalScreens` | `object` | - | Map value → screen content |
 | `responsePosition` | `string` | `"top"` | `top` or `bottom` (for response card placement) |
 
 **Position Property:**
@@ -548,7 +549,7 @@ Perfect for text buttons, age ranges, categories.
 
 ---
 
-## Response System
+## Conditional System
 
 ### Response Cards (Inline)
 
@@ -581,7 +582,7 @@ Shows a card on the **same screen** when an option is selected.
 
 ---
 
-### Response Screens (Full Replacement)
+### Conditional Screens (Full Replacement)
 
 **Replaces entire screen** when an option is selected.
 
@@ -594,7 +595,7 @@ Shows a card on the **same screen** when an option is selected.
     { "variant": "flat", "text": "Yes ✓", "bgColor": "#dcfce7", "textColor": "#166534", "value": "yes" },
     { "variant": "flat", "text": "No ✗", "bgColor": "#fef2f2", "textColor": "#991b1b", "value": "no" }
   ],
-  "responseScreens": {
+  "conditionalScreens": {
     "yes": {
       "content": [
         { "type": "heading", "content": "Awesome! 🎉" },
@@ -620,7 +621,7 @@ Shows a card on the **same screen** when an option is selected.
 
 ### Comparison
 
-| Feature | `responseCards` | `responseScreens` |
+| Feature | `responseCards` | `conditionalScreens` |
 |---------|-----------------|-------------------|
 | **What happens** | Card appears inline | Entire screen replaced |
 | **Content** | Single card | Full screen |
@@ -694,7 +695,8 @@ Shows a card on the **same screen** when an option is selected.
 
 **Auto-Complete Behavior:**
 - Radio mode + No button + **has responseCards** = Selection fires `onComplete` after **2 second delay** (so user can read the message)
-- Radio mode + No button + **no responseCards** = Selection fires `onComplete` **immediately**
+- Radio mode + No button + **no responseCards** + **no conditionalScreens** = Selection fires `onComplete` **immediately**
+- **Has conditionalScreens** = Auto-complete **DISABLED**. User must interact with conditional screen.
 - Checkbox mode always needs button
 
 ---
@@ -902,7 +904,7 @@ Shows a card on the **same screen** when an option is selected.
         { "variant": "flat", "text": "Yes ✓", "width": 130, "height": 50, "bgColor": "#dcfce7", "textColor": "#166534", "value": "yes" },
         { "variant": "flat", "text": "No ✗", "width": 130, "height": 50, "bgColor": "#fef2f2", "textColor": "#991b1b", "value": "no" }
       ],
-      "responseScreens": {
+      "conditionalScreens": {
         "yes": {
           "content": [
             { "type": "heading", "content": "Awesome! 🎉" },
@@ -1540,9 +1542,9 @@ Use `position` to control where selection appears on screen:
 | `"middle"` | Center selection between content and button |
 | `"bottom"` | Pin selection to bottom (default without button) |
 
-### 2. Branching with Response Screens
+### 2. Branching with Conditional Screens
 
-Use `responseScreens` for different paths based on selection:
+Use `conditionalScreens` for different paths based on selection:
 
 ```json
 {
@@ -1551,7 +1553,7 @@ Use `responseScreens` for different paths based on selection:
     { "variant": "flat", "text": "Yes", "value": "yes" },
     { "variant": "flat", "text": "No", "value": "no" }
   ],
-  "responseScreens": {
+  "conditionalScreens": {
     "yes": { "content": [...] },
     "no": { "content": [...] }
   }

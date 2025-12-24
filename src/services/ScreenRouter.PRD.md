@@ -210,7 +210,9 @@ function CustomQuiz() {
 
 ## Content Processing
 
-The ScreenRouter automatically processes content to inject callbacks and replace placeholders.
+The ScreenRouter automatically processes content to inject callbacks and replace placeholders. It recursively processes content within `conditionalScreens`, ensuring that buttons inside conditional views work exactly like normal screens.
+ 
+> **Auto-Injection:** If a `conditionalScreen` is defined **without a button**, the router automatically appends a default "Continue" button safely, so users never get stuck.
 
 ### Placeholder Replacement
 
@@ -255,7 +257,8 @@ Selection components automatically receive:
 | Mode | Has responseCards? | Action |
 |------|--------------------|--------|
 | `radio` | Yes | `delayedNext()` (waits for user to read feedback) |
-| `radio` | No | `goToNext()` (immediate) |
+| `radio` | No (and no conditionalScreens) | `goToNext()` (immediate) |
+| `radio` | No (WITH conditionalScreens) | **No Action** (User must click button in conditional screen) |
 | `checkbox` | Any | `goToNext()` (immediate) |
 
 ---

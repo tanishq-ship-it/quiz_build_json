@@ -113,8 +113,8 @@ type ResponseInfoCard = {
 
 type ResponseCard = ResponseQuotationCard | ResponseMessageCard | ResponseInfoCard;
 
-// Response screen content - a full screen that replaces the current screen
-type ResponseScreenContent = {
+// Conditional screen content - a full screen that replaces the current screen
+type ConditionalScreenContent = {
   content: ContentItem[];
   gap?: number;
   padding?: number;
@@ -134,11 +134,12 @@ type SelectionItem = {
   // Response cards - shown inline when an option is selected (stays on same screen)
   responseCards?: Record<string | number, ResponseCard>;
   responsePosition?: "top" | "bottom"; // Where to show the response card relative to selection
-  // Response screens - replaces entire screen content when an option is selected
-  responseScreens?: Record<string | number, ResponseScreenContent>;
+  // Conditional screens - replaces entire screen content when an option is selected
+  conditionalScreens?: Record<string | number, ConditionalScreenContent>;
   // Position of the selection on screen: "top" (default), "middle", "bottom"
   // If not specified and no button exists, defaults to "bottom"
   position?: "top" | "middle" | "bottom";
+  responseKey?: string;
 };
 
 // Card item types
@@ -213,8 +214,11 @@ const Screens: React.FC<ScreensProps> = ({
   // State to track selected values for response cards
   const [selectionState, setSelectionState] = useState<Record<number, (string | number)[]>>({});
   
-  // State to track active response screen (when an option triggers a full screen change)
-  const [activeResponseScreen, setActiveResponseScreen] = useState<ResponseScreenContent | null>(null);
+  // State to track active conditional screen (when an option triggers a full screen change)
+  const [activeConditionalScreen, setActiveConditionalScreen] = useState<ConditionalScreenContent | null>(null);
+  
+  // State to track active branch value for analytics
+  const [activeBranch, setActiveBranch] = useState<string | number | undefined>(undefined);
 
   // Extract button from content (if exists)
   const buttonItem = content.find((item) => item.type === "button") as ButtonItem | undefined;
@@ -244,7 +248,7 @@ const Screens: React.FC<ScreensProps> = ({
 
   // Find the selection item index for state tracking
   const getSelectionIndex = (): number => {
-    return content.findIndex((item) => item.type === "selection");
+    return regularContent.findIndex((item) => item.type === "selection");
   };
 
   // Render a response card based on selection
@@ -365,8 +369,9 @@ const Screens: React.FC<ScreensProps> = ({
     }
 
     if (item.type === "selection") {
-      // Auto-complete for radio mode when no button exists
-      const autoComplete = item.mode === "radio" && !buttonItem;
+      // Auto-complete for radio mode when no button exists AND no conditional screens
+      const hasConditional = item.conditionalScreens && Object.keys(item.conditionalScreens).length > 0;
+      const autoComplete = item.mode === "radio" && !buttonItem && !hasConditional;
       const selectionIndex = getSelectionIndex();
       const responsePosition = item.responsePosition ?? "top";
       const responseCard = getCurrentResponseCard(item, selectionIndex);
@@ -378,19 +383,31 @@ const Screens: React.FC<ScreensProps> = ({
           [selectionIndex]: selected,
         }));
         
-        // Check if there's a response screen for the selected option
+        // Check if there's a conditional screen for the selected option
         let branchValue: string | number | undefined;
-        if (item.responseScreens && selected.length > 0) {
+        if (item.conditionalScreens && selected.length > 0) {
           const selectedValue = selected[selected.length - 1];
-          const responseScreen = item.responseScreens[selectedValue];
-          if (responseScreen) {
-            setActiveResponseScreen(responseScreen);
+          // Normalize key to string for safety
+          const key = String(selectedValue);
+          const conditionalScreen = item.conditionalScreens[key];
+          
+          // Set or clear explicitly
+          setActiveConditionalScreen(conditionalScreen ?? null);
+          
+          if (conditionalScreen) {
+            branchValue = selectedValue;
+            setActiveBranch(selectedValue);
+          } else {
+            setActiveBranch(undefined);
           }
-          branchValue = selectedValue;
+        } else {
+          setActiveConditionalScreen(null);
+          setActiveBranch(undefined);
         }
 
         if (onScreenResponse && screenIndex != null && screenId) {
           onScreenResponse({
+            responseKey: item.responseKey ?? screenId,
             selected,
             ...(branchValue !== undefined ? { branch: branchValue } : {}),
           });
@@ -474,11 +491,11 @@ const Screens: React.FC<ScreensProps> = ({
     return null;
   };
 
-  // If a response screen is active, render it instead of the original content
-  if (activeResponseScreen) {
-    const responseContent = activeResponseScreen.content;
-    const responseGap = activeResponseScreen.gap ?? gap;
-    const responsePadding = activeResponseScreen.padding ?? padding;
+  // If a conditional screen is active, render it instead of the original content
+  if (activeConditionalScreen) {
+    const responseContent = activeConditionalScreen.content;
+    const responseGap = activeConditionalScreen.gap ?? gap;
+    const responsePadding = activeConditionalScreen.padding ?? padding;
     
     // Extract button from response content
     const responseButtonItem = responseContent.find((item) => item.type === "button") as ButtonItem | undefined;
@@ -533,15 +550,19 @@ const Screens: React.FC<ScreensProps> = ({
                     button: {
                       text: responseButtonItem.text,
                     },
+                    responseKey: selectionItem?.responseKey ?? screenId,
+                    branch: activeBranch,
                   });
                 }
-                // Reset response screen and call the button's onClick
-                setActiveResponseScreen(null);
+                // Reset conditional screen and call the button's onClick
+                setActiveConditionalScreen(null);
+                setActiveBranch(undefined);
                 responseButtonItem.onClick?.();
               }}
             />
           </div>
         )}
+        
       </div>
     );
   }

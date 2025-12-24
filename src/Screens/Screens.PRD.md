@@ -87,8 +87,10 @@ import Screens from "./Screens/Screens";
   // Response Cards Feature (inline card on same screen)
   responseCards?: Record<string | number, ResponseCard>;  // Map option values to cards
   responsePosition?: "top" | "bottom";  // Default: "top" (where response card appears)
-  // Response Screens Feature (replaces entire screen)
-  responseScreens?: Record<string | number, ResponseScreenContent>;  // Map option values to full screens
+  // Conditional Screens Feature (replaces entire screen)
+  conditionalScreens?: Record<string | number, ConditionalScreenContent>;  // Map option values to full screens
+  // Analytics
+  responseKey?: string; // Optional key for tracking this specific response
 }
 ```
 
@@ -139,21 +141,21 @@ Response cards are shown dynamically based on which option is selected. They sup
 }
 ```
 
-### Response Screen Type
-
-Response screens replace the entire screen content when an option is selected. They contain a full content array just like the main Screens component:
-
+### Conditional Screen Type
+ 
+Conditional screens replace the entire screen content when an option is selected. They contain a full content array just like the main Screens component:
+ 
 ```tsx
-{
+type ConditionalScreenContent = {
   content: ContentItem[];  // Full screen content (headings, cards, images, text, button)
   gap?: number;            // Gap between items (inherits from parent if not set)
   padding?: number;        // Screen padding (inherits from parent if not set)
 }
 ```
-
+ 
 **Example:**
 ```tsx
-responseScreens: {
+conditionalScreens: {
   "yes": {
     content: [
       { type: "heading", content: "Great! 🎉" },
@@ -163,11 +165,7 @@ responseScreens: {
     ],
   },
   "no": {
-    content: [
-      { type: "heading", content: "No problem!" },
-      { type: "card", variant: "quotation", quote: "...", author: "..." },
-      { type: "button", text: "Maybe Later", onClick: () => {} },
-    ],
+    content: [...],
   },
 }
 ```
@@ -253,8 +251,11 @@ The button is now **part of the content array**, giving full JSON control:
 When a screen has:
 - `type: "selection"` with `mode: "radio"`
 - **No** `type: "button"` in content
-
-Then selecting an option **automatically calls `onComplete`**. Perfect for quick single-choice screens.
+- **No** `conditionalScreens` configured
+ 
+Then selecting an option **automatically calls `onComplete`**.
+ 
+> **Note:** If `conditionalScreens` are present, auto-complete is **DISABLED** even if there is no button. The user must select an option, view the conditional screen, and click "Continue". Perfect for quick single-choice screens.
 
 **Delay Behavior:**
 | Has `responseCards`? | Delay |
@@ -426,24 +427,24 @@ Response cards allow you to show dynamic content (quotation, message, or info ca
 
 ---
 
-## Response Screens Feature
-
-Response screens allow you to **replace the entire screen content** when an option is selected. This is perfect for:
+## Conditional Screens Feature
+ 
+Conditional screens allow you to **replace the entire screen content** when an option is selected. This is perfect for:
 - Branching flows based on user choices
 - Showing detailed confirmation screens
 - Creating Yes/No decision points with different outcomes
 - Multi-path quiz or survey experiences
-
+ 
 ### How It Works
-
-1. Add `value` to each option to identify it
-2. Define `responseScreens` as a map of option values → full screen content
-3. When user selects an option, the entire screen is replaced with the response screen
-4. The response screen's button resets back to the original screen when clicked
-
-### Comparison: responseCards vs responseScreens
-
-| Feature | `responseCards` | `responseScreens` |
+ 
+1. Add `value` to each option to identify it.
+2. Define `conditionalScreens` as a map of option values → full screen content.
+3. When user selects an option, the entire screen is replaced with the conditional screen.
+4. Use normal buttons in the conditional content to navigate forward.
+ 
+### Comparison: responseCards vs conditionalScreens
+ 
+| Feature | `responseCards` | `conditionalScreens` |
 |---------|-----------------|-------------------|
 | **What happens** | Card appears inline | Entire screen is replaced |
 | **Content** | Single card | Full screen (heading, cards, images, button) |
@@ -483,7 +484,7 @@ Response screens allow you to **replace the entire screen content** when an opti
         { variant: "flat", text: "Yes", size: "sm", bgColor: "#fff", textColor: "#333", value: "yes" },
         { variant: "flat", text: "No", size: "sm", bgColor: "#fff", textColor: "#333", value: "no" },
       ],
-      responseScreens: {
+      conditionalScreens: {
         "yes": {
           content: [
             { type: "heading", content: "Great! 🎉" },

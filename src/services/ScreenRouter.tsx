@@ -139,10 +139,17 @@ function processContent(
       copy.onChange = copy.onChange || (() => {});
       
       // If radio mode with responseCards, add delay so user can read the message
+      // If conditionalScreens exist, DO NOT auto-navigate (wait for Continue in conditional screen)
       // Otherwise go to next screen immediately
       const hasResponseCards = copy.responseCards && Object.keys(copy.responseCards).length > 0;
+      const hasConditionalScreens = copy.conditionalScreens && Object.keys(copy.conditionalScreens).length > 0;
       const isRadio = copy.mode === "radio";
-      copy.onComplete = (isRadio && hasResponseCards) ? onDelayedNext : onNext;
+      
+      if (isRadio && hasConditionalScreens) {
+        copy.onComplete = () => {};
+      } else {
+        copy.onComplete = (isRadio && hasResponseCards) ? onDelayedNext : onNext;
+      }
 
       // Process options for placeholders
       if (copy.options) {
@@ -155,15 +162,28 @@ function processContent(
         });
       }
 
-      // Process responseScreens recursively
-      if (copy.responseScreens) {
-        for (const key of Object.keys(copy.responseScreens)) {
-          copy.responseScreens[key].content = processContent(
-            copy.responseScreens[key].content,
-            callbacks,
-            placeholders,
-            isLast
-          );
+      // Process conditionalScreens recursively
+      if (copy.conditionalScreens) {
+        for (const key of Object.keys(copy.conditionalScreens)) {
+          const cs = copy.conditionalScreens[key];
+          if (cs && cs.content) {
+            // If conditional screen has NO button, inject default Continue/Restart
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const hasButton = cs.content.some((item: any) => item?.type === "button");
+            if (!hasButton) {
+              cs.content = [
+                ...cs.content,
+                { type: "button", text: isLast ? "Restart" : "Continue" },
+              ];
+            }
+
+            cs.content = processContent(
+              cs.content,
+              callbacks,
+              placeholders,
+              isLast
+            );
+          }
         }
       }
     }

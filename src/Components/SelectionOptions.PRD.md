@@ -229,7 +229,7 @@ Shows a card on the same screen when an option is selected.
 }
 ```
 
-### responseScreens (Full Screen Replacement)
+### conditionalScreens (Full Screen Replacement)
 
 Replaces the entire screen content when an option is selected. Perfect for branching flows.
 
@@ -246,7 +246,7 @@ Replaces the entire screen content when an option is selected. Perfect for branc
     { variant: "flat", text: "Yes", value: "yes" },
     { variant: "flat", text: "No", value: "no" },
   ],
-  responseScreens: {
+  conditionalScreens: {
     "yes": {
       content: [
         { type: "heading", content: "Great! 🎉" },
@@ -267,7 +267,7 @@ Replaces the entire screen content when an option is selected. Perfect for branc
 
 ### Comparison
 
-| Feature | `responseCards` | `responseScreens` |
+| Feature | `responseCards` | `conditionalScreens` |
 |---------|-----------------|-------------------|
 | **Behavior** | Card appears inline | Entire screen replaced |
 | **Content** | Single card | Full screen with multiple items |
