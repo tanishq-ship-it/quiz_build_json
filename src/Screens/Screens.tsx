@@ -58,6 +58,7 @@ type CarouselItem = {
   height?: string | number;
   gap?: number;
   autoplay?: boolean;
+  infinite?: boolean;
   speed?: number;
   showIndicators?: boolean;
 };
@@ -545,6 +546,7 @@ const Screens: React.FC<ScreensProps> = ({
           height={item.height}
           gap={item.gap}
           autoplay={item.autoplay}
+          infinite={item.infinite}
           speed={item.speed}
           showIndicators={item.showIndicators}
           renderItem={(childItem, childIndex) => renderContentItem(childItem, childIndex)}

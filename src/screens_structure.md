@@ -231,7 +231,38 @@ You can always extend this list (e.g. `"onboarding"`, `"follow-up"`, `"upsell"`)
 
 ---
 
-### 📄 Text
+### �️ Slider
+
+Renders a scrollable carousel of content items.
+
+```json
+{
+  "type": "slider",
+  "content": [
+    { "type": "image", "src": "image1.jpg" },
+    { "type": "text", "content": "Slide 2" }
+  ],
+  "height": 200,
+  "autoplay": true,
+  "infinite": true,
+  "speed": 3000
+}
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `content` | `ContentItem[]` | required | Array of content items (slides) |
+| `height` | `number` | `200` | Fixed height (Vertical) |
+| `autoplay` | `boolean` | `false` | Enable auto-scroll |
+| `infinite` | `boolean` | `false` | Enable seamless infinite loop (Marquee) |
+| `speed` | `number` | `3000` | Animation duration or speed |
+| `align` | `string` | `"center"` | `left`, `center`, `right` |
+
+**Example 1: Review Slider (Horizontal)**
+
+---
+
+### �📄 Text
 
 ```json
 {
@@ -259,8 +290,6 @@ You can always extend this list (e.g. `"onboarding"`, `"follow-up"`, `"upsell"`)
 - `*italic*` → *italic*
 - `# H1`, `## H2`, `### H3` → Headings
 - `- item` → Bullet list
-```
-{{ ... }}
 - `1. item` → Numbered list
 - `` `code` `` → Inline code
 
@@ -573,6 +602,38 @@ Perfect for text buttons, age ranges, categories.
 **Content Items:**
 - `{ type: "image", src, width, shape, align }`
 - `{ type: "text", content, align, fontSize, color, fontWeight }`
+
+---
+
+### 🔄 Carousel
+
+Renders a horizontal carousel of content items.
+
+```json
+{
+  "type": "carousel",
+  "content": [
+    { "type": "image", "src": "image1.jpg" },
+    { "type": "text", "content": "Slide 2" }
+  ],
+  "bgColor": "#fff",
+  "gap": 16,
+  "autoplay": true,
+  "infinite": true,
+  "speed": 3000,
+  "showIndicators": true
+}
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `content` | `array` | required | Array of image/text items |
+| `bgColor` | `string` | `"#fff"` | Background |
+| `gap` | `number` | `16` | Gap between slides |
+| `autoplay` | `boolean` | `false` | Enables animation |
+| `infinite` | `boolean` | `false` | Enable infinite marquee loop |
+| `speed` | `number` | `3000` | Duration of 1 loop (Vertical) |
+| `showIndicators` | `boolean` | `true` | Show dots (Horizontal only) |
 
 ---
 

@@ -11,6 +11,7 @@ type CarouselProps = {
   height?: string | number;
   gap?: number;
   autoplay?: boolean;
+  infinite?: boolean; // New prop for generic infinite loop
   speed?: number; // ms duration for scroll or interval
   padding?: number;
   showIndicators?: boolean;
@@ -24,6 +25,7 @@ const Carousel: React.FC<CarouselProps> = ({
   itemWidth = "85%",
   height,
   gap = 16,
+  infinite = false, // Default to false unless vertical
   speed = 3000,
   padding = 0,
   showIndicators = true,
@@ -32,39 +34,61 @@ const Carousel: React.FC<CarouselProps> = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // --- VERTICAL INFINITE TICKER ---
-  if (direction === "vertical") {
-    // For infinite loop, we duplicate the items once
+  // Use infinite mode if explicitly set OR if it's vertical (ticker is typically infinite)
+  const isInfinite = infinite || direction === "vertical";
+
+  // Smart default: If horizontal infinite (marquee), default width should be "auto" (content width) 
+  // instead of "85%" (card width), unless user explicitly overrode it.
+  const effectiveItemWidth = (direction === "horizontal" && isInfinite && itemWidth === "85%") 
+    ? "auto" 
+    : itemWidth;
+
+  // --- INFINITE TICKER / MARQUEE (Both Directions) ---
+  if (isInfinite) {
+    // For infinite loop, we duplicate the items once to ensure smooth seam
     const duplicatedItems = [...items, ...items];
-    // Dynamic height based on standard usually, but specifically passed for Ticker
-    const containerHeight = height ?? 200; 
+    const containerHeight = height ?? (direction === "vertical" ? 200 : "auto");
+    const containerWidth = "100%";
+
+    // Animation Keyframe Name
+    const animName = direction === "vertical" ? "scrollVertical" : "scrollHorizontal";
     
-    // We use a CSS animation for the infinite scroll
-    // We need to inject the keyframes style dynamically or use inline style for transform
-    
+    // CSS for Masks (Fade edges)
+    const maskImage = direction === "vertical" 
+      ? "linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)"
+      : "linear-gradient(to right, transparent, black 5%, black 95%, transparent)";
+
     return (
       <div
         style={{
           position: "relative",
           height: containerHeight,
+          width: containerWidth,
           overflow: "hidden",
-          width: "100%",
-          // Fade masks at top and bottom
-          maskImage: "linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
-          WebkitMaskImage: "linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
+          maskImage: maskImage,
+          WebkitMaskImage: maskImage,
         }}
       >
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
+            flexDirection: direction === "vertical" ? "column" : "row",
             gap: gap,
             // Animation logic
-            animation: `scrollVertical ${items.length * (speed / 1000)}s linear infinite`,
+            animation: `${animName} ${items.length * (speed / 1000)}s linear infinite`,
+            width: direction === "horizontal" ? "max-content" : "100%",
           }}
         >
           {duplicatedItems.map((item, index) => (
-            <div key={index} style={{ flexShrink: 0 }}>
+            <div 
+              key={index} 
+              style={{ 
+                flexShrink: 0,
+                width: direction === "horizontal" ? effectiveItemWidth : "auto",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
               {renderItem(item, index % items.length)}
             </div>
           ))}
@@ -75,25 +99,20 @@ const Carousel: React.FC<CarouselProps> = ({
             0% { transform: translateY(0); }
             100% { transform: translateY(calc(-50% - ${gap / 2}px)); }
           }
+           @keyframes scrollHorizontal {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-50% - ${gap / 2}px)); }
+          }
         `}</style>
       </div>
     );
   }
 
-  // --- HORIZONTAL SWIPE CAROUSEL ---
+  // --- HORIZONTAL SWIPE CAROUSEL (Manual) ---
   
-  // Track active index on scroll
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const scrollLeft = scrollRef.current.scrollLeft;
-    // const width = scrollRef.current.offsetWidth;
-    // Simple calculation: center point
-    // const index = Math.round(scrollLeft / (width * 0.85)); // approx based on item width
-    // A better way is intersection observer, but scroll math is fine for simple usage
-    // Actually, with variable widths it's tricky.
-    // Let's rely on item width assumption or just dividing by ScrollWidth/Items
-    
-    // To keep it simple for now: simple index tracking relative to total scroll width
     const totalScroll = scrollRef.current.scrollWidth - scrollRef.current.clientWidth;
     if (totalScroll > 0) {
         const progress = scrollLeft / totalScroll;
@@ -120,9 +139,8 @@ const Carousel: React.FC<CarouselProps> = ({
           msOverflowStyle: "none", // Hide scrollbar IE
           WebkitOverflowScrolling: "touch",
         }}
-        className="no-scrollbar" // Helper class if you have tailwind, otherwise inline style below handles it mostly
+        className="no-scrollbar"
       >
-        {/* Style to hide scrollbar in Webkit */}
         <style>{`
           .no-scrollbar::-webkit-scrollbar { display: none; }
         `}</style>

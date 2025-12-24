@@ -16,10 +16,11 @@ import Carousel from "../Components/Carousel";
 |------|------|---------|-------------|
 | `direction` | `"horizontal" \| "vertical"` | `"horizontal"` | Layout direction |
 | `items` | `any[]` | `[]` | Content items to render |
-| `itemWidth` | `string \| number` | `"85%"` | Width of cards (Horizontal only) |
+| `itemWidth` | `string \| number` | `"85%"` / `"auto"` | `"85%"` for Swipe, `"auto"` for Infinite Marquee |
 | `height` | `string \| number` | `200` | Fixed height (Vertical only) |
 | `gap` | `number` | `16` | Gap between slides |
 | `autoplay` | `boolean` | `false` | Enables animation |
+| `infinite` | `boolean` | `false` | Enable infinite marquee loop |
 | `speed` | `number` | `3000` | Duration of 1 loop (Vertical) |
 | `showIndicators` | `boolean` | `true` | Show dots (Horizontal only) |
 
@@ -31,6 +32,8 @@ import Carousel from "../Components/Carousel";
 - **Scroll Snap:** Items snap to center.
 - **Peeking:** Default width `85%` lets user see next card.
 - **Indicators:** Dots track active index.
+- **Infinite Mode:** If `infinite: true`, transforms into a seamless horizontal marquee.
+  - **Auto-Width:** In this mode, `itemWidth` defaults to `"auto"` so items stack naturally without gaps (e.g. for text tickers).
 
 ### Vertical (Ticker)
 - **Infinite Loop:** Content is duplicated to create a seamless infinite scroll.
@@ -64,6 +67,21 @@ import Carousel from "../Components/Carousel";
   "items": [
     { "type": "text", "content": "Start..." },
     { "type": "text", "content": "End..." }
+  ]
+}
+```
+
+### 3. Horizontal Ticker (Infinite)
+```json
+{
+  "type": "carousel",
+  "direction": "horizontal",
+  "infinite": true,
+  "speed": 8000,
+  "itemWidth": "auto",
+  "items": [
+    { "type": "image", "src": "logo1.png", "width": 50 },
+    { "type": "image", "src": "logo2.png", "width": 50 }
   ]
 }
 ```
