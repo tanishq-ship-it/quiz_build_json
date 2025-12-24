@@ -12,7 +12,7 @@
 4. [Content Types Reference](#content-types-reference)
 5. [Selection System](#selection-system)
 6. [Card System](#card-system)
-7. Conditional System](#response-system)
+7. [Conditional System](#conditional-system)
 8. [Layout Patterns](#layout-patterns)
 9. [Design Tokens](#design-tokens)
 10. [50+ Screen Examples](#screen-examples)
