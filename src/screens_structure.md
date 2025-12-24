@@ -259,12 +259,39 @@ You can always extend this list (e.g. `"onboarding"`, `"follow-up"`, `"upsell"`)
 - `*italic*` → *italic*
 - `# H1`, `## H2`, `### H3` → Headings
 - `- item` → Bullet list
+```
+{{ ... }}
 - `1. item` → Numbered list
 - `` `code` `` → Inline code
 
 ---
 
-### 🔘 Button
+### 4.7 Input Item
+ 
+Renders a text input field.
+ 
+| Property | Type | Description |
+|----------|------|-------------|
+| `type` | `"input"` | Component identifier |
+| `inputType` | `"text" \| "email" \| "tel" \| "number"` | HTML input type |
+| `label` | `string` | Label above input |
+| `placeholder` | `string` | Placeholder text |
+| `required` | `boolean` | If true, validates on continue |
+| `responseKey` | `string` | Key for analytics response |
+| `width` | `string \| number` | Width of input |
+ 
+```json
+{
+  "type": "input",
+  "inputType": "email",
+  "label": "Email Address",
+  "placeholder": "you@example.com",
+  "required": true,
+  "responseKey": "user_email"
+}
+```
+ 
+### 4.8 Button Item
 
 ```json
 {

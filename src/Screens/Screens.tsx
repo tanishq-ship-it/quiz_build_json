@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Image from "../Components/Image";
 import Text from "../Components/Text";
 import Button from "../Components/Button";
+import Input from "../Components/Input";
+import Carousel from "../Components/Carousel";
 import SelectionOptions from "../Components/SelectionOptions";
 import Card, { type InfoContentItem } from "../Components/Card";
 import { FONT_INTER } from "../styles/fonts";
@@ -36,6 +38,28 @@ type HeadingItem = {
   fontSize?: number;
   color?: string;
   fontWeight?: number;
+};
+
+type InputItem = {
+  type: "input";
+  inputType?: "text" | "email" | "tel" | "number" | "password" | "url";
+  placeholder?: string;
+  label?: string;
+  width?: string | number;
+  required?: boolean;
+  responseKey?: string;
+};
+
+type CarouselItem = {
+  type: "carousel";
+  direction?: "horizontal" | "vertical";
+  items: ContentItem[]; // Recursive content!
+  itemWidth?: string | number;
+  height?: string | number;
+  gap?: number;
+  autoplay?: boolean;
+  speed?: number;
+  showIndicators?: boolean;
 };
 
 // Selection option types
@@ -191,7 +215,7 @@ type ButtonItem = {
   width?: number;
 };
 
-type ContentItem = ImageItem | TextItem | HeadingItem | SelectionItem | CardItem | ButtonItem;
+type ContentItem = ImageItem | TextItem | HeadingItem | SelectionItem | CardItem | ButtonItem | InputItem | CarouselItem;
 
 interface ScreensProps {
   content: ContentItem[];
@@ -213,6 +237,7 @@ const Screens: React.FC<ScreensProps> = ({
 }) => {
   // State to track selected values for response cards
   const [selectionState, setSelectionState] = useState<Record<number, (string | number)[]>>({});
+  const [inputState, setInputState] = useState<Record<string, string>>({});
   
   // State to track active conditional screen (when an option triggers a full screen change)
   const [activeConditionalScreen, setActiveConditionalScreen] = useState<ConditionalScreenContent | null>(null);
@@ -488,6 +513,45 @@ const Screens: React.FC<ScreensProps> = ({
       }
     }
 
+    if (item.type === "input") {
+      const value = inputState[item.responseKey ?? `input-${index}`] ?? "";
+      
+      return (
+        <Input
+          key={index}
+          type={item.inputType}
+          placeholder={item.placeholder}
+          label={item.label}
+          width={item.width}
+          required={item.required}
+          value={value}
+          onChange={(val) => {
+            setInputState(prev => ({
+              ...prev,
+              [item.responseKey ?? `input-${index}`]: val
+            }));
+          }}
+        />
+      );
+    }
+
+    if (item.type === "carousel") {
+      return (
+        <Carousel
+          key={index}
+          items={item.items}
+          direction={item.direction}
+          itemWidth={item.itemWidth}
+          height={item.height}
+          gap={item.gap}
+          autoplay={item.autoplay}
+          speed={item.speed}
+          showIndicators={item.showIndicators}
+          renderItem={(childItem, childIndex) => renderContentItem(childItem, childIndex)}
+        />
+      );
+    }
+
     return null;
   };
 
@@ -637,11 +701,33 @@ const Screens: React.FC<ScreensProps> = ({
             textColor={buttonItem.textColor ?? "#fff"}
             textAlign="center"
             onClick={() => {
+              // Basic validation for required inputs
+              const requiredInputs = content.filter(i => i.type === "input" && i.required) as InputItem[];
+              const isInvalid = requiredInputs.some(i => {
+                const val = inputState[i.responseKey ?? ""] ?? "";
+                return !val.trim();
+              });
+
+              if (isInvalid) {
+                // Shake effect or alert could go here
+                alert("Please fill in all required fields.");
+                return;
+              }
+
               if (onScreenResponse && screenIndex != null && screenId) {
+                // Collect all input values
+                const inputValues = content
+                  .filter(i => i.type === "input")
+                  .reduce((acc, i: any) => ({
+                    ...acc,
+                    [i.responseKey ?? "input"]: inputState[i.responseKey ?? ""] ?? ""
+                  }), {});
+
                 onScreenResponse({
                   button: {
                     text: buttonItem.text,
                   },
+                  ...inputValues
                 });
               }
               buttonItem.onClick?.();
