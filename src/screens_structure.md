@@ -251,7 +251,10 @@ Renders a scrollable carousel of content items.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `content` | `ContentItem[]` | required | Array of content items (slides) |
+| `type` | `"carousel"` | - | Component identifier |
+| `direction` | `"horizontal" \| "vertical"` | `"horizontal"` | Layout direction |
+| `items` | `ContentItem[]` | `[]` | Array of content items to render |
+| `itemWidth` | `string` | `"85%"` | `"auto"` if infinite=true, to avoid gaps |
 | `height` | `number` | `200` | Fixed height (Vertical) |
 | `autoplay` | `boolean` | `false` | Enable auto-scroll |
 | `infinite` | `boolean` | `false` | Enable seamless infinite loop (Marquee) |
