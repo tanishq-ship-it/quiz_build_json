@@ -70,7 +70,7 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
   const hasText = text && text.trim() !== "";
 
   // If no text, make it a square with 5% padding
-  const height = hasText ? width * 0.85 : width;
+  const height = hasText ? Math.round(width * 1.25) : width;
   const imagePadding = hasText ? (imageFill ? 0 : 12) : width * 0.05;
 
   // Use provided textBgColor, or default to transparent (no colored footer)
@@ -160,8 +160,15 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
             textAlign,
             color: hasTextBg ? textColor : "#333",
             fontFamily: FONT_INTER,
-            fontSize: Math.max(12, width * 0.1),
+            fontSize: Math.max(12, width * 0.09),
             fontWeight: 500,
+            lineHeight: 1.2,
+            display: "-webkit-box",
+            // @ts-ignore
+            WebkitLineClamp: 2,
+            // @ts-ignore
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
             borderBottomLeftRadius: borderRadius,
             borderBottomRightRadius: borderRadius,
           }}
