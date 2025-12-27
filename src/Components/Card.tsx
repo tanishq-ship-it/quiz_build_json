@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import { FONT_INTER } from "../styles/fonts";
 import Image from "./Image";
 import Text from "./Text";
+import Carousel from "./Carousel";
 
 // ========== 1. QUOTATION CARD ==========
 
@@ -268,6 +269,167 @@ const InfoCard: React.FC<InfoCardProps> = ({
   );
 };
 
+// ========== 4. CONTAINER CARD (formerly CompletionScreen) ==========
+
+interface ContainerCardProps {
+  logo?: string;
+  heading?: string;
+  subtext?: string;
+  image?: string;
+  socialProof?: string;
+  emailTicker?: string[];
+  width?: string | number;
+  gap?: number;
+  padding?: number;
+}
+
+const ContainerCard: React.FC<ContainerCardProps> = ({
+  logo,
+  heading,
+  subtext,
+  image,
+  socialProof,
+  emailTicker = [],
+  width = "100%",
+  gap = 16,
+  padding = 24,
+}) => {
+  return (
+    <div
+      style={{
+        width,
+        backgroundColor: "#ffffff",
+        borderRadius: 16,
+        padding,
+        boxSizing: "border-box",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+        display: "flex",
+        flexDirection: "column",
+        gap,
+        maxWidth: 500,
+      }}
+    >
+      {/* Logo */}
+      {logo && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
+            marginBottom: 8,
+          }}
+        >
+          <Image src={logo} alt="Logo" width="120px" align="center" />
+        </div>
+      )}
+
+      {/* Heading */}
+      {heading && (
+        <h2
+          style={{
+            margin: 0,
+            fontFamily: FONT_INTER,
+            fontSize: 24,
+            fontWeight: 700,
+            color: "#333",
+            textAlign: "center",
+            lineHeight: 1.3,
+          }}
+        >
+          {heading}
+        </h2>
+      )}
+
+      {/* Subtext */}
+      {subtext && (
+        <Text
+          content={subtext}
+          align="center"
+          fontSize={15}
+          color="#666"
+          lineHeight={1.5}
+        />
+      )}
+
+      {/* Full-Width Image (Edge-to-Edge) */}
+      {image && (
+        <div
+          style={{
+            width: `calc(100% + ${padding * 2}px)`,
+            marginLeft: -padding,
+            marginRight: -padding,
+            marginTop: 8,
+          }}
+        >
+          <img
+            src={image}
+            alt="Content"
+            style={{
+              width: "100%",
+              display: "block",
+            }}
+          />
+        </div>
+      )}
+
+      {/* Social Proof */}
+      {socialProof && (
+        <Text
+          content={socialProof}
+          align="center"
+          fontSize={14}
+          color="#555"
+          lineHeight={1.4}
+        />
+      )}
+
+      {/* Email Ticker */}
+      {emailTicker.length > 0 && (
+        <div
+          style={{
+            width: "100%",
+            overflow: "hidden",
+            marginTop: 4,
+          }}
+        >
+          <Carousel
+            direction="horizontal"
+            items={emailTicker.map((email) => ({
+              type: "text" as const,
+              content: email,
+              fontSize: 13,
+              color: "#888",
+              align: "center" as const,
+            }))}
+            itemWidth="auto"
+            height={24}
+            gap={16}
+            autoplay={true}
+            infinite={true}
+            speed={20000}
+            showIndicators={false}
+            renderItem={(item, index) => (
+              <div
+                key={index}
+                style={{
+                  fontFamily: FONT_INTER,
+                  fontSize: 13,
+                  color: "#888",
+                  whiteSpace: "nowrap",
+                  padding: "0 8px",
+                }}
+              >
+                {item.content}
+              </div>
+            )}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ========== MAIN CARD COMPONENT ==========
 
 // Quotation card props
@@ -306,7 +468,21 @@ type InfoCardFullProps = {
   padding?: number;
 };
 
-type CardProps = QuotationCardFullProps | MessageCardFullProps | InfoCardFullProps;
+// Container card props
+type ContainerCardFullProps = {
+  variant: "container";
+  logo?: string;
+  heading?: string;
+  subtext?: string;
+  image?: string;
+  socialProof?: string;
+  emailTicker?: string[];
+  width?: string | number;
+  gap?: number;
+  padding?: number;
+};
+
+type CardProps = QuotationCardFullProps | MessageCardFullProps | InfoCardFullProps | ContainerCardFullProps;
 
 const Card: React.FC<CardProps> = (props) => {
   switch (props.variant) {
@@ -346,6 +522,20 @@ const Card: React.FC<CardProps> = (props) => {
           padding={props.padding}
         />
       );
+    case "container":
+      return (
+        <ContainerCard
+          logo={props.logo}
+          heading={props.heading}
+          subtext={props.subtext}
+          image={props.image}
+          socialProof={props.socialProof}
+          emailTicker={props.emailTicker}
+          width={props.width}
+          gap={props.gap}
+          padding={props.padding}
+        />
+      );
     default:
       return null;
   }
@@ -354,7 +544,7 @@ const Card: React.FC<CardProps> = (props) => {
 export default Card;
 
 // Export individual cards for direct use
-export { QuotationCard, MessageCard, InfoCard };
+export { QuotationCard, MessageCard, InfoCard, ContainerCard };
 
 // Export types for use in Screens
 export type { CardProps, InfoContentItem };

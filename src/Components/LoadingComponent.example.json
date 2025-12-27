@@ -1,0 +1,33 @@
+{
+    "id": "loading-screen-custom",
+    "content": [
+        {
+            "type": "loading",
+            "message": "Generating your custom plan...",
+            "duration": 6000,
+            "progressColor": "#10b981",
+            "trackColor": "#d1fae5",
+            "popup": {
+                "triggerAtPercent": 50,
+                "title": "Quick Check",
+                "description": "Are you sure you want to proceed with these settings?",
+                "responseKey": "confirmation",
+                "layout": "row",
+                "options": [
+                    {
+                        "text": "Yes",
+                        "value": "yes",
+                        "bgColor": "#10b981",
+                        "textColor": "#ffffff"
+                    },
+                    {
+                        "text": "No",
+                        "value": "no",
+                        "bgColor": "#ef4444",
+                        "textColor": "#ffffff"
+                    }
+                ]
+            }
+        }
+    ]
+}

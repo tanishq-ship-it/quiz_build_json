@@ -1,0 +1,28 @@
+{
+    "id": "completion",
+    "content": [
+        {
+            "type": "card",
+            "variant": "container",
+            "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/272px-Google_2015_logo.svg.png",
+            "heading": "Be part of more than 20 million people",
+            "subtext": "Achieve more together with our growing global learning community.",
+            "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80",
+            "socialProof": "1103 people learned self-growth insights in the hour",
+            "emailTicker": [
+                "*@icloud.com",
+                "mysticwo***@gmail.com",
+                "solarchi***@yahoo.com",
+                "echocha*@example.com",
+                "learner***@outlook.com",
+                "wisdom*@proton.me"
+            ]
+        },
+        {
+            "type": "button",
+            "text": "Continue",
+            "bgColor": "#2563eb",
+            "textColor": "#fff"
+        }
+    ]
+}

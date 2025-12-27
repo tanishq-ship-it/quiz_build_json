@@ -245,6 +245,55 @@ A flexible card that can contain any combination of images and text in any order
 
 ---
 
+### 4. Container Card (`variant="container"`)
+
+A specialized card with a contained layout, perfect for completion screens, welcome messages, or any content needing a "box" look. Supports logo, full-width image, social proof, and email ticker.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `logo` | `string` | - | Logo image URL (supports placeholders) |
+| `heading` | `string` | - | Main heading text |
+| `subtext` | `string` | - | Subtitle/description text |
+| `image` | `string` | - | Full-width image URL |
+| `socialProof` | `string` | - | Social proof text |
+| `emailTicker` | `string[]` | `[]` | Array of emails for scrolling ticker |
+| `width` | `string \| number` | `"100%"` | Card width |
+| `padding` | `number` | `24` | Internal padding |
+| `gap` | `number` | `16` | Gap between elements |
+
+**Styling:**
+- Background: White (`#fff`)
+- Border radius: 16px
+- Shadow: `0 2px 8px rgba(0,0,0,0.08)`
+- Max width: 500px usually
+- Image: Edge-to-edge (breaks out of padding)
+- Email Ticker: Infinite horizontal scroll (20s speed)
+
+**Examples:**
+
+```tsx
+// Completion/Success Card
+<Card
+  variant="container"
+  logo="{{logo}}"
+  heading="Welcome aboard!"
+  subtext="Join 20 million learners"
+  image="{{image}}"
+  socialProof="1103 people joined today"
+  emailTicker={["user1@email.com", "user2@email.com"]}
+/>
+
+// Simple Welcome Card
+<Card
+  variant="container"
+  heading="Ready to start?"
+  subtext="This quiz will take 2 minutes"
+  image="/hero.jpg"
+/>
+```
+
+---
+
 ## Usage in Screens
 
 Cards are **non-clickable display elements**. Use them with the button in Screens for navigation:
@@ -305,6 +354,21 @@ Cards are **non-clickable display elements**. Use them with the button in Screen
   gap?: number;
   padding?: number;
 }
+
+// Container Card Item
+{
+  type: "card";
+  variant: "container";
+  logo?: string;
+  heading?: string;
+  subtext?: string;
+  image?: string;
+  socialProof?: string;
+  emailTicker?: string[];
+  width?: string | number;
+  gap?: number;
+  padding?: number;
+}
 ```
 
 ---
@@ -331,6 +395,7 @@ Cards are **non-clickable display elements**. Use them with the button in Screen
 | Quotation | Auto | Based on text length |
 | Message | Auto | Based on content |
 | Info | Auto | Based on content items |
+| Container | Auto | Based on content |
 
 ---
 
@@ -354,13 +419,19 @@ Cards are **non-clickable display elements**. Use them with the button in Screen
 3. **Product cards** - Feature highlights
 4. **Step indicators** - Progress steps
 
+### Container Card
+1. **Completion screens** - Success messages
+2. **Welcome screens** - Intro with logo/hero image
+3. **Social proof** - Showing community stats
+
 ---
 
 ## Dependencies
 
 - `react-markdown` - For markdown rendering in Message and Info cards
-- `Image` component - Used in Info card
-- `Text` component - Used in Info card
+- `Image` component - Used in Info and Container cards
+- `Text` component - Used in Info and Container cards
+- `Carousel` component - Used in Container card (ticker)
 
 ---
 

@@ -348,6 +348,25 @@ Renders a text input field.
 
 ---
 
+### 4.9 Content Box / Container Card
+
+See [Card System](#card-system) for the `container` variant which can be used to create completion screens, welcome screens, and other boxed layouts.
+
+The `CompletionScreen` component has been deprecated in favor of `Card variant="container"` for better flexibility.
+
+```json
+{
+  "type": "card",
+  "variant": "container",
+  "logo": "{{logo}}",
+  "heading": "Welcome!",
+  "image": "{{image}}",
+  "button": { "text": "Continue" }
+}
+```
+
+---
+
 ## Selection System
 
 ### Selection Structure
@@ -640,7 +659,71 @@ Renders a horizontal carousel of content items.
 
 ---
 
+---
+
+### ⏳ Loading Screen
+
+A timed progress bar that can be interrupted by a popup interaction.
+
+```json
+{
+  "type": "loading",
+  "message": "Analyzing your results...", 
+  "duration": 4000, 
+  "progressColor": "#2563eb",
+  "trackColor": "#e5e5e5",
+  "popup": {
+    "triggerAtPercent": 50,
+    "layout": "row",
+    "title": "Quick Question",
+    "description": "Proceed with these options?",
+    "responseKey": "confirm",
+    "options": [
+      { "text": "Yes", "value": "yes", "bgColor": "#10b981", "textColor": "#fff" },
+      { "text": "No", "value": "no", "variant": "outline" }
+    ]
+  }
+}
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `type` | `"loading"` | - | Component identifier |
+| `message` | `string` | `"Loading..."` | Text above the bar |
+| `duration` | `number` | `3000` | Duration in ms |
+| `progressColor` | `string` | `"#2563eb"` | Color of the filled bar |
+| `trackColor` | `string` | `"#e5e5e5"` | Color of the empty track |
+| `popup` | `object` | - | Optional interruption config |
+
+**Popup Object:**
+- `triggerAtPercent`: (0-100) When to pause
+- `layout`: `"column"` (default) or `"row"`
+- `responseKey`: Key for the answer
+- `options`: Array of option objects
+
+- `textColor`: Custom text color
+
+#### Strategy & Usage
+
+**Why use this component?**
+1.  **Psychology of Waiting:** A progress bar makes the wait for results feel valuable (e.g., "Analyzing your unique profile..."). It builds anticipation.
+2.  **Conversion Opportunity:** The "Interrupt Popup" is a powerful pattern. The user is mentally "locked in" waiting for their result. This is the **perfect moment** to ask for a low-friction commitment, such as:
+    -   Subscribing to a newsletter.
+    -   Rating the experience.
+    -   Confirming a preference.
+3.  **Retention:** It bridges the gap between the quiz and the payoff, reducing drop-offs if the calculation takes time.
+
+**How to use it effectively:**
+-   **Placement:** Always place this *immediately before* the Results or Completion screen.
+-   **Timing:** Set `triggerAtPercent` to `50` or `60`. This lets the user see progress, get interrupted, resolve it, and then see the bar finish. It feels "earned".
+-   **Content:** Keep the popup question simple (Yes/No). Do not ask for complex inputs here.
+
+
+
+---
+
 ## Conditional System
+
 
 ### Response Cards (Inline)
 
@@ -1403,6 +1486,27 @@ Shows a card on the **same screen** when an option is selected.
       { "type": "text", "content": "You earned 100 points", "align": "center", "color": "#92400e" }
     ]},
     { "type": "button", "text": "Continue", "bgColor": "#f59e0b" }
+  ]
+}
+```
+
+#### 6.5 Container Card (Completion/Welcome)
+
+```json
+{
+  "id": "container-card",
+  "content": [
+    {
+      "type": "card",
+      "variant": "container",
+      "logo": "{{logo}}",
+      "heading": "Welcome aboard!",
+      "subtext": "Join 20 million learners",
+      "image": "{{image}}",
+      "socialProof": "1103 people joined today",
+      "emailTicker": ["user1@email.com", "user2@email.com"]
+    },
+    { "type": "button", "text": "Continue", "bgColor": "#2563eb" }
   ]
 }
 ```

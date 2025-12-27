@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "../Components/Image";
 import Text from "../Components/Text";
 import Button from "../Components/Button";
@@ -6,6 +6,7 @@ import Input from "../Components/Input";
 import Carousel from "../Components/Carousel";
 import SelectionOptions from "../Components/SelectionOptions";
 import Card, { type InfoContentItem } from "../Components/Card";
+import LoadingComponent, { type LoadingPopupConfig } from "../Components/LoadingComponent";
 import { FONT_INTER } from "../styles/fonts";
 
 // Content item types
@@ -61,6 +62,16 @@ type CarouselItem = {
   infinite?: boolean;
   speed?: number;
   showIndicators?: boolean;
+};
+
+type LoadingItem = {
+  type: "loading";
+  message?: string;
+  duration?: number;
+  progressColor?: string;
+  trackColor?: string;
+  popup?: LoadingPopupConfig;
+  responseKey?: string;
 };
 
 // Selection option types
@@ -204,7 +215,21 @@ type InfoCardItem = {
   padding?: number;
 };
 
-type CardItem = QuotationCardItem | MessageCardItem | InfoCardItem;
+type ContainerCardItem = {
+  type: "card";
+  variant: "container";
+  logo?: string;
+  heading?: string;
+  subtext?: string;
+  image?: string;
+  socialProof?: string;
+  emailTicker?: string[];
+  width?: string | number;
+  gap?: number;
+  padding?: number;
+};
+
+type CardItem = QuotationCardItem | MessageCardItem | InfoCardItem | ContainerCardItem;
 
 // Button item for bottom CTA
 type ButtonItem = {
@@ -216,7 +241,7 @@ type ButtonItem = {
   width?: number;
 };
 
-type ContentItem = ImageItem | TextItem | HeadingItem | SelectionItem | CardItem | ButtonItem | InputItem | CarouselItem;
+type ContentItem = ImageItem | TextItem | HeadingItem | SelectionItem | CardItem | ButtonItem | InputItem | CarouselItem | LoadingItem;
 
 interface ScreensProps {
   content: ContentItem[];
@@ -236,6 +261,9 @@ const Screens: React.FC<ScreensProps> = ({
   screenId,
   onScreenResponse,
 }) => {
+  // State to track completed loading items for sequential reveal
+  const [completedLoadingIndices, setCompletedLoadingIndices] = useState<Set<number>>(new Set());
+  
   // State to track selected values for response cards
   const [selectionState, setSelectionState] = useState<Record<number, (string | number)[]>>({});
   const [inputState, setInputState] = useState<Record<string, string>>({});
@@ -246,11 +274,41 @@ const Screens: React.FC<ScreensProps> = ({
   // State to track active branch value for analytics
   const [activeBranch, setActiveBranch] = useState<string | number | undefined>(undefined);
 
+  // Reset sequential state when screen changes
+  useEffect(() => {
+    setCompletedLoadingIndices(new Set());
+  }, [screenId]);
+
   // Extract button from content (if exists)
   const buttonItem = content.find((item) => item.type === "button") as ButtonItem | undefined;
   
-  // Filter out button from regular content
-  const regularContent = content.filter((item) => item.type !== "button");
+  // Sequential Logic: Determine which content items are visible
+  // We iterate through content. If we hit a "loading" item that is NOT completed, 
+  // we include it but stop rendering anything after it.
+  const getVisibleContent = () => {
+    const visible: ContentItem[] = [];
+    const allContentWithoutButton = content.filter((item) => item.type !== "button");
+
+    for (let i = 0; i < allContentWithoutButton.length; i++) {
+      const item = allContentWithoutButton[i];
+      visible.push(item);
+      
+      if (item.type === "loading") {
+        // Use the index from the ORIGINAL content array to track uniqueness if possible,
+        // but here we are iterating specific filtered list. 
+        // Let's use the index within this filtered list for simplicity as it's deterministic per screen.
+        if (!completedLoadingIndices.has(i)) {
+          // Found an active loading item - stop here.
+          break;
+        }
+      }
+    }
+    return visible;
+  };
+
+  const regularContent = getVisibleContent();
+  const allLoadingComplete = regularContent.length === content.filter(i => i.type !== "button").length 
+    && (!regularContent.some(i => i.type === "loading" && !completedLoadingIndices.has(regularContent.indexOf(i))));
 
   // Find the selection item to check its position
   const selectionItem = regularContent.find((item) => item.type === "selection") as SelectionItem | undefined;
@@ -512,6 +570,23 @@ const Screens: React.FC<ScreensProps> = ({
           />
         );
       }
+      if (item.variant === "container") {
+        return (
+          <Card
+            key={index}
+            variant="container"
+            logo={item.logo}
+            heading={item.heading}
+            subtext={item.subtext}
+            image={item.image}
+            socialProof={item.socialProof}
+            emailTicker={item.emailTicker}
+            width={item.width}
+            gap={item.gap}
+            padding={item.padding}
+          />
+        );
+      }
     }
 
     if (item.type === "input") {
@@ -550,6 +625,60 @@ const Screens: React.FC<ScreensProps> = ({
           speed={item.speed}
           showIndicators={item.showIndicators}
           renderItem={(childItem, childIndex) => renderContentItem(childItem, childIndex)}
+        />
+      );
+    }
+
+    if (item.type === "loading") {
+      // Logic to check if this specific loading item is complete
+      // We need its index in the regularContent array to match the set logic
+      // Note: renderContentItem is mapped from topContent etc, which are subsets. 
+      // Actually, standard index passed to this function `index` is from the map.
+      // `renderContentItem` is called as `renderContentItem(item, index)`.
+      // BUT `topContent.map` index is 0,1,2... which might not match `regularContent` index if splitting happened.
+      // Safest is to find index in `regularContent` or pass real index.
+      // Since `regularContent` is the source of truth for visibility, let's look it up.
+      const realIndex = regularContent.indexOf(item);
+
+      return (
+        <LoadingComponent
+           key={index}
+           message={item.message}
+           duration={item.duration}
+           progressColor={item.progressColor}
+           trackColor={item.trackColor}
+           popup={item.popup}
+           onComplete={() => {
+             // Mark this loading item as complete to show next items
+             setCompletedLoadingIndices(prev => {
+                const newSet = new Set(prev);
+                newSet.add(realIndex);
+                return newSet;
+             });
+
+             // Auto-advance when loading is done IF it's the last thing? 
+             // Or just let the sequence play out.
+             // Original logic for auto-advance:
+             /*
+             if (onScreenResponse && screenIndex != null && screenId) {
+                onScreenResponse({
+                  responseKey: item.responseKey ?? screenId,
+                  action: "next", // specific signal for completion
+                  completed: true
+                });
+             }
+             */
+           }}
+           onPopupResponse={(key, value) => {
+              if (onScreenResponse && screenIndex != null && screenId) {
+                // Log the intermediate response
+                 onScreenResponse({
+                  responseKey: key,
+                  selected: [value],
+                  isIntermediate: true // Flag to say "don't go to next screen yet" if needed, though usually onScreenResponse might trigger nav.
+                });
+              }
+           }}
         />
       );
     }
@@ -688,7 +817,7 @@ const Screens: React.FC<ScreensProps> = ({
         </div>
       )}
 
-      {buttonItem && (
+      {buttonItem && allLoadingComplete && (
         <div
           style={{
             paddingTop: 16,
