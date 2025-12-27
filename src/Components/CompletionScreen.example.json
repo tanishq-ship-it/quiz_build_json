@@ -1,0 +1,26 @@
+{
+    "id": "completion",
+    "content": [
+        {
+            "type": "completion",
+            "logo": "{{logo}}",
+            "heading": "Be part of more than 20 million people",
+            "subtext": "Achieve more together with our growing global learning community.",
+            "image": "{{image}}",
+            "socialProof": "1103 people learned self-growth insights in the hour",
+            "emailTicker": [
+                "*@icloud.com",
+                "mysticwo***@gmail.com",
+                "solarchi***@yahoo.com",
+                "echocha*@example.com",
+                "learner***@outlook.com",
+                "wisdom*@proton.me"
+            ],
+            "button": {
+                "text": "Continue",
+                "bgColor": "#2563eb",
+                "textColor": "#fff"
+            }
+        }
+    ]
+}

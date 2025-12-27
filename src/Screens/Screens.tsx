@@ -6,6 +6,7 @@ import Input from "../Components/Input";
 import Carousel from "../Components/Carousel";
 import SelectionOptions from "../Components/SelectionOptions";
 import Card, { type InfoContentItem } from "../Components/Card";
+import CompletionScreen, { type CompletionScreenProps } from "../Components/CompletionScreen";
 import { FONT_INTER } from "../styles/fonts";
 
 // Content item types
@@ -216,7 +217,12 @@ type ButtonItem = {
   width?: number;
 };
 
-type ContentItem = ImageItem | TextItem | HeadingItem | SelectionItem | CardItem | ButtonItem | InputItem | CarouselItem;
+// Completion item for special completion screens
+type CompletionItem = {
+  type: "completion";
+} & CompletionScreenProps;
+
+type ContentItem = ImageItem | TextItem | HeadingItem | SelectionItem | CardItem | ButtonItem | InputItem | CarouselItem | CompletionItem;
 
 interface ScreensProps {
   content: ContentItem[];
@@ -236,6 +242,12 @@ const Screens: React.FC<ScreensProps> = ({
   screenId,
   onScreenResponse,
 }) => {
+  // Check if this is a completion screen
+  if (screenId === "completion" && content.length > 0 && content[0].type === "completion") {
+    const completionProps = content[0] as CompletionItem;
+    return <CompletionScreen {...completionProps} />;
+  }
+
   // State to track selected values for response cards
   const [selectionState, setSelectionState] = useState<Record<number, (string | number)[]>>({});
   const [inputState, setInputState] = useState<Record<string, string>>({});
