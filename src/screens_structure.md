@@ -348,6 +348,7 @@ Renders a text input field.
 
 ---
 
+<<<<<<< HEAD
 ### 4.9 Content Box / Container Card
 
 See [Card System](#card-system) for the `container` variant which can be used to create completion screens, welcome screens, and other boxed layouts.
@@ -365,6 +366,227 @@ The `CompletionScreen` component has been deprecated in favor of `Card variant="
 }
 ```
 
+=======
+### 4.9 Completion Screen
+
+**Special screen type for quiz/survey completion flows.**
+
+The CompletionScreen is a specialized layout that renders when `screenId === "completion"`. It features a unique container box design with logo, heading, content image, social proof, and infinite scrolling email ticker.
+
+#### When to Use
+
+- Quiz completion screens
+- Survey thank you pages
+- Onboarding finish screens
+- Community welcome screens
+- Success/achievement screens
+
+#### Screen Structure
+
+```json
+{
+  "id": "completion",
+  "content": [
+    {
+      "type": "completion",
+      "logo": "{{logo}}",
+      "heading": "Be part of more than 20 million people",
+      "subtext": "Achieve more together with our growing global learning community.",
+      "image": "{{image}}",
+      "socialProof": "1103 people learned self-growth insights in the hour",
+      "emailTicker": [
+        "*@icloud.com",
+        "mysticwo***@gmail.com",
+        "solarchi***@yahoo.com"
+      ],
+      "button": {
+        "text": "Continue",
+        "bgColor": "#2563eb",
+        "textColor": "#fff"
+      }
+    }
+  ]
+}
+```
+
+#### Props Reference
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| `type` | `"completion"` | Yes | - | Must be "completion" |
+| `logo` | `string` | No | - | Logo image URL (supports placeholders) |
+| `heading` | `string` | Yes | - | Main heading text |
+| `subtext` | `string` | No | - | Subtitle/description text |
+| `image` | `string` | No | - | Single full-width image (edge-to-edge) |
+| `comparisonCards` | `ComparisonCard[]` | No | `[]` | Alternative to image: 2-column comparison cards |
+| `socialProof` | `string` | No | - | Social proof text (e.g., "1103 people...") |
+| `emailTicker` | `string[]` | No | `[]` | Array of emails for infinite scroll |
+| `button` | `CompletionButton` | No | - | Continue button config |
+| `gap` | `number` | No | `16` | Gap between elements (px) |
+| `padding` | `number` | No | `24` | Screen padding (px) |
+
+#### ComparisonCard (Alternative to single image)
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| `image` | `string` | Yes | - | Card image (fills entire card) |
+| `title` | `string` | Yes | - | Card title (overlaid on image) |
+| `subtitle` | `string` | Yes | - | Card subtitle (overlaid on image) |
+| `bgColor` | `string` | No | `#f5f5f5` | Card background color |
+
+#### CompletionButton
+
+| Property | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| `text` | `string` | Yes | - | Button text |
+| `bgColor` | `string` | No | `#2563eb` | Button background color |
+| `textColor` | `string` | No | `#fff` | Button text color |
+
+#### Layout
+
+```
+┌─────────────────────────────────┐
+│          Logo (top)             │
+│                                 │
+│  ┌───────────────────────────┐  │
+│  │   Container Box (white)   │  │
+│  │   ├─ Heading              │  │
+│  │   ├─ Subtext              │  │
+│  │   ├─ Image (full-width)   │  │
+│  │   ├─ Social Proof         │  │
+│  │   └─ Email Ticker         │  │
+│  └───────────────────────────┘  │
+│                                 │
+│      [Continue Button]          │
+└─────────────────────────────────┘
+```
+
+#### Features
+
+**Container Box:**
+- White background with subtle shadow
+- Rounded corners (16px)
+- All content contained inside
+- Max width: 500px
+
+**Single Image:**
+- Full width, edge-to-edge (no padding)
+- Breaks out of container padding
+- Supports any image URL or placeholder
+
+**Comparison Cards (Alternative):**
+- 2-column grid layout
+- Images fill entire card
+- Text overlaid at bottom with gradient
+- White text for visibility
+
+**Email Ticker:**
+- Infinite horizontal scroll
+- Auto-plays continuously
+- Seamless loop animation
+- Speed: 20 seconds per loop
+
+**Auto-Detection:**
+- Automatically renders when `id === "completion"`
+- No special routing needed
+
+#### Examples
+
+**Minimal Example:**
+
+```json
+{
+  "id": "completion",
+  "content": [
+    {
+      "type": "completion",
+      "heading": "Welcome to the community!",
+      "button": {
+        "text": "Get Started"
+      }
+    }
+  ]
+}
+```
+
+**With Single Image:**
+
+```json
+{
+  "id": "completion",
+  "content": [
+    {
+      "type": "completion",
+      "logo": "{{logo}}",
+      "heading": "Join 20 million learners",
+      "subtext": "Start your journey today.",
+      "image": "https://example.com/hero.jpg",
+      "socialProof": "1103 people joined today",
+      "emailTicker": ["user1@email.com", "user2@email.com"],
+      "button": {
+        "text": "Continue"
+      }
+    }
+  ]
+}
+```
+
+**With Comparison Cards:**
+
+```json
+{
+  "id": "completion",
+  "content": [
+    {
+      "type": "completion",
+      "heading": "Choose your path",
+      "comparisonCards": [
+        {
+          "image": "{{image1}}",
+          "title": "Full books",
+          "subtitle": "too many hours",
+          "bgColor": "#f5f5f5"
+        },
+        {
+          "image": "{{image2}}",
+          "title": "Key insights",
+          "subtitle": "15 minutes",
+          "bgColor": "#e3f2fd"
+        }
+      ],
+      "button": {
+        "text": "Continue"
+      }
+    }
+  ]
+}
+```
+
+#### Design Tokens
+
+**Colors:**
+- Container: `#ffffff` (white)
+- Shadow: `rgba(0, 0, 0, 0.08)`
+- Heading: `#333`
+- Subtext: `#666`
+- Social proof: `#555`
+- Email ticker: `#888`
+- Card text: `#fff` (white, overlaid)
+
+**Typography:**
+- Heading: 24px, bold (700)
+- Subtext: 15px, regular (400)
+- Card title: 16px, semibold (600)
+- Card subtitle: 13px, regular (400)
+- Social proof: 14px, regular (400)
+
+**Spacing:**
+- Container border radius: 16px
+- Container padding: 24px
+- Card border radius: 12px
+- Default gap: 16px
+
+>>>>>>> 31c34951673fa53c6b90ad22e5223e04e46f55b4
 ---
 
 ## Selection System
