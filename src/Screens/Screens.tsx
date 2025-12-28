@@ -698,6 +698,7 @@ const Screens: React.FC<ScreensProps> = ({
 
     return (
       <div
+        className="scrollbar-hide"
         style={{
           display: "flex",
           flexDirection: "column",
@@ -707,6 +708,8 @@ const Screens: React.FC<ScreensProps> = ({
           height: "100%",
           boxSizing: "border-box",
           backgroundColor: "transparent",
+          overflowY: "auto",
+          overflowX: "hidden",
         }}
       >
         {/* Response Screen Content */}
@@ -764,6 +767,7 @@ const Screens: React.FC<ScreensProps> = ({
 
   return (
     <div
+      className="scrollbar-hide"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -773,6 +777,8 @@ const Screens: React.FC<ScreensProps> = ({
         height: "100%",
         boxSizing: "border-box",
         backgroundColor: "transparent",
+        overflowY: "auto",
+        overflowX: "hidden",
       }}
     >
       {/* Top Content - headings, text, images (and selection if position is "top") */}
