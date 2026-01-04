@@ -602,10 +602,18 @@ const Screens: React.FC<ScreensProps> = ({
           required={item.required}
           value={value}
           onChange={(val) => {
+            const key = item.responseKey ?? `input-${index}`;
             setInputState(prev => ({
               ...prev,
-              [item.responseKey ?? `input-${index}`]: val
+              [key]: val
             }));
+            
+            // Sync to parent immediately so data is captured even without button click
+            if (onScreenResponse && screenIndex != null && screenId) {
+              onScreenResponse({
+                [key]: val
+              });
+            }
           }}
         />
       );
@@ -655,27 +663,12 @@ const Screens: React.FC<ScreensProps> = ({
                 newSet.add(realIndex);
                 return newSet;
              });
-
-             // Auto-advance when loading is done IF it's the last thing? 
-             // Or just let the sequence play out.
-             // Original logic for auto-advance:
-             /*
-             if (onScreenResponse && screenIndex != null && screenId) {
-                onScreenResponse({
-                  responseKey: item.responseKey ?? screenId,
-                  action: "next", // specific signal for completion
-                  completed: true
-                });
-             }
-             */
            }}
            onPopupResponse={(key, value) => {
               if (onScreenResponse && screenIndex != null && screenId) {
-                // Log the intermediate response
+                 // Store response directly using the provided key
                  onScreenResponse({
-                  responseKey: key,
-                  selected: [value],
-                  isIntermediate: true // Flag to say "don't go to next screen yet" if needed, though usually onScreenResponse might trigger nav.
+                  [key]: value
                 });
               }
            }}

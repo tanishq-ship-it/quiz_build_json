@@ -78,9 +78,10 @@ const LoadingComponent: React.FC<LoadingComponentProps> = ({
   }, [duration, isPaused, popup, popupResponded, showPopup, onComplete]);
 
   const handleOptionClick = (option: LoadingPopupOption) => {
-    if (popup?.responseKey) {
-      onPopupResponse?.(popup.responseKey, option.value);
-    }
+    // Ensure we always capture the response, defaulting the key if not provided
+    const key = popup?.responseKey ?? "loading-popup-response";
+    onPopupResponse?.(key, option.value);
+
     setPopupResponded(true);
     setShowPopup(false);
     setIsPaused(false); // Resume loading
