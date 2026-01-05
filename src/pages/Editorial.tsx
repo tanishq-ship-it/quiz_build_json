@@ -209,7 +209,12 @@ const Editorial: React.FC = () => {
 
   const handleGoToPlay = () => {
     if (!quizId) return;
-    navigate(`/preview-play/${quizId}`);
+    // Use the currently selected screen from the saved list.
+    // (The user may be editing JSON and temporarily change the `id` in the editor,
+    // but the "play from where I am editing" intent maps to the selected list item.)
+    const screenIdForPlay = screens[selectedIndex]?.id;
+    const hash = screenIdForPlay ? `#${encodeURIComponent(screenIdForPlay)}` : "";
+    navigate(`/preview-play/${quizId}${hash}`);
   };
 
   const handleDeleteScreen = async (e: React.MouseEvent, screenId: string, index: number) => {

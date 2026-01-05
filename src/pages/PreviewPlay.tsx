@@ -84,6 +84,23 @@ const normalizeScreensInput = (parsed: unknown): { screens: ScreenData[]; mode: 
   return { screens: [screen], mode: "single" };
 };
 
+const getStartScreenIdFromHash = (): string | null => {
+  if (typeof window === "undefined") return null;
+  const raw = window.location.hash ?? "";
+  const trimmed = raw.startsWith("#") ? raw.slice(1) : raw;
+  if (!trimmed) return null;
+  try {
+    return decodeURIComponent(trimmed);
+  } catch {
+    return trimmed;
+  }
+};
+
+const rotateScreensFromIndex = (list: ScreenData[], startIndex: number): ScreenData[] => {
+  if (startIndex <= 0 || startIndex >= list.length) return list;
+  return [...list.slice(startIndex), ...list.slice(0, startIndex)];
+};
+
 const PreviewPlay: React.FC = () => {
   const { quizId } = useParams<{ quizId?: string }>();
 
@@ -112,7 +129,14 @@ const PreviewPlay: React.FC = () => {
 
         try {
           const { screens: parsedScreens } = normalizeScreensInput(rawContent);
-          setScreens(parsedScreens);
+          const startScreenId = getStartScreenIdFromHash();
+          if (!startScreenId) {
+            setScreens(parsedScreens);
+            return;
+          }
+
+          const startIndex = parsedScreens.findIndex((screen) => screen.id === startScreenId);
+          setScreens(startIndex >= 0 ? rotateScreensFromIndex(parsedScreens, startIndex) : parsedScreens);
         } catch (parseError) {
           const message =
             parseError instanceof Error ? parseError.message : "Invalid quiz content.";
