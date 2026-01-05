@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Moon, Sun } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
 import { getQuiz } from "../services/api";
@@ -86,12 +86,10 @@ const normalizeScreensInput = (parsed: unknown): { screens: ScreenData[]; mode: 
 
 const PreviewPlay: React.FC = () => {
   const { quizId } = useParams<{ quizId?: string }>();
-  const navigate = useNavigate();
 
   const [screens, setScreens] = useState<ScreenData[]>(DEFAULT_SCREENS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     if (!quizId) {
@@ -139,34 +137,10 @@ const PreviewPlay: React.FC = () => {
     };
   }, [quizId]);
 
-  const isDark = theme === "dark";
-
   return (
     <div
-      className={`min-h-screen w-full ${
-        isDark ? "bg-slate-950 text-slate-50" : "bg-white text-slate-900"
-      } relative`}
+      className="min-h-screen w-full bg-white text-slate-900 relative"
     >
-      {/* Back button */}
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="absolute top-3 left-3 z-10 inline-flex items-center gap-2 text-xs px-2 py-1 rounded-md bg-black/5 hover:bg-black/10 text-slate-800"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back
-      </button>
-
-      {/* Theme toggle */}
-      <button
-        type="button"
-        onClick={() => setTheme(isDark ? "light" : "dark")}
-        className="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/5 hover:bg-black/10 text-slate-800"
-        aria-label="Toggle theme"
-      >
-        {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-      </button>
-
       {/* Main content: ScreenRouter full-page */}
       <div className="w-full h-screen flex items-center justify-center">
         {isLoading ? (

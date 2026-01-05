@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Moon, Sun } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { Loader2, Moon, Sun } from "lucide-react";
 import Lottie from "lottie-react";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
@@ -93,7 +93,6 @@ const normalizeScreensInput = (parsed: unknown): { screens: ScreenData[]; mode: 
 
 const PublicQuiz: React.FC = () => {
   const { quizId } = useParams<{ quizId?: string }>();
-  const navigate = useNavigate();
 
   const [screens, setScreens] = useState<ScreenData[]>(DEFAULT_SCREENS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -254,16 +253,6 @@ const PublicQuiz: React.FC = () => {
         isDark ? "bg-slate-950 text-slate-50" : "bg-white text-slate-900"
       } relative`}
     >
-      {/* Back button */}
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="absolute top-3 left-3 z-10 inline-flex items-center gap-2 text-xs px-2 py-1 rounded-md bg-black/5 hover:bg-black/10 text-slate-800"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back
-      </button>
-
       {/* Theme toggle */}
       <button
         type="button"
