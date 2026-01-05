@@ -19,6 +19,7 @@ import Text from "./Components/Text";
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | `content` | `string` | Yes | - | Markdown text content |
+| `segments` | `{ content: string; color?: string; fontWeight?: number }[]` | No | - | Optional: inline segments (no HTML/CSS). If provided, `content` is ignored. |
 | `align` | `"left" \| "center" \| "right"` | No | `"left"` | Text alignment |
 | `fontSize` | `number` | No | `16` | Base font size in pixels |
 | `color` | `string` | No | `"#333"` | Text color |
@@ -81,6 +82,24 @@ The component supports the following markdown syntax:
   color="#fff"
   fontWeight={500}
   lineHeight={1.8}
+/>
+```
+
+### Inline Color Without HTML (Segments)
+
+Use `segments` when you want to color only part of the text without embedding HTML/CSS in the content string.
+
+```tsx
+<Text
+  align="center"
+  fontSize={24}
+  fontWeight={700}
+  color="#333"
+  segments={[
+    { content: "Join millions who trust " },
+    { content: "micro-learning", color: "#2563eb" },
+    { content: " to build life skills." },
+  ]}
 />
 ```
 

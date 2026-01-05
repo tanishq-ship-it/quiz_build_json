@@ -297,6 +297,7 @@ Renders a scrollable carousel of content items.
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `content` | `string` | required | Markdown-enabled text |
+| `segments` | `TextSegment[]` | - | Optional: render inline colored segments (no HTML/CSS). If provided, `content` is ignored. |
 | `align` | `string` | `"left"` | `left`, `center`, `right` |
 | `fontSize` | `number` | `16` | Font size in px |
 | `color` | `string` | `"#333"` | Text color |
@@ -310,6 +311,23 @@ Renders a scrollable carousel of content items.
 - `- item` → Bullet list
 - `1. item` → Numbered list
 - `` `code` `` → Inline code
+
+**Inline color without HTML (segments):**
+
+```json
+{
+  "type": "text",
+  "align": "center",
+  "fontSize": 24,
+  "fontWeight": 700,
+  "color": "#333",
+  "segments": [
+    { "content": "Join millions who trust " },
+    { "content": "micro-learning", "color": "#2563eb" },
+    { "content": " to build life skills." }
+  ]
+}
+```
 
 ---
 

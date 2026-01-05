@@ -25,6 +25,11 @@ type ImageItem = {
 type TextItem = {
   type: "text";
   content: string;
+  segments?: Array<{
+    content: string;
+    color?: string;
+    fontWeight?: number;
+  }>;
   align?: "left" | "center" | "right";
   fontSize?: number;
   color?: string;
@@ -424,6 +429,7 @@ const Screens: React.FC<ScreensProps> = ({
         <Text
           key={index}
           content={item.content}
+          segments={item.segments}
           align={item.align}
           fontSize={item.fontSize}
           color={item.color}
