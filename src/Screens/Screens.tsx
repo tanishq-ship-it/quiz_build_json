@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "../Components/Image";
 import Text from "../Components/Text";
 import Button from "../Components/Button";
@@ -295,9 +295,19 @@ const Screens: React.FC<ScreensProps> = ({
   // State to track active branch value for analytics
   const [activeBranch, setActiveBranch] = useState<string | number | undefined>(undefined);
 
+  // Optional UX: if a screen has selection + a confirm button at the bottom,
+  // scroll to the confirm button on the first selection interaction.
+  const confirmButtonContainerRef = useRef<HTMLDivElement | null>(null);
+  const hasAutoScrolledToConfirmRef = useRef<boolean>(false);
+
   // Reset sequential state when screen changes
   useEffect(() => {
     setCompletedLoadingIndices(new Set());
+  }, [screenId]);
+
+  // Reset one-time auto-scroll when screen changes
+  useEffect(() => {
+    hasAutoScrolledToConfirmRef.current = false;
   }, [screenId]);
 
   // Extract button from content (if exists)
@@ -486,6 +496,28 @@ const Screens: React.FC<ScreensProps> = ({
       const responsePosition = item.responsePosition ?? "top";
       const responseCard = getCurrentResponseCard(item, selectionIndex);
 
+      const tryScrollToConfirmButton = () => {
+        // Only for flows that have an explicit confirm button (i.e., NOT auto-complete).
+        if (!buttonItem) return;
+        if (hasAutoScrolledToConfirmRef.current) return;
+
+        hasAutoScrolledToConfirmRef.current = true;
+
+        // Defer until after React commits layout changes (e.g., response cards / conditional screen).
+        setTimeout(() => {
+          const el = confirmButtonContainerRef.current;
+          if (!el) return;
+          if (typeof window === "undefined") return;
+
+          const rect = el.getBoundingClientRect();
+          const viewH = window.innerHeight || document.documentElement.clientHeight;
+          const alreadyVisible = rect.top >= 0 && rect.bottom <= viewH;
+          if (alreadyVisible) return;
+
+          el.scrollIntoView({ behavior: "smooth", block: "end" });
+        }, 0);
+      };
+
       // Handle selection change to update state for response cards/screens
       const handleSelectionChange = (selected: (string | number)[]) => {
         setSelectionState((prev) => ({
@@ -525,6 +557,7 @@ const Screens: React.FC<ScreensProps> = ({
         }
 
         item.onChange?.(selected);
+        tryScrollToConfirmButton();
       };
       
       return (
@@ -753,6 +786,7 @@ const Screens: React.FC<ScreensProps> = ({
         {/* Response Screen Button */}
         {responseButtonItem && (
           <div
+            ref={confirmButtonContainerRef}
             style={{
               paddingTop: 16,
               paddingBottom: 16,
@@ -848,6 +882,7 @@ const Screens: React.FC<ScreensProps> = ({
 
       {buttonItem && allLoadingComplete && (
         <div
+          ref={confirmButtonContainerRef}
           style={{
             paddingTop: 16,
             paddingBottom: 16,
