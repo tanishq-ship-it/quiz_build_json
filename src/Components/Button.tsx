@@ -118,6 +118,7 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
                   style={{
                     ...(segment.color ? { color: segment.color } : null),
                     ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+                    ...(segment.fontSize ? { fontSize: segment.fontSize } : null),
                   }}
                 >
                   {segment.content}
@@ -132,6 +133,7 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
                   style={{
                     ...(segment.color ? { color: segment.color } : null),
                     ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+                    ...(segment.fontSize ? { fontSize: segment.fontSize } : null),
                   }}
                 >
                   {segment.content}
@@ -152,6 +154,7 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
               style={{
                 ...(segment.color ? { color: segment.color } : null),
                 ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+                ...(segment.fontSize ? { fontSize: segment.fontSize } : null),
               }}
             >
               {segment.content}

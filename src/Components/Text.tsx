@@ -6,6 +6,7 @@ export type TextSegment = {
   content: string;
   color?: string;
   fontWeight?: number;
+  fontSize?: number;
 };
 
 interface TextProps {
@@ -51,6 +52,7 @@ const Text: React.FC<TextProps> = ({
               style={{
                 ...(segment.color ? { color: segment.color } : null),
                 ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+                ...(segment.fontSize ? { fontSize: segment.fontSize } : null),
               }}
             >
               {segment.content}
