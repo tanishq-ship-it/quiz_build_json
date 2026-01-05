@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FONT_INTER } from "../styles/fonts";
 import Button from "./Button";
 
@@ -42,6 +42,7 @@ const LoadingComponent: React.FC<LoadingComponentProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupResponded, setPopupResponded] = useState(false);
+  const hasFiredCompleteRef = useRef(false);
 
   useEffect(() => {
     if (isPaused) return;
@@ -54,7 +55,6 @@ const LoadingComponent: React.FC<LoadingComponentProps> = ({
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer);
-          onComplete?.();
           return 100;
         }
 
@@ -76,6 +76,25 @@ const LoadingComponent: React.FC<LoadingComponentProps> = ({
 
     return () => clearInterval(timer);
   }, [duration, isPaused, popup, popupResponded, showPopup, onComplete]);
+
+  // Fire completion AFTER React commits the progress=100 render.
+  // This avoids "Cannot update a component while rendering a different component" warnings
+  // when the parent reacts to `onComplete` by setting state.
+  useEffect(() => {
+    if (progress < 100) return;
+    if (hasFiredCompleteRef.current) return;
+    hasFiredCompleteRef.current = true;
+    onComplete?.();
+  }, [onComplete, progress]);
+
+  // Reset completion when key inputs change (new loading instance semantics).
+  useEffect(() => {
+    hasFiredCompleteRef.current = false;
+    setProgress(0);
+    setIsPaused(false);
+    setShowPopup(false);
+    setPopupResponded(false);
+  }, [duration, message, popup]);
 
   const handleOptionClick = (option: LoadingPopupOption) => {
     // Ensure we always capture the response, defaulting the key if not provided

@@ -31,6 +31,7 @@ const Carousel: React.FC<CarouselProps> = ({
   showIndicators = true,
   renderItem,
 }) => {
+  const safeItems = Array.isArray(items) ? items : [];
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +47,7 @@ const Carousel: React.FC<CarouselProps> = ({
   // --- INFINITE TICKER / MARQUEE (Both Directions) ---
   if (isInfinite) {
     // For infinite loop, we duplicate the items once to ensure smooth seam
-    const duplicatedItems = [...items, ...items];
+    const duplicatedItems = [...safeItems, ...safeItems];
     const containerHeight = height ?? (direction === "vertical" ? 200 : "auto");
     const containerWidth = "100%";
 
@@ -75,7 +76,7 @@ const Carousel: React.FC<CarouselProps> = ({
             flexDirection: direction === "vertical" ? "column" : "row",
             gap: gap,
             // Animation logic
-            animation: `${animName} ${items.length * (speed / 1000)}s linear infinite`,
+            animation: `${animName} ${Math.max(safeItems.length, 1) * (speed / 1000)}s linear infinite`,
             width: direction === "horizontal" ? "max-content" : "100%",
           }}
         >
@@ -89,7 +90,7 @@ const Carousel: React.FC<CarouselProps> = ({
                 justifyContent: "center",
               }}
             >
-              {renderItem(item, index % items.length)}
+              {renderItem(item, index % Math.max(safeItems.length, 1))}
             </div>
           ))}
         </div>
@@ -116,7 +117,7 @@ const Carousel: React.FC<CarouselProps> = ({
     const totalScroll = scrollRef.current.scrollWidth - scrollRef.current.clientWidth;
     if (totalScroll > 0) {
         const progress = scrollLeft / totalScroll;
-        const newIndex = Math.round(progress * (items.length - 1));
+        const newIndex = Math.round(progress * (safeItems.length - 1));
         setActiveIndex(newIndex);
     }
   };
@@ -145,7 +146,7 @@ const Carousel: React.FC<CarouselProps> = ({
           .no-scrollbar::-webkit-scrollbar { display: none; }
         `}</style>
 
-        {items.map((item, index) => (
+        {safeItems.map((item, index) => (
           <div
             key={index}
             style={{
@@ -161,9 +162,9 @@ const Carousel: React.FC<CarouselProps> = ({
       </div>
 
       {/* Indicators */}
-      {showIndicators && items.length > 1 && (
+      {showIndicators && safeItems.length > 1 && (
         <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
-          {items.map((_, idx) => (
+          {safeItems.map((_, idx) => (
             <div
               key={idx}
               style={{

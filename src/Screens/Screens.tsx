@@ -59,7 +59,10 @@ type InputItem = {
 type CarouselItem = {
   type: "carousel";
   direction?: "horizontal" | "vertical";
-  items: ContentItem[]; // Recursive content!
+  // NOTE: historically some JSON uses `content` instead of `items`.
+  // We support both to avoid breaking existing screen configs.
+  items?: ContentItem[]; // Recursive content!
+  content?: ContentItem[]; // Alias for items
   itemWidth?: string | number;
   height?: string | number;
   gap?: number;
@@ -683,10 +686,11 @@ const Screens: React.FC<ScreensProps> = ({
     }
 
     if (item.type === "carousel") {
+      const carouselItems = item.items ?? item.content ?? [];
       return (
         <Carousel
           key={index}
-          items={item.items}
+          items={carouselItems}
           direction={item.direction}
           itemWidth={item.itemWidth}
           height={item.height}
