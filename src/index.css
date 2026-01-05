@@ -160,8 +160,8 @@ button:focus-visible {
 /* Mobile Frame - default for large screens */
 .mobile-frame {
   width: 30vw;
-  height: 80vh;
-  height: 80dvh;
+  height: 90vh;
+  height: 90dvh;
   overflow-y: auto;
   overflow-x: hidden;
 }
