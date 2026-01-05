@@ -2,6 +2,12 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import { FONT_INTER } from "../styles/fonts";
 
+export type TextSegment = {
+  content: string;
+  color?: string;
+  fontWeight?: number;
+};
+
 interface TextProps {
   content: string;
   align?: "left" | "center" | "right";
@@ -13,11 +19,7 @@ interface TextProps {
    * Optional: render inline colored segments without HTML/CSS in the content string.
    * When provided, `content` is ignored.
    */
-  segments?: Array<{
-    content: string;
-    color?: string;
-    fontWeight?: number;
-  }>;
+  segments?: TextSegment[];
 }
 
 const Text: React.FC<TextProps> = ({

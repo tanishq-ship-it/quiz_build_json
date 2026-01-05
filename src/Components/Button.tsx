@@ -1,5 +1,6 @@
 import React from "react";
 import { FONT_INTER } from "../styles/fonts";
+import type { TextSegment } from "./Text";
 
 // --- Internal Button Components ---
 
@@ -43,6 +44,7 @@ const SquareButton: React.FC<SquareButtonProps> = ({
 interface ImageCardButtonProps {
   imageSrc: string;
   text: string;
+  segments?: TextSegment[];
   width?: number;
   textAlign?: "left" | "center" | "right";
   textBgColor?: string;
@@ -55,6 +57,7 @@ interface ImageCardButtonProps {
 const ImageCardButton: React.FC<ImageCardButtonProps> = ({
   imageSrc,
   text,
+  segments,
   width = 150,
   textAlign = "center",
   textBgColor,
@@ -66,8 +69,13 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
   const borderRadius = 16;
   const imageSize = width * 0.55;
 
-  // Check if text is provided
-  const hasText = text && text.trim() !== "";
+  const hasSegments =
+    Array.isArray(segments) && segments.some((s) => typeof s.content === "string" && s.content.trim() !== "");
+
+  // Check if text is provided (string fallback)
+  const hasText = hasSegments || (text && text.trim() !== "");
+
+  const altText = hasSegments ? segments.map((s) => s.content).join("") : (text || "image");
 
   // If no text, make it a square with 5% padding
   const height = hasText ? Math.round(width * 1.25) : width;
@@ -76,6 +84,107 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
   // Use provided textBgColor, or default to transparent (no colored footer)
   const finalTextBgColor = textBgColor || "transparent";
   const hasTextBg = textBgColor && textBgColor !== "transparent";
+
+  const renderLabel = (): React.ReactNode => {
+    // 1) Segments path: support "\n" inside segment content to force line breaks.
+    if (hasSegments && segments) {
+      const lines: TextSegment[][] = [[]];
+
+      segments.forEach((seg) => {
+        const parts = String(seg.content ?? "").split("\n");
+        parts.forEach((part, partIdx) => {
+          if (part.length > 0) {
+            lines[lines.length - 1].push({ ...seg, content: part });
+          }
+          if (partIdx < parts.length - 1) {
+            lines.push([]);
+          }
+        });
+      });
+
+      const normalizedLines = lines
+        .map((line) => line.filter((s) => s.content !== ""))
+        .filter((line) => line.some((s) => s.content.trim() !== ""));
+
+      if (normalizedLines.length >= 2) {
+        const [line1, line2] = normalizedLines;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {line1.map((segment, idx) => (
+                <span
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`l1-${idx}`}
+                  style={{
+                    ...(segment.color ? { color: segment.color } : null),
+                    ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+                  }}
+                >
+                  {segment.content}
+                </span>
+              ))}
+            </div>
+            <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 400, opacity: 0.9 }}>
+              {line2.map((segment, idx) => (
+                <span
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`l2-${idx}`}
+                  style={{
+                    ...(segment.color ? { color: segment.color } : null),
+                    ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+                  }}
+                >
+                  {segment.content}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      // Single line (default segments behavior)
+      return (
+        <span>
+          {segments.map((segment, idx) => (
+            <span
+              // eslint-disable-next-line react/no-array-index-key
+              key={idx}
+              style={{
+                ...(segment.color ? { color: segment.color } : null),
+                ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+              }}
+            >
+              {segment.content}
+            </span>
+          ))}
+        </span>
+      );
+    }
+
+    // 2) String path: support "Name\nSubtitle" and bold the first line.
+    if (typeof text === "string" && text.includes("\n")) {
+      const lines = text
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+      const titleLine = lines[0] ?? "";
+      const subtitleLine = lines.slice(1).join(" ");
+
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {titleLine}
+          </div>
+          <div style={{ fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", opacity: 0.9 }}>
+            {subtitleLine}
+          </div>
+        </div>
+      );
+    }
+
+    // 3) Default string behavior (clamped to 2 lines via container style)
+    return text;
+  };
 
   return (
     <button
@@ -108,7 +217,7 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
           // Full area image (covers entire image section, or image-only mode)
           <img
             src={imageSrc}
-            alt={text || "image"}
+            alt={altText}
             style={{
               width: "100%",
               height: "100%",
@@ -130,7 +239,7 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
           >
             <img
               src={imageSrc}
-              alt={text}
+              alt={altText}
               style={{
                 width: "100%",
                 height: "100%",
@@ -141,7 +250,7 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
         ) : (
           <img
             src={imageSrc}
-            alt={text}
+            alt={altText}
             style={{
               maxWidth: "85%",
               maxHeight: "85%",
@@ -163,17 +272,28 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
             fontSize: Math.max(12, width * 0.09),
             fontWeight: 500,
             lineHeight: 1.2,
-            display: "-webkit-box",
-            // @ts-ignore
-            WebkitLineClamp: 2,
-            // @ts-ignore
-            WebkitBoxOrient: "vertical",
             overflow: "hidden",
             borderBottomLeftRadius: borderRadius,
             borderBottomRightRadius: borderRadius,
           }}
         >
-          {text}
+          {/* Default label gets clamped to 2 lines; 2-line (Name + Subtitle) uses its own truncation */}
+          {!hasSegments && !(typeof text === "string" && text.includes("\n")) ? (
+            <div
+              style={{
+                display: "-webkit-box",
+                // @ts-ignore
+                WebkitLineClamp: 2,
+                // @ts-ignore
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {renderLabel()}
+            </div>
+          ) : (
+            renderLabel()
+          )}
         </div>
       )}
     </button>
@@ -308,6 +428,7 @@ interface ButtonProps {
   // Image card button props
   imageSrc?: string;
   text?: string;
+  segments?: TextSegment[];
   width?: number;
   height?: number; // For flat button custom height
   textAlign?: "left" | "center" | "right";
@@ -341,6 +462,7 @@ const Button: React.FC<ButtonProps> = (props) => {
         <ImageCardButton
           imageSrc={props.imageSrc || ""}
           text={props.text || ""}
+          segments={props.segments}
           width={props.width}
           textAlign={props.textAlign}
           textBgColor={props.textBgColor}

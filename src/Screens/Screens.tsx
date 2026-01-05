@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "../Components/Image";
-import Text from "../Components/Text";
+import Text, { type TextSegment } from "../Components/Text";
 import Button from "../Components/Button";
 import Input from "../Components/Input";
 import Carousel from "../Components/Carousel";
@@ -25,11 +25,7 @@ type ImageItem = {
 type TextItem = {
   type: "text";
   content: string;
-  segments?: Array<{
-    content: string;
-    color?: string;
-    fontWeight?: number;
-  }>;
+  segments?: TextSegment[];
   align?: "left" | "center" | "right";
   fontSize?: number;
   color?: string;
@@ -94,7 +90,8 @@ type SquareOption = {
 type ImageCardOption = {
   variant: "imageCard";
   imageSrc: string;
-  text: string;
+  text?: string;
+  segments?: TextSegment[];
   width?: number;
   textAlign?: "left" | "center" | "right";
   textBgColor?: string;

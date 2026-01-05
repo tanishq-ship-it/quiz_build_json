@@ -54,6 +54,7 @@ A card-style button with an image on top and optional text label at the bottom. 
 |------|------|---------|-------------|
 | `imageSrc` | `string` | required | Image URL |
 | `text` | `string` | `""` | Label text (empty = image-only mode) |
+| `segments` | `{ content: string; color?: string; fontWeight?: number }[]` | `undefined` | Optional: styled inline segments for the label. If provided, it takes precedence over `text`. |
 | `width` | `number` | `150` | Button width |
 | `textAlign` | `"left" \| "center" \| "right"` | `"center"` | Text alignment |
 | `textBgColor` | `string` | `undefined` | Background color for text section |
@@ -69,7 +70,7 @@ A card-style button with an image on top and optional text label at the bottom. 
 **Special Behaviors:**
 
 1. **Image-only mode (no text):**
-   - When `text` is empty or not provided
+   - When `text` is empty/not provided **and** `segments` is not provided
    - Card becomes square (`width × width`)
    - Image fills area with 5% padding
    - No text section rendered
@@ -120,6 +121,18 @@ A card-style button with an image on top and optional text label at the bottom. 
   imageSrc="/avatar.jpg" 
   text="John"
   imageShape="circle"
+/>
+
+// Styled label (segments takes precedence over text)
+<Button
+  variant="imageCard"
+  imageSrc="/avatar.jpg"
+  segments={[
+    { content: "Join " },
+    { content: "micro-learning", color: "#2563eb", fontWeight: 700 },
+    { content: " today" },
+  ]}
+  textBgColor="#f5f5f5"
 />
 ```
 

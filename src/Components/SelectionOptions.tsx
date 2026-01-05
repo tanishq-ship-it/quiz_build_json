@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Button from "./Button";
+import type { TextSegment } from "./Text";
 
 // Option types matching Button variants
 type SquareOption = {
@@ -11,7 +12,8 @@ type SquareOption = {
 type ImageCardOption = {
   variant: "imageCard";
   imageSrc: string;
-  text: string;
+  text?: string;
+  segments?: TextSegment[];
   width?: number;
   textAlign?: "left" | "center" | "right";
   textBgColor?: string;
@@ -172,7 +174,8 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
               <Button
                 variant="imageCard"
                 imageSrc={option.imageSrc}
-                text={option.text}
+                text={option.text ?? ""}
+                segments={option.segments}
                 width={option.width ?? 140}
                 textAlign={option.textAlign}
                 textBgColor={option.textBgColor}
