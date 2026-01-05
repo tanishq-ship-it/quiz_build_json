@@ -9,9 +9,15 @@ export interface ScreenData {
   id: string;
   /**
    * Optional category label for this screen.
-   * Not used by the UI renderer; useful for organizing/analytics.
+   * Used by ScreenRouter to optionally render a category progress header.
+   * Also useful for organizing/analytics.
    */
   category?: string;
+  /**
+   * When true, ScreenRouter will still show the top logo but will NOT render
+   * the category progress bar/label for this screen (even if `category` exists).
+   */
+  hideCategoryBar?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: any[];
 }
@@ -280,11 +286,12 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
     isLastScreen
   );
 
-  const showCategoryHeader = categorySteps.length > 0 && Boolean(currentScreen.category);
+  const showLogoHeader = categorySteps.length > 0 && Boolean(currentScreen.category);
+  const showCategoryBar = showLogoHeader && !currentScreen.hideCategoryBar;
 
   // In-category progress (0 at first question in category, 1 at last)
   let inCategoryProgress = 0;
-  if (showCategoryHeader && activeCategoryKey) {
+  if (showCategoryBar && activeCategoryKey) {
     const indices = screensByCategory.get(activeCategoryKey) ?? [];
     const total = indices.length;
     const positionInCategory = indices.indexOf(currentIndex);
@@ -298,9 +305,11 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
 
   // Overall bar fill index = previous full categories + in-category fraction
   const categoryFillIndex =
-    showCategoryHeader && activeCategoryIndex >= 0
+    showCategoryBar && activeCategoryIndex >= 0
       ? activeCategoryIndex + inCategoryProgress
       : 0;
+
+  const headerPaddingTop = showLogoHeader ? (showCategoryBar ? 50 : 30) : 0;
 
   return (
     <div className="app-container">
@@ -313,11 +322,14 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
           }}
         >
           {/* 
-            Show logo + category bar ONLY when:
+            Show the top logo header ONLY when:
             - At least one screen defines a category
             - The current screen itself has a category
+
+            You can hide only the category bar/label for a specific screen with:
+            `hideCategoryBar: true`
           */}
-          {showCategoryHeader && (
+          {showLogoHeader && (
             <div
               style={{
                 position: "absolute",
@@ -331,7 +343,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
                 pointerEvents: "none",
               }}
             >
-              {/* Logo + category progress header */}
+              {/* Logo header (optionally followed by category progress header) */}
               <div
                 style={{
                   display: "flex",
@@ -373,32 +385,36 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
                   />
                 </div>
 
-                {/* Category progress bar */}
-                <CategoryProgressBar
-                  categories={categorySteps}
-                  activeIndex={activeCategoryIndex}
-                  fillIndex={categoryFillIndex}
-                />
+                {showCategoryBar && (
+                  <>
+                    {/* Category progress bar */}
+                    <CategoryProgressBar
+                      categories={categorySteps}
+                      activeIndex={activeCategoryIndex}
+                      fillIndex={categoryFillIndex}
+                    />
 
-                {/* Active category label (e.g. Profile, Core quiz) */}
-                {activeCategory && (
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      letterSpacing: 0.4,
-                      textTransform: "uppercase",
-                      color: "#a78bfa", // small purple color
-                      textAlign: "center",
-                    }}
-                  >
-                    {activeCategory.label}
-                    {/*
-                      Future enhancement:
-                      " · 1 of N" style progress within the category can be added here
-                      using currentIndex + counts per category.
-                    */}
-                  </div>
+                    {/* Active category label (e.g. Profile, Core quiz) */}
+                    {activeCategory && (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          letterSpacing: 0.4,
+                          textTransform: "uppercase",
+                          color: "#a78bfa", // small purple color
+                          textAlign: "center",
+                        }}
+                      >
+                        {activeCategory.label}
+                        {/*
+                          Future enhancement:
+                          " · 1 of N" style progress within the category can be added here
+                          using currentIndex + counts per category.
+                        */}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -408,7 +424,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
             style={{
               height: "100%",
               boxSizing: "border-box",
-              paddingTop: showCategoryHeader ? 50 : 0,
+              paddingTop: headerPaddingTop,
             }}
           >
             <Screens

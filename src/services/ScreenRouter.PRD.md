@@ -54,19 +54,19 @@ Defines the structure for each screen in the flow.
 ```tsx
 interface ScreenData {
   id: string;              // Unique screen identifier
-  category?: string;       // Optional category for organizing/analytics (not used in UI rendering)
+  category?: string;       // Optional category label for grouping/analytics; ScreenRouter may also render a top header when present
+  hideCategoryBar?: boolean; // Optional - hides the category progress bar/label for this screen (logo still shows)
   content: ContentItem[];  // Array of content items (see Screens.PRD.md)
 }
 ```
 
 #### Category usage
 
-The `category` field is a **pure metadata label** on each screen:
+The `category` field is a metadata label on each screen:
 
-- It is **not read by `ScreenRouter` or `Screens`** to decide layout, navigation, or scoring.
-- It is **passed through unchanged** as part of `ScreenData`, so:
-  - `currentScreen.category` is available when you use `useScreenRouter`.
-  - You can use it for **analytics, filtering, and management tools**.
+- It is **not read by `Screens`** to decide layout, navigation, or scoring.
+- `ScreenRouter` may use it to render a top header (logo + category progress bar/label) when at least one screen defines a category and the current screen also has one.
+- If you want to keep `category` for grouping/analytics but hide the UI bar on a specific screen, set `hideCategoryBar: true`.
 
 Typical use‑cases:
 

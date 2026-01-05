@@ -89,14 +89,15 @@ User sees Screen → Interacts with Selection/Button → Next Screen
 | Property | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
 | `id` | `string` | Yes | - | Unique screen identifier |
-| `category` | `string` | No | - | Optional category/tag for organizing screens (not used in UI rendering) |
+| `category` | `string` | No | - | Optional category/tag for organizing screens. When used with `ScreenRouter`, it can also enable the top logo + category progress header. |
+| `hideCategoryBar` | `boolean` | No | `false` | When `true`, the top logo still shows (if `category` is present), but the category progress bar/label is hidden for this screen. |
 | `content` | `ContentItem[]` | Yes | - | Array of content items |
 | `gap` | `number` | No | `16` | Gap between items (px) |
 | `padding` | `number` | No | `24` | Screen padding (px) |
 
 ### Screen Categories (`category`)
 
-The optional `category` field lets you **label and group screens by their purpose**, without changing how they look or behave in the UI.
+The optional `category` field lets you **label and group screens by their purpose**. In addition, `ScreenRouter` can use it to show a top header (logo + category progress bar/label).
 
 - **Why it exists**
   - Helps product/ops **organize large quizzes** (50–60+ screens).
@@ -107,8 +108,22 @@ The optional `category` field lets you **label and group screens by their purpos
 
 - **Important:**  
   - `category` is **not read by the `Screens` renderer**.
-  - It **does not affect layout, navigation, or scoring** by itself.
-  - It is pure metadata that the backend and tools can use for management and analysis.
+  - `ScreenRouter` **may** use `category` to render a top header (logo + category progress bar/label).
+  - You can keep the grouping/analytics value of `category` but disable the bar per-screen using `hideCategoryBar: true`.
+  - `category` does **not affect navigation or scoring** by itself.
+
+#### Hide the category bar (logo only)
+
+If you want **only the logo** at the top (no category progress bar/label) for a specific screen, add:
+
+```json
+{
+  "id": "gender-selection",
+  "category": "profile",
+  "hideCategoryBar": true,
+  "content": []
+}
+```
 
 #### Recommended category values
 
