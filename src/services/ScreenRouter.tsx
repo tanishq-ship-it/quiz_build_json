@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import Screens from "../Screens/Screens";
-import logoImage from "../assests/logo.png";
+import logoImage from "../assests/logo.svg";
 
 // ============================================================
 // TYPES
@@ -368,8 +368,6 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
                       position: "absolute",
                       inset: 0,
                       borderRadius: 999,
-                      background:
-                        "radial-gradient(circle at 50% 0%, rgba(167,139,250,0.55), transparent 60%)",
                       filter: "blur(10px)",
                       opacity: 0.9,
                     }}
