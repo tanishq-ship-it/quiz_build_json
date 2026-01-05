@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Play, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, GripVertical, Loader2, Play, Plus, Save, Trash2 } from "lucide-react";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
 import { deleteQuizScreen, getQuiz, replaceQuizScreens, type ReplaceScreensPayload } from "../services/api";
@@ -85,6 +85,17 @@ const normalizeScreensInput = (parsed: unknown): { screens: ScreenData[]; mode: 
   return { screens: [screen], mode: "single" };
 };
 
+const moveArrayItem = <T,>(array: T[], from: number, to: number): T[] => {
+  if (from === to) return array;
+  if (from < 0 || from >= array.length) return array;
+  if (to < 0 || to >= array.length) return array;
+
+  const copy = [...array];
+  const [item] = copy.splice(from, 1);
+  copy.splice(to, 0, item);
+  return copy;
+};
+
 const Editorial: React.FC = () => {
   const { quizId } = useParams<{ quizId?: string }>();
   const navigate = useNavigate();
@@ -97,6 +108,8 @@ const Editorial: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!quizId) {
@@ -217,6 +230,53 @@ const Editorial: React.FC = () => {
     navigate(`/preview-play/${quizId}${hash}`);
   };
 
+  const handleReorderScreens = async (fromIndex: number, toIndex: number) => {
+    if (!quizId) return;
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || fromIndex >= screens.length) return;
+    if (toIndex < 0 || toIndex >= screens.length) return;
+
+    const selectedScreenId = screens[selectedIndex]?.id;
+
+    // Protect unsaved edits: if the editor's preview is for the currently selected screen,
+    // use it as the source-of-truth for that screen when persisting reorder.
+    const baseScreens = [...screens];
+    if (selectedScreenId && previewScreen?.id === selectedScreenId) {
+      baseScreens[selectedIndex] = previewScreen;
+    }
+
+    const reordered = moveArrayItem(baseScreens, fromIndex, toIndex);
+    const previousScreens = screens;
+
+    setScreens(reordered);
+    setDraggingIndex(null);
+    setDragOverIndex(null);
+
+    if (selectedScreenId) {
+      const newSelected = reordered.findIndex((s) => s.id === selectedScreenId);
+      if (newSelected >= 0) {
+        setSelectedIndex(newSelected);
+      }
+    }
+
+    try {
+      setIsSaving(true);
+      setError(null);
+      const payload: ReplaceScreensPayload = { screens: reordered };
+      await replaceQuizScreens(quizId, payload);
+    } catch {
+      setError("Failed to save new screen order.");
+      // Roll back to keep UI consistent with DB
+      setScreens(previousScreens);
+      if (selectedScreenId) {
+        const rollbackSelected = previousScreens.findIndex((s) => s.id === selectedScreenId);
+        if (rollbackSelected >= 0) setSelectedIndex(rollbackSelected);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleDeleteScreen = async (e: React.MouseEvent, screenId: string, index: number) => {
     e.stopPropagation(); // Prevent selecting the screen when clicking delete
     if (!quizId) return;
@@ -314,34 +374,71 @@ const Editorial: React.FC = () => {
               </div>
               <div className="max-h-[420px] overflow-y-auto">
                 {screens.map((screen, index) => (
-                  <button
+                  <div
                     key={screen.id}
-                    type="button"
+                    draggable={!isSaving}
+                    onDragStart={(e) => {
+                      setDraggingIndex(index);
+                      setDragOverIndex(index);
+                      e.dataTransfer.effectAllowed = "move";
+                      e.dataTransfer.setData("text/plain", String(index));
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (dragOverIndex !== index) setDragOverIndex(index);
+                      e.dataTransfer.dropEffect = "move";
+                    }}
+                    onDragLeave={() => {
+                      setDragOverIndex((prev) => (prev === index ? null : prev));
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const raw = e.dataTransfer.getData("text/plain");
+                      const from = Number.parseInt(raw, 10);
+                      if (!Number.isFinite(from)) return;
+                      void handleReorderScreens(from, index);
+                    }}
+                    onDragEnd={() => {
+                      setDraggingIndex(null);
+                      setDragOverIndex(null);
+                    }}
                     onClick={() => handleSelectScreen(index)}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 text-left text-xs border-b border-slate-100 last:border-b-0 ${
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        handleSelectScreen(index);
+                      }
+                    }}
+                    className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left text-xs border-b border-slate-100 last:border-b-0 ${
                       index === selectedIndex
                         ? "bg-sky-50 text-sky-900"
                         : "bg-transparent text-slate-700 hover:bg-slate-50"
+                    } ${
+                      draggingIndex === index ? "opacity-60" : ""
+                    } ${
+                      dragOverIndex === index && draggingIndex != null && draggingIndex !== index
+                        ? "ring-2 ring-sky-200"
+                        : ""
                     }`}
                   >
+                    <span className="text-slate-400">
+                      <GripVertical className="w-3.5 h-3.5" />
+                    </span>
                     <span className="truncate">
                       {index + 1}. {screen.id}
                     </span>
-                    <div
-                      role="button"
-                      tabIndex={0}
+                    <button
+                      type="button"
                       onClick={(e) => handleDeleteScreen(e, screen.id, index)}
-                      onKeyDown={(e) => {
-                         if (e.key === "Enter" || e.key === " ") {
-                           handleDeleteScreen(e as unknown as React.MouseEvent, screen.id, index);
-                         }
-                      }}
-                      className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded"
+                      disabled={isSaving}
+                      className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded disabled:opacity-40"
                       title="Delete screen"
+                      draggable={false}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </div>
-                  </button>
+                    </button>
+                  </div>
                 ))}
                 {screens.length === 0 && (
                   <div className="px-4 py-4 text-xs text-slate-400">
