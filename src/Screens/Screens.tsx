@@ -166,8 +166,23 @@ type SelectionItem = {
   mode: "radio" | "checkbox";
   layout: `${number}x${number}`;
   options: SelectionOptionItem[];
+  /**
+   * When true, user must select at least one option before continuing.
+   * (Only applies when a bottom button exists. Auto-complete radio already requires a click.)
+   */
+  required?: boolean;
   selectedColor?: string;
   selectedBorderWidth?: number;
+  /**
+   * Optional visual indicator style.
+   * - "none" (default): current behavior
+   * - "circle": shows right-side circle (checked/unchecked) and a neutral border when unselected (flat options)
+   */
+  indicator?: "none" | "circle";
+  /**
+   * Border color when not selected (only used when indicator="circle")
+   */
+  unselectedBorderColor?: string;
   gap?: number;
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void; // Auto-fires for radio when no button
@@ -272,6 +287,7 @@ const Screens: React.FC<ScreensProps> = ({
   // State to track selected values for response cards
   const [selectionState, setSelectionState] = useState<Record<number, (string | number)[]>>({});
   const [inputState, setInputState] = useState<Record<string, string>>({});
+  const [validationError, setValidationError] = useState<string | null>(null);
   
   // State to track active conditional screen (when an option triggers a full screen change)
   const [activeConditionalScreen, setActiveConditionalScreen] = useState<ConditionalScreenContent | null>(null);
@@ -286,6 +302,10 @@ const Screens: React.FC<ScreensProps> = ({
 
   // Extract button from content (if exists)
   const buttonItem = content.find((item) => item.type === "button") as ButtonItem | undefined;
+
+  const getInputKey = (item: InputItem, index: number): string => {
+    return item.responseKey ?? `input-${index}`;
+  };
   
   // Sequential Logic: Determine which content items are visible
   // We iterate through content. If we hit a "loading" item that is NOT completed, 
@@ -472,6 +492,7 @@ const Screens: React.FC<ScreensProps> = ({
           ...prev,
           [selectionIndex]: selected,
         }));
+        setValidationError(null);
         
         // Check if there's a conditional screen for the selected option
         let branchValue: string | number | undefined;
@@ -517,6 +538,8 @@ const Screens: React.FC<ScreensProps> = ({
             options={item.options}
             selectedColor={item.selectedColor}
             selectedBorderWidth={item.selectedBorderWidth}
+            indicator={item.indicator}
+            unselectedBorderColor={item.unselectedBorderColor}
             gap={item.gap}
             onChange={handleSelectionChange}
             onComplete={item.onComplete}
@@ -596,7 +619,8 @@ const Screens: React.FC<ScreensProps> = ({
     }
 
     if (item.type === "input") {
-      const value = inputState[item.responseKey ?? `input-${index}`] ?? "";
+      const key = getInputKey(item, index);
+      const value = inputState[key] ?? "";
       
       return (
         <Input
@@ -608,11 +632,11 @@ const Screens: React.FC<ScreensProps> = ({
           required={item.required}
           value={value}
           onChange={(val) => {
-            const key = item.responseKey ?? `input-${index}`;
             setInputState(prev => ({
               ...prev,
               [key]: val
             }));
+            setValidationError(null);
             
             // Sync to parent immediately so data is captured even without button click
             if (onScreenResponse && screenIndex != null && screenId) {
@@ -829,6 +853,28 @@ const Screens: React.FC<ScreensProps> = ({
             paddingBottom: 16,
           }}
         >
+          {validationError && (
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 10,
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: 420,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#ef4444",
+                  textAlign: "center",
+                }}
+              >
+                {validationError}
+              </div>
+            </div>
+          )}
           <Button
             variant="flat"
             text={buttonItem.text}
@@ -837,27 +883,35 @@ const Screens: React.FC<ScreensProps> = ({
             textColor={buttonItem.textColor ?? "#fff"}
             textAlign="center"
             onClick={() => {
-              // Basic validation for required inputs
-              const requiredInputs = content.filter(i => i.type === "input" && i.required) as InputItem[];
-              const isInvalid = requiredInputs.some(i => {
-                const val = inputState[i.responseKey ?? ""] ?? "";
+              // Basic validation for required inputs + required selection
+              const isInputInvalid = content.some((i, idx) => {
+                if (i.type !== "input" || !i.required) return false;
+                const key = getInputKey(i, idx);
+                const val = inputState[key] ?? "";
                 return !val.trim();
               });
 
-              if (isInvalid) {
-                // Shake effect or alert could go here
-                alert("Please fill in all required fields.");
+              const selectionIndex = getSelectionIndex();
+              const selectedValues =
+                selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
+              const isSelectionInvalid =
+                Boolean(selectionItem?.required) && selectedValues.length === 0;
+
+              if (isInputInvalid || isSelectionInvalid) {
+                setValidationError("Please answer all required question(s) to continue.");
                 return;
               }
 
+              setValidationError(null);
+
               if (onScreenResponse && screenIndex != null && screenId) {
                 // Collect all input values
-                const inputValues = content
-                  .filter(i => i.type === "input")
-                  .reduce((acc, i: any) => ({
-                    ...acc,
-                    [i.responseKey ?? "input"]: inputState[i.responseKey ?? ""] ?? ""
-                  }), {});
+                const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
+                  if (i.type !== "input") return acc;
+                  const key = getInputKey(i, idx);
+                  acc[key] = inputState[key] ?? "";
+                  return acc;
+                }, {});
 
                 onScreenResponse({
                   button: {

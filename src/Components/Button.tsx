@@ -201,6 +201,16 @@ interface FlatButtonProps {
   bgColor?: string;
   textColor?: string;
   fontSize?: number;
+  /**
+   * Optional element rendered on the right (e.g., selection indicator).
+   * Used by some contexts (like SelectionOptions). Safe to ignore elsewhere.
+   */
+  rightIcon?: React.ReactNode;
+  /**
+   * When true, text can wrap to multiple lines (clamped to 2 lines).
+   * Defaults to false to preserve existing behavior.
+   */
+  allowWrap?: boolean;
   onClick?: () => void;
 }
 
@@ -213,6 +223,8 @@ const FlatButton: React.FC<FlatButtonProps> = ({
   bgColor = "#2563eb",
   textColor = "#fff",
   fontSize: customFontSize,
+  rightIcon,
+  allowWrap = false,
   onClick,
 }) => {
   // Use preset size if provided, otherwise use custom values or defaults
@@ -237,14 +249,15 @@ const FlatButton: React.FC<FlatButtonProps> = ({
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
-        justifyContent:
-          textAlign === "left"
+        justifyContent: rightIcon
+          ? "space-between"
+          : textAlign === "left"
             ? "flex-start"
             : textAlign === "right"
-            ? "flex-end"
-            : "center",
+              ? "flex-end"
+              : "center",
         paddingLeft: textAlign === "left" ? 16 : 8,
-        paddingRight: textAlign === "right" ? 16 : 8,
+        paddingRight: rightIcon ? 16 : textAlign === "right" ? 16 : 8,
         color: textColor,
         fontFamily: FONT_INTER,
         fontSize,
@@ -255,15 +268,30 @@ const FlatButton: React.FC<FlatButtonProps> = ({
     >
       <span
         style={{
+          flex: 1,
           overflow: "hidden",
           textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          width: "100%",
+          whiteSpace: allowWrap ? "normal" : "nowrap",
           textAlign,
+          lineHeight: 1.2,
+          ...(allowWrap
+            ? ({
+                display: "-webkit-box",
+                // @ts-ignore
+                WebkitLineClamp: 2,
+                // @ts-ignore
+                WebkitBoxOrient: "vertical",
+              } as React.CSSProperties)
+            : {}),
         }}
       >
         {text}
       </span>
+      {rightIcon && (
+        <span style={{ marginLeft: 12, display: "flex", alignItems: "center", flexShrink: 0 }}>
+          {rightIcon}
+        </span>
+      )}
     </button>
   );
 };
@@ -290,6 +318,8 @@ interface ButtonProps {
   // Flat button props
   bgColor?: string;
   fontSize?: number; // For flat button custom font size
+  rightIcon?: React.ReactNode;
+  allowWrap?: boolean;
   // Common
   onClick?: () => void;
 }
@@ -331,6 +361,8 @@ const Button: React.FC<ButtonProps> = (props) => {
           bgColor={props.bgColor}
           textColor={props.textColor}
           fontSize={props.fontSize}
+          rightIcon={props.rightIcon}
+          allowWrap={props.allowWrap}
           onClick={props.onClick}
         />
       );

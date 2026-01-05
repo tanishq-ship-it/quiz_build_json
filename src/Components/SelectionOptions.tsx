@@ -48,6 +48,16 @@ interface SelectionOptionsProps {
   options: OptionItem[];
   selectedColor?: string;
   selectedBorderWidth?: number;
+  /**
+   * Visual indicator for selection state.
+   * - "none" (default): current behavior (no right-side circle, no neutral border)
+   * - "circle": shows a right-side circle indicator (checked/unchecked) and a neutral border when unselected
+   */
+  indicator?: "none" | "circle";
+  /**
+   * Border color when not selected (only used when indicator="circle")
+   */
+  unselectedBorderColor?: string;
   gap?: number;
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void; // Auto-fires for radio when autoComplete is true
@@ -66,6 +76,8 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
   options,
   selectedColor = "#2563eb",
   selectedBorderWidth = 2,
+  indicator = "none",
+  unselectedBorderColor = "#e5e7eb",
   gap = 8,
   onChange,
   onComplete,
@@ -125,15 +137,18 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
     >
       {options.slice(0, rows * cols).map((option, index) => {
         const optionSelected = isSelected(option, index);
+        const showCircleIndicator = indicator === "circle" && option.variant === "flat";
 
         // Style for the clickable wrapper - fits exactly around button
         const wrapperStyle: React.CSSProperties = {
           display: "inline-flex",
           cursor: "pointer",
-          borderRadius: option.variant === "square" ? 8 : 16,
+          borderRadius: showCircleIndicator ? 24 : option.variant === "square" ? 8 : 16,
           border: optionSelected
             ? `${selectedBorderWidth}px solid ${selectedColor}`
-            : `${selectedBorderWidth}px solid transparent`,
+            : `${selectedBorderWidth}px solid ${
+                showCircleIndicator ? unselectedBorderColor : "transparent"
+              }`,
           boxSizing: "border-box",
           transition: "border-color 0.15s ease",
           overflow: "hidden",
@@ -177,6 +192,44 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
                 bgColor={option.bgColor}
                 textColor={option.textColor}
                 fontSize={option.fontSize}
+                allowWrap={showCircleIndicator}
+                rightIcon={
+                  showCircleIndicator ? (
+                    <div
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxSizing: "border-box",
+                        border: optionSelected
+                          ? `2px solid ${selectedColor}`
+                          : "2px solid #c7c7c7",
+                        backgroundColor: optionSelected ? selectedColor : "transparent",
+                      }}
+                    >
+                      {optionSelected && (
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M20 6L9 17l-5-5"
+                            stroke="#fff"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  ) : undefined
+                }
               />
             )}
           </div>

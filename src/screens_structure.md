@@ -427,6 +427,9 @@ The `CompletionScreen` component has been deprecated in favor of `Card variant="
 | `gap` | `number` | `8` | Gap between options (px) |
 | `selectedColor` | `string` | `"#2563eb"` | Selection border color |
 | `selectedBorderWidth` | `number` | `2` | Selection border width |
+| `indicator` | `"none" \| "circle"` | `"none"` | Visual indicator style. `"circle"` shows a right-side checked/unchecked circle for `flat` options and a neutral border when not selected |
+| `unselectedBorderColor` | `string` | `"#e5e7eb"` | Border color when not selected (only used when `indicator="circle"`) |
+| `required` | `boolean` | `false` | If `true`, user must select at least one option before pressing the bottom button |
 | `position` | `string` | varies | `"top"`, `"middle"`, or `"bottom"` - where selection appears on screen |
 | `responseKey` | `string` | - | Optional key for tracking answer in analytics |
 | `responseCards` | `object` | - | Map value → card config |
