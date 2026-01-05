@@ -183,6 +183,7 @@ const PreviewPlay: React.FC = () => {
             config={{
               screens,
               placeholders: PLACEHOLDERS,
+              hashHistory: "push",
             }}
           />
         )}

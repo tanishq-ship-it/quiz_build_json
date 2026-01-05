@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Screens from "../Screens/Screens";
 import logoImage from "../assests/logo.svg";
 
@@ -28,6 +28,20 @@ export interface ScreenRouterConfig {
   onScreenChange?: (index: number, screenId: string) => void;
   onComplete?: () => void;
   delayForResponseCards?: number;
+  /**
+   * When enabled, ScreenRouter will:
+   * - Read initial screen from the URL hash: `#<screenId>`
+   * - Keep the URL hash in sync as screens change
+   *
+   * Defaults to true.
+   */
+  syncHash?: boolean;
+  /**
+   * Controls whether ScreenRouter writes hash changes using:
+   * - `replaceState` (default): does not create history entries per screen
+   * - `pushState`: creates a history entry per screen so browser back/forward navigates screens
+   */
+  hashHistory?: "replace" | "push";
   // Called when a screen produces a response (e.g., selection choices)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onScreenResponse?: (params: { index: number; screenId: string; response: any }) => void;
@@ -41,11 +55,121 @@ interface ScreenRouterProps {
 // SCREEN ROUTER HOOK - For external state management
 // ============================================================
 export function useScreenRouter(config: ScreenRouterConfig) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const { screens, onScreenChange, onComplete, delayForResponseCards = 2000 } = config;
+  const {
+    screens,
+    onScreenChange,
+    onComplete,
+    delayForResponseCards = 2000,
+    syncHash = true,
+    hashHistory = "replace",
+  } = config;
+
+  const getHashScreenId = useCallback((): string | null => {
+    if (typeof window === "undefined") return null;
+    const raw = window.location.hash ?? "";
+    const trimmed = raw.startsWith("#") ? raw.slice(1) : raw;
+    if (!trimmed) return null;
+    try {
+      return decodeURIComponent(trimmed);
+    } catch {
+      return trimmed;
+    }
+  }, []);
+
+  const findScreenIndexById = useCallback(
+    (screenId: string): number => screens.findIndex((s) => s.id === screenId),
+    [screens],
+  );
+
+  const getInitialIndex = useCallback((): number => {
+    if (!syncHash) return 0;
+    const hashId = getHashScreenId();
+    if (!hashId) return 0;
+    const idx = findScreenIndexById(hashId);
+    return idx >= 0 ? idx : 0;
+  }, [findScreenIndexById, getHashScreenId, syncHash]);
+
+  const [currentIndex, setCurrentIndex] = useState<number>(() => getInitialIndex());
 
   const isLastScreen = currentIndex === screens.length - 1;
   const currentScreen = screens[currentIndex];
+
+  // Ensure index is always in-bounds if screens array changes
+  useEffect(() => {
+    if (screens.length === 0) return;
+    if (currentIndex < 0 || currentIndex >= screens.length) {
+      setCurrentIndex(0);
+    }
+  }, [currentIndex, screens.length]);
+
+  // One place to emit onScreenChange without duplicates
+  const lastNotifiedKeyRef = useRef<string | null>(null);
+  const notifyScreenChange = useCallback(
+    (index: number) => {
+      const screenId = screens[index]?.id;
+      if (!screenId) return;
+      const key = `${index}:${screenId}`;
+      if (lastNotifiedKeyRef.current === key) return;
+      lastNotifiedKeyRef.current = key;
+      onScreenChange?.(index, screenId);
+    },
+    [onScreenChange, screens],
+  );
+
+  // Notify initial screen (and any changes that happen outside the navigation helpers)
+  useEffect(() => {
+    if (screens.length === 0) return;
+    notifyScreenChange(currentIndex);
+  }, [currentIndex, notifyScreenChange, screens.length]);
+
+  // Keep URL hash in sync with the current screen id
+  const isApplyingHistoryNavigationRef = useRef(false);
+  useEffect(() => {
+    if (!syncHash) return;
+    if (typeof window === "undefined") return;
+    const screenId = currentScreen?.id;
+    if (!screenId) return;
+    const encoded = encodeURIComponent(screenId);
+    const nextHash = `#${encoded}`;
+    if (window.location.hash === nextHash) return;
+    const nextUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
+
+    // If we're responding to browser navigation (back/forward/manual hash), do NOT write history again.
+    if (isApplyingHistoryNavigationRef.current) {
+      isApplyingHistoryNavigationRef.current = false;
+      return;
+    }
+
+    // Avoid trapping the user: if there's no existing hash, always replace (even in push mode).
+    const hasExistingHash = (window.location.hash ?? "").length > 1;
+    const method: "replaceState" | "pushState" =
+      hashHistory === "push" && hasExistingHash ? "pushState" : "replaceState";
+
+    window.history[method](null, "", nextUrl);
+  }, [currentScreen?.id, hashHistory, syncHash]);
+
+  // Allow manual hash navigation: `#<screenId>`
+  useEffect(() => {
+    if (!syncHash) return;
+    if (typeof window === "undefined") return;
+
+    const applyHashToIndex = () => {
+      const hashId = getHashScreenId();
+      if (!hashId) return;
+      const idx = findScreenIndexById(hashId);
+      if (idx >= 0 && idx !== currentIndex) {
+        isApplyingHistoryNavigationRef.current = true;
+        setCurrentIndex(idx);
+      }
+    };
+
+    window.addEventListener("hashchange", applyHashToIndex);
+    window.addEventListener("popstate", applyHashToIndex);
+    return () => {
+      window.removeEventListener("hashchange", applyHashToIndex);
+      window.removeEventListener("popstate", applyHashToIndex);
+    };
+  }, [currentIndex, findScreenIndexById, getHashScreenId, syncHash]);
 
   const goToNext = useCallback(() => {
     if (isLastScreen) {
@@ -53,37 +177,37 @@ export function useScreenRouter(config: ScreenRouterConfig) {
     } else {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
-      onScreenChange?.(newIndex, screens[newIndex].id);
+      notifyScreenChange(newIndex);
     }
-  }, [currentIndex, isLastScreen, screens, onScreenChange, onComplete]);
+  }, [currentIndex, isLastScreen, notifyScreenChange, onComplete]);
 
   const goToPrevious = useCallback(() => {
     if (currentIndex > 0) {
       const newIndex = currentIndex - 1;
       setCurrentIndex(newIndex);
-      onScreenChange?.(newIndex, screens[newIndex].id);
+      notifyScreenChange(newIndex);
     }
-  }, [currentIndex, screens, onScreenChange]);
+  }, [currentIndex, notifyScreenChange]);
 
   const goToScreen = useCallback((index: number) => {
     if (index >= 0 && index < screens.length) {
       setCurrentIndex(index);
-      onScreenChange?.(index, screens[index].id);
+      notifyScreenChange(index);
     }
-  }, [screens, onScreenChange]);
+  }, [notifyScreenChange, screens.length]);
 
   const goToScreenById = useCallback((screenId: string) => {
     const index = screens.findIndex(s => s.id === screenId);
     if (index !== -1) {
       setCurrentIndex(index);
-      onScreenChange?.(index, screenId);
+      notifyScreenChange(index);
     }
-  }, [screens, onScreenChange]);
+  }, [notifyScreenChange, screens]);
 
   const reset = useCallback(() => {
     setCurrentIndex(0);
-    onScreenChange?.(0, screens[0].id);
-  }, [screens, onScreenChange]);
+    notifyScreenChange(0);
+  }, [notifyScreenChange]);
 
   const delayedNext = useCallback(() => {
     setTimeout(() => {

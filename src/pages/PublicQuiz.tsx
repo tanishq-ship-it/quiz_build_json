@@ -106,6 +106,22 @@ const PublicQuiz: React.FC = () => {
   const [screenEnteredAt, setScreenEnteredAt] = useState<number | null>(null);
   const responsesByIndexRef = useRef<Record<number, unknown>>({});
 
+  const getInitialIndexFromHash = (availableScreens: ScreenData[]): number => {
+    if (typeof window === "undefined") return 0;
+    const raw = window.location.hash ?? "";
+    const trimmed = raw.startsWith("#") ? raw.slice(1) : raw;
+    if (!trimmed) return 0;
+    const hashId = (() => {
+      try {
+        return decodeURIComponent(trimmed);
+      } catch {
+        return trimmed;
+      }
+    })();
+    const idx = availableScreens.findIndex((s) => s.id === hashId);
+    return idx >= 0 ? idx : 0;
+  };
+
   useEffect(() => {
     if (!quizId) {
       setError("Missing quiz id.");
@@ -143,9 +159,10 @@ const PublicQuiz: React.FC = () => {
             try {
               const quizResponse = await createQuizResponse(quiz.id);
               if (!cancelled) {
+                const initialIndex = getInitialIndexFromHash(parsedScreens);
                 setQuizResponseId(quizResponse.id);
-                setCurrentScreenIndex(0);
-                setCurrentScreenId(parsedScreens[0]?.id ?? null);
+                setCurrentScreenIndex(initialIndex);
+                setCurrentScreenId(parsedScreens[initialIndex]?.id ?? null);
                 setScreenEnteredAt(Date.now());
               }
             } catch {
@@ -273,6 +290,7 @@ const PublicQuiz: React.FC = () => {
             config={{
               screens,
               placeholders: PLACEHOLDERS,
+              hashHistory: "push",
               onScreenChange: handleScreenChange,
               onComplete: handleComplete,
               onScreenResponse: handleScreenResponse,
