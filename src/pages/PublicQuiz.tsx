@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Loader2, Moon, Sun } from "lucide-react";
 import Lottie from "lottie-react";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
@@ -93,6 +93,7 @@ const normalizeScreensInput = (parsed: unknown): { screens: ScreenData[]; mode: 
 
 const PublicQuiz: React.FC = () => {
   const { quizId } = useParams<{ quizId?: string }>();
+  const navigate = useNavigate();
 
   const [screens, setScreens] = useState<ScreenData[]>(DEFAULT_SCREENS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -229,6 +230,9 @@ const PublicQuiz: React.FC = () => {
 
   const handleComplete = (): void => {
     void appendCurrentScreenIfNeeded();
+    if (quizId) {
+      navigate(`/${quizId}/payments`);
+    }
   };
 
   const handleScreenResponse = (params: {
@@ -280,6 +284,7 @@ const PublicQuiz: React.FC = () => {
               screens,
               placeholders: PLACEHOLDERS,
               hashHistory: "push",
+              lastScreenButtonAction: "complete",
               onScreenChange: handleScreenChange,
               onComplete: handleComplete,
               onScreenResponse: handleScreenResponse,

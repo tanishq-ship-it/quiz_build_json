@@ -29,6 +29,12 @@ export interface ScreenRouterConfig {
   onComplete?: () => void;
   delayForResponseCards?: number;
   /**
+   * Controls what happens when a screen contains a bottom `button` item on the LAST screen.
+   * - "reset" (default): last button restarts the quiz (current behavior)
+   * - "complete": last button triggers `onComplete`
+   */
+  lastScreenButtonAction?: "reset" | "complete";
+  /**
    * When enabled, ScreenRouter will:
    * - Read initial screen from the URL hash: `#<screenId>`
    * - Keep the URL hash in sync as screens change
@@ -215,6 +221,10 @@ export function useScreenRouter(config: ScreenRouterConfig) {
     }, delayForResponseCards);
   }, [goToNext, delayForResponseCards]);
 
+  const complete = useCallback(() => {
+    onComplete?.();
+  }, [onComplete]);
+
   return {
     currentIndex,
     currentScreen,
@@ -227,6 +237,7 @@ export function useScreenRouter(config: ScreenRouterConfig) {
     goToScreenById,
     reset,
     delayedNext,
+    complete,
   };
 }
 
@@ -240,12 +251,14 @@ function processContent(
     onNext: () => void;
     onReset: () => void;
     onDelayedNext: () => void;
+    onComplete: () => void;
   },
   placeholders: Record<string, string> = {},
-  isLast: boolean
+  isLast: boolean,
+  lastScreenButtonAction: "reset" | "complete"
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any[] {
-  const { onNext, onReset, onDelayedNext } = callbacks;
+  const { onNext, onReset, onDelayedNext, onComplete } = callbacks;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return content.map((item: any) => {
@@ -261,7 +274,11 @@ function processContent(
 
     // Button: add onClick
     if (copy.type === "button") {
-      copy.onClick = isLast ? onReset : onNext;
+      if (isLast) {
+        copy.onClick = lastScreenButtonAction === "complete" ? onComplete : onReset;
+      } else {
+        copy.onClick = onNext;
+      }
     }
 
     // Selection: add callbacks
@@ -311,7 +328,8 @@ function processContent(
               cs.content,
               callbacks,
               placeholders,
-              isLast
+              isLast,
+              lastScreenButtonAction
             );
           }
         }
@@ -344,6 +362,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
     goToNext,
     reset,
     delayedNext,
+    complete,
   } = useScreenRouter(config);
 
   // Derive ordered category steps from screens (first occurrence wins)
@@ -405,9 +424,11 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
       onNext: goToNext,
       onReset: reset,
       onDelayedNext: delayedNext,
+      onComplete: complete,
     },
     config.placeholders,
-    isLastScreen
+    isLastScreen,
+    config.lastScreenButtonAction ?? "reset"
   );
 
   const showLogoHeader = categorySteps.length > 0 && Boolean(currentScreen.category);
