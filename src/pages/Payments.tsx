@@ -145,20 +145,20 @@ const Payments: React.FC = () => {
       {
         id: "1-month",
         duration: "1 month",
-        originalPrice: "$22.43",
-        discountedPrice: "$10.99",
-        perDay: "$0.37",
-        strikePrice: "$0.75",
+        originalPrice: "$25.99",
+        discountedPrice: "$12.99",
+        perDay: "$0.43",
+        strikePrice: "$0.87",
         badge: DISCOUNT_LABEL,
         badgeColor: "text-blue-600 border-blue-600",
       },
       {
         id: "3-months",
         duration: "3 months",
-        originalPrice: "$40.80",
-        discountedPrice: "$18.99",
-        perDay: "$0.21",
-        strikePrice: "$0.45",
+        originalPrice: "$59.99",
+        discountedPrice: "$29.99",
+        perDay: "$0.33",
+        strikePrice: "$0.67",
         badge: DISCOUNT_LABEL,
         badgeColor: "text-blue-600 border-blue-600",
         popular: true,
@@ -166,15 +166,20 @@ const Payments: React.FC = () => {
       {
         id: "1-year",
         duration: "1 year",
-        originalPrice: "$108.80",
-        discountedPrice: "$52.99",
-        perDay: "$0.15",
-        strikePrice: "$0.30",
+        originalPrice: "$199.99",
+        discountedPrice: "$99.99",
+        perDay: "$0.27",
+        strikePrice: "$0.55",
         badge: "BEST OFFER",
         badgeColor: "text-blue-600 border-blue-600",
       },
     ],
     [],
+  );
+
+  const selectedPlanDetails = useMemo(
+    () => plans.find((p) => p.id === selectedPlan) ?? plans[0],
+    [plans, selectedPlan],
   );
 
   const handleContinue = () => {
@@ -315,8 +320,8 @@ const Payments: React.FC = () => {
               <div className="mt-5 text-center text-xs text-gray-500 leading-relaxed">
                 <p>
                   We&apos;ve applied a discount to your first subscription. Your plan will renew at
-                  the full price of $40.80 after the current term. You can manage your subscription
-                  in your account.
+                  the full price of {selectedPlanDetails.originalPrice} after the current term. You
+                  can manage your subscription in your account.
                 </p>
                 <p className="mt-2">
                   By continuing, you agree to our{" "}
