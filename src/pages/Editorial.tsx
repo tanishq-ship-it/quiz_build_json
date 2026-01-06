@@ -96,6 +96,26 @@ const moveArrayItem = <T,>(array: T[], from: number, to: number): T[] => {
   return copy;
 };
 
+const generateUniqueScreenId = (existingIds: Set<string>): string => {
+  const tryId = (): string => {
+    try {
+      // Modern browsers
+      if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return `screen-${crypto.randomUUID()}`;
+      }
+    } catch {
+      // ignore
+    }
+    return `screen-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  };
+
+  let next = tryId();
+  while (existingIds.has(next)) {
+    next = tryId();
+  }
+  return next;
+};
+
 const Editorial: React.FC = () => {
   const { quizId } = useParams<{ quizId?: string }>();
   const navigate = useNavigate();
@@ -215,9 +235,30 @@ const Editorial: React.FC = () => {
     }
   };
 
-  const handleGoToAdd = () => {
-    if (!quizId) return;
-    navigate(`/preview/${quizId}`);
+  const handleAddEmptyScreen = () => {
+    // Create an empty screen locally (do not persist until user clicks Save)
+    const selectedScreenId = screens[selectedIndex]?.id;
+    const nextScreens = [...screens];
+
+    // Protect unsaved edits for the currently selected screen before switching away
+    if (selectedScreenId && previewScreen?.id === selectedScreenId) {
+      nextScreens[selectedIndex] = previewScreen;
+    }
+
+    const existingIds = new Set(nextScreens.map((s) => s.id));
+    const newScreen: ScreenData = {
+      id: generateUniqueScreenId(existingIds),
+      content: [],
+    };
+
+    nextScreens.push(newScreen);
+
+    setScreens(nextScreens);
+    const newIndex = nextScreens.length - 1;
+    setSelectedIndex(newIndex);
+    setEditorJson(JSON.stringify(newScreen, null, 2));
+    setPreviewScreen(newScreen);
+    setParseError(null);
   };
 
   const handleGoToPlay = () => {
@@ -338,7 +379,7 @@ const Editorial: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={handleGoToAdd}
+              onClick={handleAddEmptyScreen}
               className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-inter-medium bg-violet-600 text-white shadow-sm hover:bg-violet-500 w-full sm:w-auto justify-center"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -451,7 +492,7 @@ const Editorial: React.FC = () => {
               <div className="p-3 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={handleGoToAdd}
+                  onClick={handleAddEmptyScreen}
                   className="inline-flex items-center justify-center gap-1.5 h-8 w-full px-3 rounded-md text-[11px] font-inter-medium bg-violet-600 text-white shadow-sm hover:bg-violet-500"
                   title="Add a new screen"
                   draggable={false}
@@ -492,18 +533,30 @@ const Editorial: React.FC = () => {
 
                 <div className="w-full md:w-1/2 p-0 flex items-stretch justify-stretch bg-slate-50 rounded-br-2xl md:rounded-bl-none md:rounded-br-2xl overflow-hidden min-h-[60vh] md:min-h-0">
                   {previewScreen ? (
-                    <div className="preview-embedded preview-theme-light editorial-preview w-full h-full">
-                      <ScreenRouter
-                        config={{
-                          screens: [previewScreen],
-                          placeholders: PLACEHOLDERS,
-                        }}
-                      />
-                    </div>
+                    Array.isArray(previewScreen.content) && previewScreen.content.length === 0 ? (
+                      <div className="w-full h-full flex items-center justify-center p-6">
+                        <p className="text-[11px] text-slate-400 text-center">
+                          Empty screen. Add blocks in the JSON editor (e.g. text, image, selection) and click Save to persist.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="preview-embedded preview-theme-light editorial-preview w-full h-full">
+                        <ScreenRouter
+                          config={{
+                            screens: [previewScreen],
+                            placeholders: PLACEHOLDERS,
+                            // Avoid hash side-effects while editing a single screen preview
+                            syncHash: false,
+                          }}
+                        />
+                      </div>
+                    )
                   ) : (
-                    <p className="text-[11px] text-slate-400">
-                      Enter valid screen JSON to see preview.
-                    </p>
+                    <div className="w-full h-full flex items-center justify-center p-6">
+                      <p className="text-[11px] text-slate-400 text-center">
+                        Enter valid screen JSON to see preview.
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
