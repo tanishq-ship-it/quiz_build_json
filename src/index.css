@@ -219,6 +219,26 @@ button:focus-visible {
   overflow-x: hidden;
 }
 
+/* ScreenRouter top header (logo + optional category bar)
+   Note: It's absolutely positioned within `.mobile-frame`.
+   On full-bleed mobile/embedded layouts, negative top would get clipped by `.screen-section { overflow: hidden }`,
+   so we keep it inside the frame. */
+.screen-router-header {
+  top: -32px;
+}
+
+@media (max-width: 767px) {
+  .screen-router-header {
+    top: 8px;
+  }
+}
+
+/* Embedded previews have no vertical breathing room; keep header visible. */
+.preview-embedded .screen-router-header,
+.editorial-preview .screen-router-header {
+  top: 8px;
+}
+
 /* Editorial full-bleed preview overrides */
 .editorial-preview .app-container {
   width: 100%;

@@ -455,9 +455,9 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
           */}
           {showLogoHeader && (
             <div
+              className="screen-router-header"
               style={{
                 position: "absolute",
-                top: -32,
                 left: 0,
                 right: 0,
                 display: "flex",
