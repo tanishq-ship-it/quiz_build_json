@@ -16,10 +16,6 @@ interface TextProps {
   color?: string;
   fontWeight?: number;
   lineHeight?: number;
-  /**
-   * Optional: render inline colored segments without HTML/CSS in the content string.
-   * When provided, `content` is ignored.
-   */
   segments?: TextSegment[];
 }
 

@@ -283,7 +283,10 @@ function QuizCreator() {
                     {/* Preview */}
                     <button
                       type="button"
-                      onClick={() => navigate(`/preview-play/${quiz.id}`)}
+                      onClick={() => {
+                        const url = new URL(`/preview-play/${quiz.id}`, window.location.origin).toString();
+                        window.open(url, "_blank", "noopener,noreferrer");
+                      }}
                       className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50/80 text-sky-700 hover:bg-sky-100 hover:border-sky-200 transition-colors px-2.5"
                       title="Preview"
                     >

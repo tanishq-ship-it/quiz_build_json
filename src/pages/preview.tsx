@@ -453,7 +453,8 @@ const Preview: React.FC = () => {
                   type="button"
                   onClick={() => {
                     if (quizId) {
-                      navigate(`/preview-play/${quizId}`);
+                      const url = new URL(`/preview-play/${quizId}`, window.location.origin).toString();
+                      window.open(url, "_blank", "noopener,noreferrer");
                     }
                   }}
                   className={`inline-flex items-center justify-center h-7 px-3 rounded-md text-[11px] font-medium transition-all duration-200 ${

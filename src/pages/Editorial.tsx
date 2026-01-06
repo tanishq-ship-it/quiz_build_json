@@ -227,7 +227,8 @@ const Editorial: React.FC = () => {
     // but the "play from where I am editing" intent maps to the selected list item.)
     const screenIdForPlay = screens[selectedIndex]?.id;
     const hash = screenIdForPlay ? `#${encodeURIComponent(screenIdForPlay)}` : "";
-    navigate(`/preview-play/${quizId}${hash}`);
+    const url = new URL(`/preview-play/${quizId}${hash}`, window.location.origin).toString();
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleReorderScreens = async (fromIndex: number, toIndex: number) => {
