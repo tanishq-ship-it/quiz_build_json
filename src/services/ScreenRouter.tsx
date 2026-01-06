@@ -524,7 +524,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
                           fontWeight: 600,
                           letterSpacing: 0.4,
                           textTransform: "uppercase",
-                          color: "#a78bfa", // small purple color
+                          color: "#6d3be8", // purple
                           textAlign: "center",
                         }}
                       >
@@ -610,7 +610,7 @@ function CategoryProgressBar({ categories, activeIndex, fillIndex }: CategoryPro
             right: 0,
             height: 4,
             borderRadius: 999,
-            backgroundColor: "#e5edff",
+            backgroundColor: "#ede9fe",
           }}
         />
 
@@ -623,7 +623,7 @@ function CategoryProgressBar({ categories, activeIndex, fillIndex }: CategoryPro
               width: `${(clampedFillIndex / maxIndex) * 100}%`,
               height: 4,
               borderRadius: 999,
-              background: "linear-gradient(90deg, #3b82f6, #6366f1)",
+              background: "linear-gradient(90deg, #6d3be8, #6d3be8)",
               transition: "width 200ms ease-out",
             }}
           />
@@ -641,8 +641,8 @@ function CategoryProgressBar({ categories, activeIndex, fillIndex }: CategoryPro
           {categories.map((cat, index) => {
             const isActive = index === activeIndex;
             const isCompleted = activeIndex > index;
-            const outerColor = isActive || isCompleted ? "#3b82f6" : "#dbe3ff";
-            const innerColor = isActive ? "#1d4ed8" : isCompleted ? "#3b82f6" : "#e5edff";
+            const outerColor = isActive || isCompleted ? "#6d3be8" : "#ddd6fe";
+            const innerColor = isActive ? "#6d3be8" : isCompleted ? "#6d3be8" : "#ede9fe";
 
             return (
               <div
@@ -656,7 +656,7 @@ function CategoryProgressBar({ categories, activeIndex, fillIndex }: CategoryPro
                   alignItems: "center",
                   justifyContent: "center",
                   boxShadow: isActive
-                    ? "0 0 0 4px rgba(59,130,246,0.30)"
+                    ? "0 0 0 4px rgba(109,59,232,0.30)"
                     : "none",
                   transition:
                     "background-color 200ms ease-out, box-shadow 200ms ease-out",
