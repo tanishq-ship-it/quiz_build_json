@@ -318,27 +318,28 @@ const Editorial: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[#f9fafb] via-[#eef2ff] to-[#e0f2fe]">
-      {/* Back */}
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="absolute top-4 left-4 z-20 inline-flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md bg-white/80 border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back
-      </button>
-
+    <div className="relative min-h-screen bg-linear-to-br from-[#f9fafb] via-[#eef2ff] to-[#e0f2fe]">
       <main className="relative z-10 max-w-7xl mx-auto px-5 md:px-8 py-10 flex flex-col gap-6">
-        <header className="flex items-center justify-between">
-          <h1 className="text-sm md:text-base font-inter-semibold tracking-[-0.01em] text-slate-900">
-            Screens Editor
-          </h1>
-          <div className="flex items-center gap-2">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md bg-white/80 border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
+              title="Back"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+            <h1 className="text-sm md:text-base font-inter-semibold tracking-[-0.01em] text-slate-900">
+              Screens Editor
+            </h1>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={handleGoToAdd}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-inter-medium bg-violet-600 text-white shadow-sm hover:bg-violet-500"
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-inter-medium bg-violet-600 text-white shadow-sm hover:bg-violet-500 w-full sm:w-auto justify-center"
             >
               <Plus className="w-3.5 h-3.5" />
               Add
@@ -346,7 +347,7 @@ const Editorial: React.FC = () => {
             <button
               type="button"
               onClick={handleGoToPlay}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-inter-medium border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100"
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-inter-medium border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100 w-full sm:w-auto justify-center"
             >
               <Play className="w-3.5 h-3.5" />
               Play
@@ -373,7 +374,7 @@ const Editorial: React.FC = () => {
                   {screens.length} {screens.length === 1 ? "screen" : "screens"}
                 </span>
               </div>
-              <div className="max-h-[420px] overflow-y-auto">
+              <div className="max-h-[35vh] md:max-h-[420px] overflow-y-auto">
                 {screens.map((screen, index) => (
                   <div
                     key={screen.id}
@@ -477,7 +478,7 @@ const Editorial: React.FC = () => {
                   )}
                 </div>
 
-                <div className="w-full md:w-3/4 p-0 flex items-stretch justify-stretch bg-slate-50 rounded-br-2xl md:rounded-bl-none md:rounded-br-2xl overflow-hidden">
+                <div className="w-full md:w-1/2 p-0 flex items-stretch justify-stretch bg-slate-50 rounded-br-2xl md:rounded-bl-none md:rounded-br-2xl overflow-hidden min-h-[60vh] md:min-h-0">
                   {previewScreen ? (
                     <div className="preview-embedded preview-theme-light editorial-preview w-full h-full">
                       <ScreenRouter

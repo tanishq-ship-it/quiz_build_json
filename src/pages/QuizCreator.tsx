@@ -179,7 +179,7 @@ function QuizCreator() {
       {/* Main Content */}
       <main className="relative z-10 max-w-6xl mx-auto px-5 md:px-8 py-8 flex flex-col gap-6">
         {/* Header */}
-        <header className="flex items-center justify-between">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-white/70 border border-white/80 backdrop-blur-xl shadow-sm shadow-sky-500/20">
               <Zap className="w-4 h-4 text-sky-600" />
@@ -197,7 +197,7 @@ function QuizCreator() {
           <button
             type="button"
             onClick={handleOpenDialog}
-            className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-md text-sm font-inter-medium bg-violet-600 text-white shadow-sm shadow-violet-500/40 hover:bg-violet-500 hover:shadow-md hover:shadow-violet-500/40 transition-all"
+            className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-md text-sm font-inter-medium bg-violet-600 text-white shadow-sm shadow-violet-500/40 hover:bg-violet-500 hover:shadow-md hover:shadow-violet-500/40 transition-all w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Create Quiz
@@ -227,7 +227,7 @@ function QuizCreator() {
           <div className="flex flex-col gap-3">
             {isLoading && (
               <div className="flex items-center justify-center py-6">
-                <div className="w-80 h-80">
+                <div className="w-52 h-52 sm:w-80 sm:h-80">
                   <Lottie animationData={loadingAnimation} loop autoplay />
                 </div>
               </div>
@@ -268,7 +268,7 @@ function QuizCreator() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-start gap-2">
                     {/* Edit */}
                     <button
                       type="button"
