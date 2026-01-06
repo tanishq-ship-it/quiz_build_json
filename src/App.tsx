@@ -5,11 +5,15 @@ import Preview from "./pages/preview";
 import PreviewPlay from "./pages/PreviewPlay";
 import Editorial from "./pages/Editorial";
 import PublicQuiz from "./pages/PublicQuiz";
+import Payments from "./pages/Payments";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<QuizCreator />} />
+      {/* Payments (paywall) */}
+      <Route path="/preview-play/:quizId/payments" element={<Payments />} />
+      <Route path="/:quizId/payments" element={<Payments />} />
       <Route path="/:quizId" element={<PublicQuiz />} />
       <Route path="/preview" element={<Preview />} />
       <Route path="/preview/:quizId" element={<Preview />} />
