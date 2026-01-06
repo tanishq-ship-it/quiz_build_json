@@ -448,6 +448,18 @@ const Editorial: React.FC = () => {
                   </div>
                 )}
               </div>
+              <div className="p-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={handleGoToAdd}
+                  className="inline-flex items-center justify-center gap-1.5 h-8 w-full px-3 rounded-md text-[11px] font-inter-medium bg-violet-600 text-white shadow-sm hover:bg-violet-500"
+                  title="Add a new screen"
+                  draggable={false}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add screen
+                </button>
+              </div>
             </div>
 
             {/* Right: JSON + preview */}
