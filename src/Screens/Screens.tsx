@@ -166,34 +166,18 @@ type SelectionItem = {
   mode: "radio" | "checkbox";
   layout: `${number}x${number}`;
   options: SelectionOptionItem[];
-  /**
-   * When true, user must select at least one option before continuing.
-   * (Only applies when a bottom button exists. Auto-complete radio already requires a click.)
-   */
   required?: boolean;
   selectedColor?: string;
   selectedBorderWidth?: number;
-  /**
-   * Optional visual indicator style.
-   * - "none" (default): current behavior
-   * - "circle": shows right-side circle (checked/unchecked) and a neutral border when unselected (flat options)
-   */
   indicator?: "none" | "circle";
-  /**
-   * Border color when not selected (only used when indicator="circle")
-   */
   unselectedBorderColor?: string;
   gap?: number;
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void; // Auto-fires for radio when no button
   defaultSelected?: (string | number)[];
-  // Response cards - shown inline when an option is selected (stays on same screen)
   responseCards?: Record<string | number, ResponseCard>;
-  responsePosition?: "top" | "bottom"; // Where to show the response card relative to selection
-  // Conditional screens - replaces entire screen content when an option is selected
+  responsePosition?: "top" | "bottom"; 
   conditionalScreens?: Record<string | number, ConditionalScreenContent>;
-  // Position of the selection on screen: "top" (default), "middle", "bottom"
-  // If not specified and no button exists, defaults to "bottom"
   position?: "top" | "middle" | "bottom";
   responseKey?: string;
 };

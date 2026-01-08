@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { BookOpen, Headphones, Instagram, Loader2, ShieldCheck, Star } from "lucide-react";
 import { getQuiz } from "../services/api";
 
 type PlanId = "1-month" | "3-months" | "1-year";
@@ -31,6 +31,62 @@ type Plan = {
   badgeColor: string;
   popular?: boolean;
 };
+
+type PaymentMethod = {
+  id: string;
+  label: string;
+  accentClassName?: string;
+};
+
+type Review = {
+  id: string;
+  rating: number; // 1..5
+  text: string;
+  userName: string;
+  handle: string;
+};
+
+const PAYMENT_METHODS: PaymentMethod[] = [
+  { id: "visa", label: "VISA" },
+  { id: "mastercard", label: "mastercard" },
+  { id: "discover", label: "DISCOVER" },
+  { id: "paypal", label: "PayPal", accentClassName: "text-blue-700" },
+  { id: "amex", label: "AMEX", accentClassName: "text-blue-700" },
+  { id: "maestro", label: "maestro" },
+];
+
+const CUSTOMER_REVIEWS: Review[] = [
+  {
+    id: "r1",
+    rating: 5,
+    text: "This app breaks books down into quick, easy snippets. Just listened to a chunk of 'Atomic Habits' during my warm-up today. Highly recommend it for anyone who’s too busy to sit down and read!",
+    userName: "Alex Johnson",
+    handle: "AlexJohnsonNYC",
+  },
+  {
+    id: "r2",
+    rating: 5,
+    text: "I never imagined finding a tattoo this personal and meaningful. It’s perfect, the way it reflects my journey and personality is amazing!",
+    userName: "Emily Brown",
+    handle: "EmilyBrown.3",
+  },
+  {
+    id: "r3",
+    rating: 5,
+    text: "The customization options blew me away. It’s exactly what I envisioned from the start, and the ability to tweak every detail made all the difference!",
+    userName: "Kevin Miller",
+    handle: "KevinMillerx",
+  },
+];
+
+const TRUSTED_COMPANIES: string[] = [
+  "Microsoft",
+  "Walmart",
+  "Bank of America",
+  "amazon.com",
+  "salesforce",
+  "NVIDIA",
+];
 
 const Payments: React.FC = () => {
   const { quizId } = useParams<{ quizId?: string }>();
@@ -343,6 +399,28 @@ const Payments: React.FC = () => {
                 </p>
               </div>
 
+              {/* Pay safe & secure + supported methods */}
+              <div className="mt-4">
+                <div className="bg-emerald-50 text-emerald-700 rounded-2xl px-4 py-3 flex items-center justify-center gap-2 font-semibold">
+                  <ShieldCheck className="w-5 h-5" />
+                  Pay safe &amp; secure
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                  {PAYMENT_METHODS.map((m) => (
+                    <div
+                      key={m.id}
+                      className={`bg-white border border-gray-200 rounded-lg px-3 py-2 text-[11px] font-semibold tracking-wide ${
+                        m.accentClassName ?? "text-gray-700"
+                      }`}
+                      aria-label={m.label}
+                    >
+                      {m.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="mt-4 flex justify-center">
                 <button
                   type="button"
@@ -351,6 +429,133 @@ const Payments: React.FC = () => {
                 >
                   Back
                 </button>
+              </div>
+            </div>
+
+            {/* Benefits / continuation section (below paywall) */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <h2 className="text-4xl font-extrabold text-center leading-tight">
+                Understand key ideas
+                <br />
+                in 15 minutes
+              </h2>
+
+              <div className="mt-6 flex gap-4 items-start">
+                <div className="w-24 h-24 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <BookOpen className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-xl font-bold text-gray-900">Know more in minutes</p>
+                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                    Get the key insights from today&apos;s best books, podcast, and articles
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm p-6 space-y-8">
+              <div className="flex gap-4 items-start">
+                <div className="w-20 h-20 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <BookOpen className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xl font-bold text-gray-900">Feed your curiosity</p>
+                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                    Personal recommendations to dive into 6,500+ title and hundreds of topics
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start">
+                <div className="w-20 h-20 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Headphones className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xl font-bold text-gray-900">Listen, learn, gain insights!</p>
+                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                    Learn from experts through step-by-step guides &amp; exclusive personal
+                    insights.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Global community */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <p className="text-center text-2xl font-extrabold text-gray-900 leading-snug">
+                Become a member of our global community of{" "}
+                <span className="text-blue-600">70 million people</span>
+              </p>
+            </div>
+
+            {/* Customer reviews */}
+            <div className="mt-2">
+              <h3 className="text-2xl font-extrabold text-gray-900 px-1">Customer reviews</h3>
+            </div>
+
+            {CUSTOMER_REVIEWS.map((review) => (
+              <div key={review.id} className="bg-white rounded-2xl shadow-sm p-6">
+                <div className="flex items-center gap-1 text-yellow-400">
+                  {Array.from({ length: 5 }).map((_, idx) => (
+                    <Star
+                      key={idx}
+                      className={`w-5 h-5 ${idx < review.rating ? "fill-yellow-400" : ""}`}
+                    />
+                  ))}
+                </div>
+
+                <p className="mt-4 text-lg text-gray-900 leading-relaxed">{review.text}</p>
+
+                <div className="mt-6 flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-700">
+                    {review.userName
+                      .split(" ")
+                      .slice(0, 2)
+                      .map((w) => w[0])
+                      .join("")}
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <span className="text-base">{review.handle}</span>
+                    <Instagram className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Trusted by companies */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <p className="text-center text-xs tracking-widest font-semibold text-gray-500">
+                ALSO TRUSTED BY
+              </p>
+              <p className="text-center text-3xl font-extrabold text-blue-600 mt-2">
+                +1,500 COMPANIES
+              </p>
+
+              <div className="mt-6 grid grid-cols-3 gap-4 items-center">
+                {TRUSTED_COMPANIES.map((c) => (
+                  <div
+                    key={c}
+                    className="h-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-[12px] font-semibold text-gray-700"
+                    aria-label={c}
+                  >
+                    {c}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom discount banner (sticky) */}
+            <div className="sticky bottom-0 z-10 pt-2">
+              <div className="bg-purple-600 text-white rounded-2xl px-4 py-3 text-center font-extrabold tracking-wide">
+                %{DISCOUNT_PERCENT_LABEL.replace("%", "")} DISCOUNT RESERVED FOR{" "}
+                {formatCountdown(countdownSeconds)}
               </div>
             </div>
           </div>
