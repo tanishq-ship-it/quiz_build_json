@@ -7,6 +7,8 @@ type SquareOption = {
   variant: "square";
   character: string;
   size?: number;
+  fontWeight?: number;
+  fontSize?: number;
 };
 
 type ImageCardOption = {
@@ -251,11 +253,27 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
               onClick={() => handleSelect(option, index)}
             >
               {option.variant === "square" && (
+                (() => {
+                  // Be tolerant of legacy/hand-edited JSON where size may be a string.
+                  const rawSize = (option as { size?: unknown }).size;
+                  const normalizedSize =
+                    typeof rawSize === "number"
+                      ? rawSize
+                      : typeof rawSize === "string"
+                        ? Number(rawSize)
+                        : NaN;
+                  const squareSize = Number.isFinite(normalizedSize) ? normalizedSize : 60;
+
+                  return (
                 <Button
                   variant="square"
                   character={option.character}
-                  size={option.size ?? 60}
+                  size={squareSize}
+                  fontWeight={option.fontWeight}
+                  fontSize={option.fontSize}
                 />
+                  );
+                })()
               )}
               {option.variant === "imageCard" && (
                 <Button

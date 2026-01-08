@@ -12,6 +12,7 @@ interface ListBlockContent {
 }
 
 interface ListBlockProps {
+  // Runtime payloads can be imperfect; keep strict typing but tolerate missing data safely.
   content: ListBlockContent;
   width?: number | string;
   height?: number | string;
@@ -30,7 +31,8 @@ const ListBlock: React.FC<ListBlockProps> = ({
   textColor = "#333",
   iconSize = 32,
 }) => {
-  const { heading, data } = content;
+  const heading = content?.heading ?? "";
+  const data: ListItem[] = Array.isArray(content?.data) ? content.data : [];
   const computedHeight =
     height ?? (typeof width === "number" ? width * 2 : undefined);
   const borderRadius = 16;

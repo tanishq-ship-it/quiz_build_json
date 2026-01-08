@@ -24,6 +24,8 @@ A small square button with a single character inside. Perfect for option selecto
 |------|------|---------|-------------|
 | `character` | `string` | required | Single character to display |
 | `size` | `number` | `30` | Width & height in pixels |
+| `fontWeight` | `number` | `600` | Optional: font weight override |
+| `fontSize` | `number` | `size * 0.5` | Optional: font size override |
 | `onClick` | `() => void` | - | Click handler |
 
 **Styling:**
@@ -31,8 +33,8 @@ A small square button with a single character inside. Perfect for option selecto
 - Text color: Dark gray (`#333`)
 - Border: Light gray (`#ccc`)
 - Border radius: 6px
-- Font size: 50% of button size
-- Font weight: 600 (semi-bold)
+- Font size: 50% of button size (unless `fontSize` is provided)
+- Font weight: 600 (semi-bold, unless `fontWeight` is provided)
 
 **Examples:**
 

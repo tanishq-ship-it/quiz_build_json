@@ -125,6 +125,8 @@ Each option must specify a `variant` that matches Button variants:
   variant: "square";
   character: string;   // Single character
   size?: number;       // Default: 60
+  fontWeight?: number; // Optional: overrides square button font weight (default 600)
+  fontSize?: number;   // Optional: overrides square button font size (default: size * 0.5)
   id?: string | number;
   value?: string | number;
 }

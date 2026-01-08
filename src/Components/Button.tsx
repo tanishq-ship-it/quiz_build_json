@@ -8,12 +8,16 @@ import type { TextSegment } from "./Text";
 interface SquareButtonProps {
   character: string;
   size?: number;
+  fontWeight?: number;
+  fontSize?: number;
   onClick?: () => void;
 }
 
 const SquareButton: React.FC<SquareButtonProps> = ({
   character,
   size = 30,
+  fontWeight = 600,
+  fontSize,
   onClick,
 }) => {
   return (
@@ -22,6 +26,8 @@ const SquareButton: React.FC<SquareButtonProps> = ({
       style={{
         width: size,
         height: size,
+        padding: 0,
+        boxSizing: "border-box",
         borderRadius: 6,
         border: "1px solid #ccc",
         backgroundColor: "#fff",
@@ -31,8 +37,8 @@ const SquareButton: React.FC<SquareButtonProps> = ({
         alignItems: "center",
         justifyContent: "center",
         fontFamily: FONT_INTER,
-        fontSize: size * 0.5,
-        fontWeight: 600,
+        fontSize: fontSize ?? size * 0.5,
+        fontWeight,
       }}
     >
       {character.charAt(0)}
@@ -428,6 +434,7 @@ interface ButtonProps {
   // Square button props
   character?: string;
   size?: number | FlatButtonSize; // number for square, string for flat preset
+  fontWeight?: number; // square button custom font weight
   // Image card button props
   imageSrc?: string;
   text?: string;
@@ -457,6 +464,8 @@ const Button: React.FC<ButtonProps> = (props) => {
         <SquareButton
           character={props.character || ""}
           size={typeof props.size === "number" ? props.size : undefined}
+          fontWeight={props.fontWeight}
+          fontSize={typeof props.fontSize === "number" ? props.fontSize : undefined}
           onClick={props.onClick}
         />
       );

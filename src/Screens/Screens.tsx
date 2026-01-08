@@ -85,6 +85,8 @@ type SquareOption = {
   variant: "square";
   character: string;
   size?: number;
+  fontWeight?: number;
+  fontSize?: number;
   id?: string | number;
   value?: string | number;
 };
@@ -281,8 +283,17 @@ type ListBlockRowItem = {
   type: "listBlockRow";
   gap?: number;
   blocks: Array<{
-    heading: string;
-    data: Array<{ icon: string; text: string }>;
+    /**
+     * Backwards/forwards compatible:
+     * - Older schema: `heading` + `data` at the block root
+     * - Newer schema (seen in JSON payloads): `content: { heading, data }`
+     */
+    heading?: string;
+    data?: Array<{ icon: string; text: string }>;
+    content?: {
+      heading?: string;
+      data?: Array<{ icon: string; text: string }>;
+    };
     width?: number | string;
     height?: number | string;
     bgColor?: string;
@@ -481,6 +492,7 @@ const Screens: React.FC<ScreensProps> = ({
   const renderContentItem = (item: ContentItem, index: number) => {
     if (item.type === "listBlockRow") {
       const rowGap = item.gap ?? 16;
+      const blocks = Array.isArray(item.blocks) ? item.blocks : [];
       return (
         <div
           key={index}
@@ -492,18 +504,23 @@ const Screens: React.FC<ScreensProps> = ({
             flexWrap: "nowrap",
           }}
         >
-          {item.blocks.map((b, blockIndex) => (
-            <ListBlock
-              key={`${index}-${blockIndex}`}
-              content={{ heading: b.heading, data: b.data }}
-              width={b.width ?? `calc((100% - ${rowGap}px) / 2)`}
-              height={b.height}
-              bgColor={b.bgColor}
-              titleColor={b.titleColor}
-              textColor={b.textColor}
-              iconSize={b.iconSize}
-            />
-          ))}
+          {blocks.map((b, blockIndex) => {
+            const resolvedHeading = b.heading ?? b.content?.heading ?? "";
+            const resolvedData = b.data ?? b.content?.data ?? [];
+
+            return (
+              <ListBlock
+                key={`${index}-${blockIndex}`}
+                content={{ heading: resolvedHeading, data: resolvedData }}
+                width={b.width ?? `calc((100% - ${rowGap}px) / 2)`}
+                height={b.height}
+                bgColor={b.bgColor}
+                titleColor={b.titleColor}
+                textColor={b.textColor}
+                iconSize={b.iconSize}
+              />
+            );
+          })}
         </div>
       );
     }
