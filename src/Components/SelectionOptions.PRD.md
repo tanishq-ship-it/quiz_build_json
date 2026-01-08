@@ -25,6 +25,7 @@ import SelectionOptions from "./Components/SelectionOptions";
 | `selectedBorderWidth` | `number` | `2` | Border width for selection |
 | `gap` | `number` | `8` | Gap between options in pixels |
 | `position` | `"top" \| "middle" \| "bottom"` | varies | Where selection appears on screen |
+| `labels` | `SelectionLabels` | - | Optional edge labels for rating-style rows (recommended for `"1x5"`). Renders a label under the first and last option. |
 | `onChange` | `(selected) => void` | - | Called when selection changes |
 | `onComplete` | `(selected) => void` | - | Called for radio auto-complete |
 | `autoComplete` | `boolean` | `false` | Enable auto-complete for radio |
@@ -72,6 +73,46 @@ The `layout` prop uses the format `"ROWSxCOLS"`:
 | `"2x3"` | 2 rows, 3 columns | 6 (wide grid) |
 
 ---
+
+## Rating Labels (for `layout: "1x5"`)
+
+For rating-style layouts like `"1x5"`, you can provide `labels` to show text under the **first** and **last** option (like “Not like me” → “Just like me”).
+
+### `SelectionLabels` Type
+
+Supported shapes:
+
+- Object form:
+
+```tsx
+labels: {
+  left: "Not like me",
+  right: "Just like me",
+}
+```
+
+- Object form (styled):
+
+```tsx
+labels: {
+  left: { text: "Not like me", textColor: "#9ca3af", fontSize: 14, fontWeight: 500 },
+  right: { text: "Just like me", textColor: "#9ca3af", fontSize: 14, fontWeight: 500 },
+}
+```
+
+- Tuple form:
+
+```tsx
+labels: [
+  { text: "Not like me", textColor: "#9ca3af", fontSize: 14 },
+  { text: "Just like me", textColor: "#9ca3af", fontSize: 14 },
+]
+```
+
+### Notes
+
+- Labels are only rendered for `layout: "1x5"`.
+- Use `labels` (not `scaleLabels`).
 
 ## Option Types
 

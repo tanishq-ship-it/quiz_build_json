@@ -161,6 +161,17 @@ type ConditionalScreenContent = {
   padding?: number;
 };
 
+type SelectionEdgeLabel = {
+  text: string;
+  textColor?: string;
+  fontSize?: number;
+  fontWeight?: number;
+};
+
+type SelectionLabels =
+  | { left?: SelectionEdgeLabel | string; right?: SelectionEdgeLabel | string }
+  | [SelectionEdgeLabel | string, SelectionEdgeLabel | string];
+
 type SelectionItem = {
   type: "selection";
   mode: "radio" | "checkbox";
@@ -196,6 +207,7 @@ type SelectionItem = {
   // If not specified and no button exists, defaults to "bottom"
   position?: "top" | "middle" | "bottom";
   responseKey?: string;
+  labels?: SelectionLabels;
 };
 
 // Card item types
@@ -578,6 +590,7 @@ const Screens: React.FC<ScreensProps> = ({
             onComplete={item.onComplete}
             autoComplete={autoComplete}
             defaultSelected={item.defaultSelected}
+            labels={item.labels}
           />
           
           {/* Response card below selection */}

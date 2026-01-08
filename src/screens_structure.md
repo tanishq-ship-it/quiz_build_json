@@ -1393,6 +1393,10 @@ Shows a card on the **same screen** when an option is selected.
       "mode": "radio",
       "layout": "1x5",
       "gap": 16,
+      "labels": {
+        "left": { "text": "Not like me", "textColor": "#9ca3af", "fontSize": 14 },
+        "right": { "text": "Just like me", "textColor": "#9ca3af", "fontSize": 14 }
+      },
       "options": [
         { "variant": "square", "character": "1", "size": 52, "value": 1 },
         { "variant": "square", "character": "2", "size": 52, "value": 2 },

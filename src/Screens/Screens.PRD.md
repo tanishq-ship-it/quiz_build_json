@@ -704,6 +704,10 @@ Conditional screens allow you to **replace the entire screen content** when an o
       mode: "radio",
       layout: "1x5",
       gap: 12,
+      labels: {
+        left: { text: "Not like me", textColor: "#9ca3af", fontSize: 14 },
+        right: { text: "Just like me", textColor: "#9ca3af", fontSize: 14 },
+      },
       options: [
         { variant: "square", character: "1", size: 55, value: 1 },
         { variant: "square", character: "2", size: 55, value: 2 },
