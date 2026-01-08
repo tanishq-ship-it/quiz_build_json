@@ -212,6 +212,11 @@ type SelectionItem = {
   selectedColor?: string;
   selectedBorderWidth?: number;
   /**
+   * Optional override for the wrapper border radius around each option (px).
+   * Useful when you want less rounding than the defaults (especially with indicator="circle").
+   */
+  optionBorderRadius?: number;
+  /**
    * Optional visual indicator style.
    * - "none" (default): current behavior
    * - "circle": shows right-side circle (checked/unchecked) and a neutral border when unselected (flat options)
@@ -711,6 +716,7 @@ const Screens: React.FC<ScreensProps> = ({
             options={item.options}
             selectedColor={item.selectedColor}
             selectedBorderWidth={item.selectedBorderWidth}
+            optionBorderRadius={item.optionBorderRadius}
             indicator={item.indicator}
             unselectedBorderColor={item.unselectedBorderColor}
             gap={item.gap}

@@ -78,6 +78,11 @@ interface SelectionOptionsProps {
   selectedColor?: string;
   selectedBorderWidth?: number;
   /**
+   * Optional override for the wrapper border radius around each option (px).
+   * Useful when you want less rounding than the defaults (especially with indicator="circle").
+   */
+  optionBorderRadius?: number;
+  /**
    * Visual indicator for selection state.
    * - "none" (default): current behavior (no right-side circle, no neutral border)
    * - "circle": shows a right-side circle indicator (checked/unchecked) and a neutral border when unselected
@@ -162,6 +167,7 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
   options,
   selectedColor = "#2563eb",
   selectedBorderWidth = 2,
+  optionBorderRadius,
   indicator = "none",
   unselectedBorderColor = "#e5e7eb",
   gap = 8,
@@ -235,10 +241,11 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
           const showCircleIndicator = indicator === "circle" && option.variant === "flat";
 
           // Style for the clickable wrapper - fits exactly around button
+          const defaultRadius = showCircleIndicator ? 24 : option.variant === "square" ? 8 : 16;
           const wrapperStyle: React.CSSProperties = {
             display: "inline-flex",
             cursor: "pointer",
-            borderRadius: showCircleIndicator ? 24 : option.variant === "square" ? 8 : 16,
+            borderRadius: optionBorderRadius ?? defaultRadius,
             border: optionSelected
               ? `${selectedBorderWidth}px solid ${selectedColor}`
               : `${selectedBorderWidth}px solid ${
