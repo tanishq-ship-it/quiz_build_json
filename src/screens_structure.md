@@ -188,6 +188,31 @@ You can always extend this list (e.g. `"onboarding"`, `"follow-up"`, `"upsell"`)
 
 ## Content Types Reference
 
+### Common Layout Controls (optional)
+
+Most content items support **optional layout controls** to help you move components up/down, center them vertically, or add extra spacing between blocks.
+
+These properties can be added to items like: `image`, `heading`, `text`, `card`, `selection`, `input`, `loading`, `listBlockRow`, and `button`.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `position` | `"top" \| "middle" \| "bottom"` | `"top"` *(button defaults to `"bottom"`)* | Vertical placement in the screen layout stacks |
+| `marginTop` | `number` | `0` | Extra space above this block (px) |
+| `marginBottom` | `number` | `0` | Extra space below this block (px) |
+| `offsetY` | `number` | `0` | Nudge up/down (px). Negative moves up, positive moves down |
+
+**Example: center a card and nudge it slightly up**
+
+```json
+{
+  "type": "card",
+  "variant": "message",
+  "message": "Centered content with a small upward nudge.",
+  "position": "middle",
+  "offsetY": -12
+}
+```
+
 ### 📷 Image
 
 ```json
@@ -362,21 +387,29 @@ Renders a text input field.
 {
   "type": "button",
   "text": "Continue",
+  "position": "bottom",
   "bgColor": "#2563eb",
   "textColor": "#fff",
-  "width": 300
+  "width": 300,
+  "marginTop": 0,
+  "marginBottom": 0,
+  "offsetY": 0
 }
 ```
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `text` | `string` | required | Button label |
+| `position` | `"top" \| "middle" \| "bottom"` | `"bottom"` | Where the button renders vertically |
 | `bgColor` | `string` | `"#2563eb"` | Background color |
 | `textColor` | `string` | `"#fff"` | Text color |
 | `width` | `number` | `300` | Button width in px |
+| `marginTop` | `number` | `0` | Extra space above the button (px) |
+| `marginBottom` | `number` | `0` | Extra space below the button (px) |
+| `offsetY` | `number` | `0` | Nudge the button up/down (px) |
 
 **Button Behavior:**
-- Always renders at **bottom** of screen
+- Defaults to **bottom** of screen, but can be moved via `position: "top" | "middle" | "bottom"`
 - If **no button** in content + **radio mode** selection → **auto-complete** on select
 
 ---

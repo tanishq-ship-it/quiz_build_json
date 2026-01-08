@@ -10,6 +10,28 @@ import LoadingComponent, { type LoadingPopupConfig } from "../Components/Loading
 import ListBlock from "../Components/listBock";
 import { FONT_INTER } from "../styles/fonts";
 
+type VerticalPosition = "top" | "middle" | "bottom";
+
+type LayoutAdjustments = {
+  /**
+   * Vertical placement of this component within the screen.
+   * - "top": renders in the top stack (default for most components)
+   * - "middle": renders in the middle stack (centered vertically in remaining space)
+   * - "bottom": renders in the bottom stack (above/beside the Continue button area)
+   */
+  position?: VerticalPosition;
+  /**
+   * Extra vertical spacing around this component (in px).
+   * Useful when you want to add/remove "space" above/below a specific block.
+   */
+  marginTop?: number;
+  marginBottom?: number;
+  /**
+   * Nudge this component up/down (in px). Negative moves up, positive moves down.
+   */
+  offsetY?: number;
+};
+
 // Content item types
 type ImageItem = {
   type: "image";
@@ -21,7 +43,7 @@ type ImageItem = {
   borderColor?: string;
   borderWidth?: number;
   align?: "left" | "center" | "right";
-};
+} & LayoutAdjustments;
 
 type TextItem = {
   type: "text";
@@ -32,7 +54,7 @@ type TextItem = {
   color?: string;
   fontWeight?: number;
   lineHeight?: number;
-};
+} & LayoutAdjustments;
 
 type HeadingItem = {
   type: "heading";
@@ -41,7 +63,7 @@ type HeadingItem = {
   fontSize?: number;
   color?: string;
   fontWeight?: number;
-};
+} & LayoutAdjustments;
 
 type InputItem = {
   type: "input";
@@ -52,7 +74,7 @@ type InputItem = {
   required?: boolean;
   borderRadius?: number;
   responseKey?: string;
-};
+} & LayoutAdjustments;
 
 type CarouselItem = {
   type: "carousel";
@@ -68,7 +90,7 @@ type CarouselItem = {
   infinite?: boolean;
   speed?: number;
   showIndicators?: boolean;
-};
+} & LayoutAdjustments;
 
 type LoadingItem = {
   type: "loading";
@@ -78,7 +100,7 @@ type LoadingItem = {
   trackColor?: string;
   popup?: LoadingPopupConfig;
   responseKey?: string;
-};
+} & LayoutAdjustments;
 
 // Selection option types
 type SquareOption = {
@@ -210,9 +232,12 @@ type SelectionItem = {
   conditionalScreens?: Record<string | number, ConditionalScreenContent>;
   // Position of the selection on screen: "top" (default), "middle", "bottom"
   // If not specified and no button exists, defaults to "bottom"
-  position?: "top" | "middle" | "bottom";
+  position?: VerticalPosition;
   responseKey?: string;
   labels?: SelectionLabels;
+  marginTop?: number;
+  marginBottom?: number;
+  offsetY?: number;
 };
 
 // Card item types
@@ -276,6 +301,10 @@ type ButtonItem = {
   bgColor?: string;
   textColor?: string;
   width?: number;
+  position?: VerticalPosition;
+  marginTop?: number;
+  marginBottom?: number;
+  offsetY?: number;
 };
 
 // Two-column list blocks (e.g., "Before" / "After")
@@ -301,7 +330,7 @@ type ListBlockRowItem = {
     textColor?: string;
     iconSize?: number;
   }>;
-};
+} & LayoutAdjustments;
 
 type ContentItem =
   | ImageItem
@@ -364,6 +393,7 @@ const Screens: React.FC<ScreensProps> = ({
 
   // Extract button from content (if exists)
   const buttonItem = content.find((item) => item.type === "button") as ButtonItem | undefined;
+  const buttonPosition: VerticalPosition = buttonItem?.position ?? "bottom";
 
   const getInputKey = (item: InputItem, index: number): string => {
     return item.responseKey ?? `input-${index}`;
@@ -404,18 +434,17 @@ const Screens: React.FC<ScreensProps> = ({
   // - If position is explicitly set, use it
   // - If no button exists, default to "bottom"
   // - Otherwise default to "top"
-  const selectionPosition = selectionItem?.position ?? (!buttonItem ? "bottom" : "top");
-  
-  // Separate content based on selection position
-  const topContent = selectionPosition !== "top" 
-    ? regularContent.filter((item) => item.type !== "selection")
-    : regularContent;
+  const selectionPosition: VerticalPosition = selectionItem?.position ?? (!buttonItem ? "bottom" : "top");
 
-  // Middle content: selection when position is "middle"
-  const middleSelection = selectionPosition === "middle" ? selectionItem : undefined;
+  const resolveItemPosition = (item: ContentItem): VerticalPosition => {
+    if (item.type === "selection") return selectionPosition;
+    const p = (item as unknown as { position?: VerticalPosition }).position;
+    return p ?? "top";
+  };
 
-  // Bottom content: selection when position is "bottom"
-  const bottomSelection = selectionPosition === "bottom" ? selectionItem : undefined;
+  const topItems = regularContent.filter((item) => resolveItemPosition(item) === "top");
+  const middleItems = regularContent.filter((item) => resolveItemPosition(item) === "middle");
+  const bottomItems = regularContent.filter((item) => resolveItemPosition(item) === "bottom");
 
   // Find the selection item index for state tracking
   const getSelectionIndex = (): number => {
@@ -490,12 +519,35 @@ const Screens: React.FC<ScreensProps> = ({
   };
 
   const renderContentItem = (item: ContentItem, index: number) => {
-    if (item.type === "listBlockRow") {
-      const rowGap = item.gap ?? 16;
-      const blocks = Array.isArray(item.blocks) ? item.blocks : [];
+    const applyLayout = (node: React.ReactNode) => {
+      const mt = (item as unknown as { marginTop?: number }).marginTop;
+      const mb = (item as unknown as { marginBottom?: number }).marginBottom;
+      const offsetY = (item as unknown as { offsetY?: number }).offsetY;
+      const hasLayout = mt != null || mb != null || offsetY != null;
+      if (!hasLayout) return <React.Fragment key={index}>{node}</React.Fragment>;
+
       return (
         <div
           key={index}
+          style={{
+            width: "100%",
+            marginTop: mt,
+            marginBottom: mb,
+            transform: offsetY != null ? `translateY(${offsetY}px)` : undefined,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          {node}
+        </div>
+      );
+    };
+
+    if (item.type === "listBlockRow") {
+      const rowGap = item.gap ?? 16;
+      const blocks = Array.isArray(item.blocks) ? item.blocks : [];
+      return applyLayout(
+        <div
           style={{
             width: "100%",
             display: "flex",
@@ -526,9 +578,8 @@ const Screens: React.FC<ScreensProps> = ({
     }
 
     if (item.type === "image") {
-      return (
+      return applyLayout(
         <Image
-          key={index}
           src={item.src}
           alt={item.alt}
           width={item.width}
@@ -542,9 +593,8 @@ const Screens: React.FC<ScreensProps> = ({
     }
 
     if (item.type === "text") {
-      return (
+      return applyLayout(
         <Text
-          key={index}
           content={item.content}
           segments={item.segments}
           align={item.align}
@@ -557,9 +607,8 @@ const Screens: React.FC<ScreensProps> = ({
     }
 
     if (item.type === "heading") {
-      return (
+      return applyLayout(
         <h2
-          key={index}
           style={{
             margin: 0,
             fontFamily: FONT_INTER,
@@ -647,8 +696,8 @@ const Screens: React.FC<ScreensProps> = ({
         tryScrollToConfirmButton();
       };
       
-      return (
-        <div key={index} style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", width: "100%" }}>
+      return applyLayout(
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", width: "100%" }}>
           {/* Response card above selection */}
           {responsePosition === "top" && responseCard}
           
@@ -676,9 +725,8 @@ const Screens: React.FC<ScreensProps> = ({
 
     if (item.type === "card") {
       if (item.variant === "quotation") {
-        return (
+        return applyLayout(
           <Card
-            key={index}
             variant="quotation"
             quote={item.quote}
             author={item.author}
@@ -694,9 +742,8 @@ const Screens: React.FC<ScreensProps> = ({
         );
       }
       if (item.variant === "message") {
-        return (
+        return applyLayout(
           <Card
-            key={index}
             variant="message"
             message={item.message}
             width={item.width}
@@ -708,9 +755,8 @@ const Screens: React.FC<ScreensProps> = ({
         );
       }
       if (item.variant === "info") {
-        return (
+        return applyLayout(
           <Card
-            key={index}
             variant="info"
             content={item.content}
             width={item.width}
@@ -721,9 +767,8 @@ const Screens: React.FC<ScreensProps> = ({
         );
       }
       if (item.variant === "container") {
-        return (
+        return applyLayout(
           <Card
-            key={index}
             variant="container"
             logo={item.logo}
             heading={item.heading}
@@ -743,9 +788,8 @@ const Screens: React.FC<ScreensProps> = ({
       const key = getInputKey(item, index);
       const value = inputState[key] ?? "";
       
-      return (
+      return applyLayout(
         <Input
-          key={index}
           type={item.inputType}
           placeholder={item.placeholder}
           label={item.label}
@@ -773,9 +817,8 @@ const Screens: React.FC<ScreensProps> = ({
 
     if (item.type === "carousel") {
       const carouselItems = item.items ?? item.content ?? [];
-      return (
+      return applyLayout(
         <Carousel
-          key={index}
           items={carouselItems}
           direction={item.direction}
           itemWidth={item.itemWidth}
@@ -801,9 +844,8 @@ const Screens: React.FC<ScreensProps> = ({
       // Since `regularContent` is the source of truth for visibility, let's look it up.
       const realIndex = regularContent.indexOf(item);
 
-      return (
+      return applyLayout(
         <LoadingComponent
-           key={index}
            message={item.message}
            duration={item.duration}
            progressColor={item.progressColor}
@@ -840,7 +882,17 @@ const Screens: React.FC<ScreensProps> = ({
     
     // Extract button from response content
     const responseButtonItem = responseContent.find((item) => item.type === "button") as ButtonItem | undefined;
+    const responseButtonPosition: VerticalPosition = responseButtonItem?.position ?? "bottom";
     const responseRegularContent = responseContent.filter((item) => item.type !== "button");
+
+    const resolveResponseItemPosition = (item: ContentItem): VerticalPosition => {
+      const p = (item as unknown as { position?: VerticalPosition }).position;
+      return p ?? "top";
+    };
+
+    const responseTopItems = responseRegularContent.filter((item) => resolveResponseItemPosition(item) === "top");
+    const responseMiddleItems = responseRegularContent.filter((item) => resolveResponseItemPosition(item) === "middle");
+    const responseBottomItems = responseRegularContent.filter((item) => resolveResponseItemPosition(item) === "bottom");
 
     return (
       <div
@@ -849,7 +901,6 @@ const Screens: React.FC<ScreensProps> = ({
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "space-between",
           padding: responsePadding,
           height: "100%",
           boxSizing: "border-box",
@@ -858,7 +909,7 @@ const Screens: React.FC<ScreensProps> = ({
           overflowX: "hidden",
         }}
       >
-        {/* Response Screen Content */}
+        {/* Response Screen: Top Stack */}
         <div
           style={{
             display: "flex",
@@ -870,43 +921,159 @@ const Screens: React.FC<ScreensProps> = ({
             paddingTop: 16,
           }}
         >
-          {responseRegularContent.map((item, index) => renderContentItem(item, index))}
+          {responseTopItems.map((item, index) => renderContentItem(item, index))}
+          {responseButtonItem && responseButtonPosition === "top" && (
+            <div
+              ref={confirmButtonContainerRef}
+              style={{
+                paddingTop: 16,
+                paddingBottom: 16,
+                marginTop: responseButtonItem.marginTop,
+                marginBottom: responseButtonItem.marginBottom,
+                transform:
+                  responseButtonItem.offsetY != null
+                    ? `translateY(${responseButtonItem.offsetY}px)`
+                    : undefined,
+              }}
+            >
+              <Button
+                variant="flat"
+                text={responseButtonItem.text}
+                width={responseButtonItem.width ?? 300}
+                bgColor={responseButtonItem.bgColor ?? "#2563eb"}
+                textColor={responseButtonItem.textColor ?? "#fff"}
+                textAlign="center"
+                onClick={() => {
+                  if (onScreenResponse && screenIndex != null && screenId) {
+                    onScreenResponse({
+                      button: {
+                        text: responseButtonItem.text,
+                      },
+                      responseKey: selectionItem?.responseKey ?? screenId,
+                      branch: activeBranch,
+                    });
+                  }
+                  // Reset conditional screen and call the button's onClick
+                  setActiveConditionalScreen(null);
+                  setActiveBranch(undefined);
+                  responseButtonItem.onClick?.();
+                }}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Response Screen Button */}
-        {responseButtonItem && (
-          <div
-            ref={confirmButtonContainerRef}
-            style={{
-              paddingTop: 16,
-              paddingBottom: 16,
-            }}
-          >
-            <Button
-              variant="flat"
-              text={responseButtonItem.text}
-              width={responseButtonItem.width ?? 300}
-              bgColor={responseButtonItem.bgColor ?? "#2563eb"}
-              textColor={responseButtonItem.textColor ?? "#fff"}
-              textAlign="center"
-              onClick={() => {
-                if (onScreenResponse && screenIndex != null && screenId) {
-                  onScreenResponse({
-                    button: {
-                      text: responseButtonItem.text,
-                    },
-                    responseKey: selectionItem?.responseKey ?? screenId,
-                    branch: activeBranch,
-                  });
-                }
-                // Reset conditional screen and call the button's onClick
-                setActiveConditionalScreen(null);
-                setActiveBranch(undefined);
-                responseButtonItem.onClick?.();
+        {/* Response Screen: Middle Stack (centered) */}
+        <div
+          style={{
+            flex: 1,
+            width: "100%",
+            maxWidth: 500,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: responseMiddleItems.length > 0 ? "center" : "stretch",
+            gap: responseGap,
+            paddingTop: responseMiddleItems.length > 0 ? 16 : 0,
+            paddingBottom: responseMiddleItems.length > 0 ? 16 : 0,
+          }}
+        >
+          {responseMiddleItems.map((item, index) => renderContentItem(item, index))}
+          {responseButtonItem && responseButtonPosition === "middle" && (
+            <div
+              ref={confirmButtonContainerRef}
+              style={{
+                paddingTop: 16,
+                paddingBottom: 16,
+                marginTop: responseButtonItem.marginTop,
+                marginBottom: responseButtonItem.marginBottom,
+                transform:
+                  responseButtonItem.offsetY != null
+                    ? `translateY(${responseButtonItem.offsetY}px)`
+                    : undefined,
               }}
-            />
-          </div>
-        )}
+            >
+              <Button
+                variant="flat"
+                text={responseButtonItem.text}
+                width={responseButtonItem.width ?? 300}
+                bgColor={responseButtonItem.bgColor ?? "#2563eb"}
+                textColor={responseButtonItem.textColor ?? "#fff"}
+                textAlign="center"
+                onClick={() => {
+                  if (onScreenResponse && screenIndex != null && screenId) {
+                    onScreenResponse({
+                      button: {
+                        text: responseButtonItem.text,
+                      },
+                      responseKey: selectionItem?.responseKey ?? screenId,
+                      branch: activeBranch,
+                    });
+                  }
+                  // Reset conditional screen and call the button's onClick
+                  setActiveConditionalScreen(null);
+                  setActiveBranch(undefined);
+                  responseButtonItem.onClick?.();
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Response Screen: Bottom Stack */}
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 500,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: responseGap,
+            paddingTop: 16,
+            paddingBottom: 16,
+          }}
+        >
+          {responseBottomItems.map((item, index) => renderContentItem(item, index))}
+          {responseButtonItem && responseButtonPosition === "bottom" && (
+            <div
+              ref={confirmButtonContainerRef}
+              style={{
+                paddingTop: 16,
+                paddingBottom: 16,
+                marginTop: responseButtonItem.marginTop,
+                marginBottom: responseButtonItem.marginBottom,
+                transform:
+                  responseButtonItem.offsetY != null
+                    ? `translateY(${responseButtonItem.offsetY}px)`
+                    : undefined,
+              }}
+            >
+              <Button
+                variant="flat"
+                text={responseButtonItem.text}
+                width={responseButtonItem.width ?? 300}
+                bgColor={responseButtonItem.bgColor ?? "#2563eb"}
+                textColor={responseButtonItem.textColor ?? "#fff"}
+                textAlign="center"
+                onClick={() => {
+                  if (onScreenResponse && screenIndex != null && screenId) {
+                    onScreenResponse({
+                      button: {
+                        text: responseButtonItem.text,
+                      },
+                      responseKey: selectionItem?.responseKey ?? screenId,
+                      branch: activeBranch,
+                    });
+                  }
+                  // Reset conditional screen and call the button's onClick
+                  setActiveConditionalScreen(null);
+                  setActiveBranch(undefined);
+                  responseButtonItem.onClick?.();
+                }}
+              />
+            </div>
+          )}
+        </div>
         
       </div>
     );
@@ -919,7 +1086,6 @@ const Screens: React.FC<ScreensProps> = ({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "space-between",
         padding,
         height: "100%",
         boxSizing: "border-box",
@@ -928,7 +1094,7 @@ const Screens: React.FC<ScreensProps> = ({
         overflowX: "hidden",
       }}
     >
-      {/* Top Content - headings, text, images (and selection if position is "top") */}
+      {/* Top Stack */}
       <div
         style={{
           display: "flex",
@@ -940,116 +1106,292 @@ const Screens: React.FC<ScreensProps> = ({
           paddingTop: 16,
         }}
       >
-        {topContent.map((item, index) => renderContentItem(item, index))}
-      </div>
-
-      {/* Middle Selection - when position is "middle" */}
-      {middleSelection && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            paddingTop: 16,
-            paddingBottom: 16,
-          }}
-        >
-          {renderContentItem(middleSelection, 998)}
-        </div>
-      )}
-
-      {/* Bottom Area - Selection (when position is "bottom") or Button */}
-      {bottomSelection && (
-        <div
-          style={{
-            paddingTop: 16,
-            paddingBottom: 16,
-          }}
-        >
-          {renderContentItem(bottomSelection, 999)}
-        </div>
-      )}
-
-      {buttonItem && allLoadingComplete && (
-        <div
-          ref={confirmButtonContainerRef}
-          style={{
-            paddingTop: 16,
-            paddingBottom: 16,
-          }}
-        >
-          {validationError && (
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 10,
-              }}
-            >
+        {topItems.map((item, index) => renderContentItem(item, index))}
+        {buttonItem && buttonPosition === "top" && allLoadingComplete && (
+          <div
+            ref={confirmButtonContainerRef}
+            style={{
+              paddingTop: 16,
+              paddingBottom: 16,
+              marginTop: buttonItem.marginTop,
+              marginBottom: buttonItem.marginBottom,
+              transform: buttonItem.offsetY != null ? `translateY(${buttonItem.offsetY}px)` : undefined,
+            }}
+          >
+            {validationError && (
               <div
                 style={{
-                  maxWidth: 420,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "#ef4444",
-                  textAlign: "center",
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: 10,
                 }}
               >
-                {validationError}
+                <div
+                  style={{
+                    maxWidth: 420,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#ef4444",
+                    textAlign: "center",
+                  }}
+                >
+                  {validationError}
+                </div>
               </div>
-            </div>
-          )}
-          <Button
-            variant="flat"
-            text={buttonItem.text}
-            width={buttonItem.width ?? 300}
-            bgColor={buttonItem.bgColor ?? "#2563eb"}
-            textColor={buttonItem.textColor ?? "#fff"}
-            textAlign="center"
-            onClick={() => {
-              // Basic validation for required inputs + required selection
-              const isInputInvalid = content.some((i, idx) => {
-                if (i.type !== "input" || !i.required) return false;
-                const key = getInputKey(i, idx);
-                const val = inputState[key] ?? "";
-                return !val.trim();
-              });
-
-              const selectionIndex = getSelectionIndex();
-              const selectedValues =
-                selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
-              const isSelectionInvalid =
-                Boolean(selectionItem?.required) && selectedValues.length === 0;
-
-              if (isInputInvalid || isSelectionInvalid) {
-                setValidationError("Please answer all required question(s) to continue.");
-                return;
-              }
-
-              setValidationError(null);
-
-              if (onScreenResponse && screenIndex != null && screenId) {
-                // Collect all input values
-                const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
-                  if (i.type !== "input") return acc;
+            )}
+            <Button
+              variant="flat"
+              text={buttonItem.text}
+              width={buttonItem.width ?? 300}
+              bgColor={buttonItem.bgColor ?? "#2563eb"}
+              textColor={buttonItem.textColor ?? "#fff"}
+              textAlign="center"
+              onClick={() => {
+                // Basic validation for required inputs + required selection
+                const isInputInvalid = content.some((i, idx) => {
+                  if (i.type !== "input" || !i.required) return false;
                   const key = getInputKey(i, idx);
-                  acc[key] = inputState[key] ?? "";
-                  return acc;
-                }, {});
-
-                onScreenResponse({
-                  button: {
-                    text: buttonItem.text,
-                  },
-                  ...inputValues
+                  const val = inputState[key] ?? "";
+                  return !val.trim();
                 });
-              }
-              buttonItem.onClick?.();
+
+                const selectionIndex = getSelectionIndex();
+                const selectedValues =
+                  selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
+                const isSelectionInvalid =
+                  Boolean(selectionItem?.required) && selectedValues.length === 0;
+
+                if (isInputInvalid || isSelectionInvalid) {
+                  setValidationError("Please answer all required question(s) to continue.");
+                  return;
+                }
+
+                setValidationError(null);
+
+                if (onScreenResponse && screenIndex != null && screenId) {
+                  // Collect all input values
+                  const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
+                    if (i.type !== "input") return acc;
+                    const key = getInputKey(i, idx);
+                    acc[key] = inputState[key] ?? "";
+                    return acc;
+                  }, {});
+
+                  onScreenResponse({
+                    button: {
+                      text: buttonItem.text,
+                    },
+                    ...inputValues
+                  });
+                }
+                buttonItem.onClick?.();
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Middle Stack (centered in remaining space) */}
+      <div
+        style={{
+          flex: 1,
+          width: "100%",
+          maxWidth: 500,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: middleItems.length > 0 ? "center" : "stretch",
+          gap,
+          paddingTop: middleItems.length > 0 ? 16 : 0,
+          paddingBottom: middleItems.length > 0 ? 16 : 0,
+        }}
+      >
+        {middleItems.map((item, index) => renderContentItem(item, index))}
+        {buttonItem && buttonPosition === "middle" && allLoadingComplete && (
+          <div
+            ref={confirmButtonContainerRef}
+            style={{
+              paddingTop: 16,
+              paddingBottom: 16,
+              marginTop: buttonItem.marginTop,
+              marginBottom: buttonItem.marginBottom,
+              transform: buttonItem.offsetY != null ? `translateY(${buttonItem.offsetY}px)` : undefined,
             }}
-          />
-        </div>
-      )}
+          >
+            {validationError && (
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: 10,
+                }}
+              >
+                <div
+                  style={{
+                    maxWidth: 420,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#ef4444",
+                    textAlign: "center",
+                  }}
+                >
+                  {validationError}
+                </div>
+              </div>
+            )}
+            <Button
+              variant="flat"
+              text={buttonItem.text}
+              width={buttonItem.width ?? 300}
+              bgColor={buttonItem.bgColor ?? "#2563eb"}
+              textColor={buttonItem.textColor ?? "#fff"}
+              textAlign="center"
+              onClick={() => {
+                // Basic validation for required inputs + required selection
+                const isInputInvalid = content.some((i, idx) => {
+                  if (i.type !== "input" || !i.required) return false;
+                  const key = getInputKey(i, idx);
+                  const val = inputState[key] ?? "";
+                  return !val.trim();
+                });
+
+                const selectionIndex = getSelectionIndex();
+                const selectedValues =
+                  selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
+                const isSelectionInvalid =
+                  Boolean(selectionItem?.required) && selectedValues.length === 0;
+
+                if (isInputInvalid || isSelectionInvalid) {
+                  setValidationError("Please answer all required question(s) to continue.");
+                  return;
+                }
+
+                setValidationError(null);
+
+                if (onScreenResponse && screenIndex != null && screenId) {
+                  // Collect all input values
+                  const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
+                    if (i.type !== "input") return acc;
+                    const key = getInputKey(i, idx);
+                    acc[key] = inputState[key] ?? "";
+                    return acc;
+                  }, {});
+
+                  onScreenResponse({
+                    button: {
+                      text: buttonItem.text,
+                    },
+                    ...inputValues
+                  });
+                }
+                buttonItem.onClick?.();
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Stack */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 500,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap,
+          paddingTop: 16,
+          paddingBottom: 16,
+        }}
+      >
+        {bottomItems.map((item, index) => renderContentItem(item, index))}
+
+        {buttonItem && buttonPosition === "bottom" && allLoadingComplete && (
+          <div
+            ref={confirmButtonContainerRef}
+            style={{
+              paddingTop: 16,
+              paddingBottom: 16,
+              marginTop: buttonItem.marginTop,
+              marginBottom: buttonItem.marginBottom,
+              transform: buttonItem.offsetY != null ? `translateY(${buttonItem.offsetY}px)` : undefined,
+            }}
+          >
+            {validationError && (
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: 10,
+                }}
+              >
+                <div
+                  style={{
+                    maxWidth: 420,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#ef4444",
+                    textAlign: "center",
+                  }}
+                >
+                  {validationError}
+                </div>
+              </div>
+            )}
+            <Button
+              variant="flat"
+              text={buttonItem.text}
+              width={buttonItem.width ?? 300}
+              bgColor={buttonItem.bgColor ?? "#2563eb"}
+              textColor={buttonItem.textColor ?? "#fff"}
+              textAlign="center"
+              onClick={() => {
+                // Basic validation for required inputs + required selection
+                const isInputInvalid = content.some((i, idx) => {
+                  if (i.type !== "input" || !i.required) return false;
+                  const key = getInputKey(i, idx);
+                  const val = inputState[key] ?? "";
+                  return !val.trim();
+                });
+
+                const selectionIndex = getSelectionIndex();
+                const selectedValues =
+                  selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
+                const isSelectionInvalid =
+                  Boolean(selectionItem?.required) && selectedValues.length === 0;
+
+                if (isInputInvalid || isSelectionInvalid) {
+                  setValidationError("Please answer all required question(s) to continue.");
+                  return;
+                }
+
+                setValidationError(null);
+
+                if (onScreenResponse && screenIndex != null && screenId) {
+                  // Collect all input values
+                  const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
+                    if (i.type !== "input") return acc;
+                    const key = getInputKey(i, idx);
+                    acc[key] = inputState[key] ?? "";
+                    return acc;
+                  }, {});
+
+                  onScreenResponse({
+                    button: {
+                      text: buttonItem.text,
+                    },
+                    ...inputValues
+                  });
+                }
+                buttonItem.onClick?.();
+              }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
