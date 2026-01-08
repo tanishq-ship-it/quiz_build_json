@@ -227,6 +227,11 @@ type SelectionItem = {
    */
   unselectedBorderColor?: string;
   gap?: number;
+  /**
+   * Optional separate grid gaps (px). If provided, they override `gap` for that axis.
+   */
+  rowGap?: number;
+  colGap?: number;
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void; // Auto-fires for radio when no button
   defaultSelected?: (string | number)[];
@@ -720,6 +725,8 @@ const Screens: React.FC<ScreensProps> = ({
             indicator={item.indicator}
             unselectedBorderColor={item.unselectedBorderColor}
             gap={item.gap}
+            rowGap={item.rowGap}
+            colGap={item.colGap}
             onChange={handleSelectionChange}
             onComplete={item.onComplete}
             autoComplete={autoComplete}

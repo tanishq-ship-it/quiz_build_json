@@ -93,6 +93,11 @@ interface SelectionOptionsProps {
    */
   unselectedBorderColor?: string;
   gap?: number;
+  /**
+   * Optional separate grid gaps (px). If provided, they override `gap` for that axis.
+   */
+  rowGap?: number;
+  colGap?: number;
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void; // Auto-fires for radio when autoComplete is true
   autoComplete?: boolean; // If true, radio selection triggers onComplete immediately
@@ -171,6 +176,8 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
   indicator = "none",
   unselectedBorderColor = "#e5e7eb",
   gap = 8,
+  rowGap,
+  colGap,
   onChange,
   onComplete,
   autoComplete = false,
@@ -179,6 +186,25 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
 }) => {
   const [selected, setSelected] = useState<(string | number)[]>(defaultSelected);
   const { rows, cols } = parseLayout(layout);
+
+  const visibleOptions = options.slice(0, rows * cols);
+
+  const getOptionWidth = (option: OptionItem): number | null => {
+    if (option.variant === "flat") return typeof option.width === "number" ? option.width : null;
+    if (option.variant === "imageCard") return typeof option.width === "number" ? option.width : null;
+    if (option.variant === "square") return typeof option.size === "number" ? option.size : null;
+    return null;
+  };
+
+  // When columns are 1fr (equal-width), the "gap" is NOT the only distance between
+  // two fixed-width buttons. The remaining column space also contributes.
+  // If the user sets a horizontal gap and all options have explicit widths,
+  // shrink columns to content width so `colGap` actually controls spacing.
+  const shouldShrinkColumnsToContent =
+    cols > 1 &&
+    colGap != null &&
+    visibleOptions.length > 0 &&
+    visibleOptions.every((o) => getOptionWidth(o) != null);
 
   // Special-case: rating rows (1x5) should NOT animate in.
   // These screens are typically used for quick rating/emoji selection and should feel instant.
@@ -226,17 +252,22 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+          gridTemplateColumns: shouldShrinkColumnsToContent
+            ? `repeat(${cols}, max-content)`
+            : `repeat(${cols}, minmax(0, 1fr))`,
           gridTemplateRows: `repeat(${rows}, auto)`,
-          gap,
+          gap: rowGap != null || colGap != null ? undefined : gap,
+          rowGap: rowGap ?? gap,
+          columnGap: colGap ?? gap,
           width: "100%",
           boxSizing: "border-box",
+          justifyContent: shouldShrinkColumnsToContent ? "center" : undefined,
           justifyItems: "center",
           alignItems: "center",
           overflow: "hidden",
         }}
       >
-        {options.slice(0, rows * cols).map((option, index) => {
+        {visibleOptions.map((option, index) => {
           const optionSelected = isSelected(option, index);
           const showCircleIndicator = indicator === "circle" && option.variant === "flat";
 

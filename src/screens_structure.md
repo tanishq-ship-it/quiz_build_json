@@ -466,6 +466,8 @@ The `CompletionScreen` component has been deprecated in favor of `Card variant="
 | `layout` | `string` | required | Grid format: `"ROWSxCOLS"` |
 | `options` | `array` | required | Array of option objects |
 | `gap` | `number` | `8` | Gap between options (px) |
+| `rowGap` | `number` | uses `gap` | Row gap between options (px). Overrides `gap` vertically |
+| `colGap` | `number` | uses `gap` | Column gap between options (px). Overrides `gap` horizontally |
 | `selectedColor` | `string` | `"#2563eb"` | Selection border color |
 | `selectedBorderWidth` | `number` | `2` | Selection border width |
 | `indicator` | `"none" \| "circle"` | `"none"` | Visual indicator style. `"circle"` shows a right-side checked/unchecked circle for `flat` options and a neutral border when not selected |
@@ -483,6 +485,10 @@ The `CompletionScreen` component has been deprecated in favor of `Card variant="
 - `"top"` - Selection stays with heading/text at top (default when button exists)
 - `"middle"` - Selection centered between content and button
 - `"bottom"` - Selection at bottom of screen (default when no button)
+
+**Separate row/column gaps:**
+- Use `gap` to set both row + column spacing.
+- Use `rowGap` / `colGap` if you want different spacing per axis (e.g., tighter columns).
 
 ### Layout Formats
 
