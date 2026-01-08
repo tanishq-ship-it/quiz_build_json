@@ -301,6 +301,7 @@ type ButtonItem = {
   bgColor?: string;
   textColor?: string;
   width?: number;
+  height?: number;
   fontSize?: number;
   showBorder?: boolean;
   borderColor?: string;
@@ -943,6 +944,7 @@ const Screens: React.FC<ScreensProps> = ({
                 variant="flat"
                 text={responseButtonItem.text}
                 width={responseButtonItem.width ?? 300}
+                height={responseButtonItem.height}
                 bgColor={responseButtonItem.bgColor ?? "#2563eb"}
                 textColor={responseButtonItem.textColor ?? "#fff"}
                 fontSize={responseButtonItem.fontSize}
@@ -1003,6 +1005,7 @@ const Screens: React.FC<ScreensProps> = ({
                 variant="flat"
                 text={responseButtonItem.text}
                 width={responseButtonItem.width ?? 300}
+                height={responseButtonItem.height}
                 bgColor={responseButtonItem.bgColor ?? "#2563eb"}
                 textColor={responseButtonItem.textColor ?? "#fff"}
                 fontSize={responseButtonItem.fontSize}
@@ -1061,6 +1064,7 @@ const Screens: React.FC<ScreensProps> = ({
                 variant="flat"
                 text={responseButtonItem.text}
                 width={responseButtonItem.width ?? 300}
+                height={responseButtonItem.height}
                 bgColor={responseButtonItem.bgColor ?? "#2563eb"}
                 textColor={responseButtonItem.textColor ?? "#fff"}
                 fontSize={responseButtonItem.fontSize}
@@ -1156,6 +1160,7 @@ const Screens: React.FC<ScreensProps> = ({
               variant="flat"
               text={buttonItem.text}
               width={buttonItem.width ?? 300}
+              height={buttonItem.height}
               bgColor={buttonItem.bgColor ?? "#2563eb"}
               textColor={buttonItem.textColor ?? "#fff"}
               fontSize={buttonItem.fontSize}
@@ -1260,6 +1265,7 @@ const Screens: React.FC<ScreensProps> = ({
               variant="flat"
               text={buttonItem.text}
               width={buttonItem.width ?? 300}
+              height={buttonItem.height}
               bgColor={buttonItem.bgColor ?? "#2563eb"}
               textColor={buttonItem.textColor ?? "#fff"}
               fontSize={buttonItem.fontSize}
@@ -1363,6 +1369,7 @@ const Screens: React.FC<ScreensProps> = ({
               variant="flat"
               text={buttonItem.text}
               width={buttonItem.width ?? 300}
+              height={buttonItem.height}
               bgColor={buttonItem.bgColor ?? "#2563eb"}
               textColor={buttonItem.textColor ?? "#fff"}
               fontSize={buttonItem.fontSize}
