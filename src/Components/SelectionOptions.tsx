@@ -32,6 +32,11 @@ type FlatOption = {
   bgColor?: string;
   textColor?: string;
   fontSize?: number;
+  /**
+   * Optional right-side label (e.g., "Casual", "Regular").
+   * Rendered on the right side of the button.
+   */
+  rightLabel?: { text: string; textColor?: string; fontSize?: number; fontWeight?: number } | string;
 };
 
 type OptionItem = (SquareOption | ImageCardOption | FlatOption) & {
@@ -130,6 +135,14 @@ const normalizeLabels = (labels: SelectionLabels | undefined): { left?: Selectio
   const left = normalizeEdgeLabel(labels.left);
   const right = normalizeEdgeLabel(labels.right);
   return left || right ? { left, right } : null;
+};
+
+type ButtonRightLabel = { text: string; textColor?: string; fontSize?: number; fontWeight?: number };
+const normalizeRightLabel = (value: FlatOption["rightLabel"]): ButtonRightLabel | null => {
+  if (!value) return null;
+  if (typeof value === "string") return { text: value };
+  if (typeof value === "object" && typeof value.text === "string") return value;
+  return null;
 };
 
 const SelectionOptions: React.FC<SelectionOptionsProps> = ({
@@ -259,55 +272,79 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
                 />
               )}
               {option.variant === "flat" && (
-                <Button
+              (() => {
+                const rightLabel = normalizeRightLabel(option.rightLabel);
+                const rightIconContent =
+                  rightLabel || showCircleIndicator ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      {rightLabel && (
+                        <span
+                          style={{
+                            color: rightLabel.textColor ?? "#9ca3af",
+                            fontSize: rightLabel.fontSize ?? 14,
+                            fontWeight: rightLabel.fontWeight ?? 500,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {rightLabel.text}
+                        </span>
+                      )}
+                      {showCircleIndicator && (
+                        <div
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: 999,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            boxSizing: "border-box",
+                            border: optionSelected
+                              ? `2px solid ${selectedColor}`
+                              : "2px solid #c7c7c7",
+                            backgroundColor: optionSelected ? selectedColor : "transparent",
+                          }}
+                        >
+                          {optionSelected && (
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M20 6L9 17l-5-5"
+                                stroke="#fff"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : undefined;
+
+                const effectiveTextAlign = option.textAlign ?? (rightLabel ? "left" : undefined);
+
+                return (
+                  <Button
                   variant="flat"
                   text={option.text}
                   size={option.size}
                   width={option.width}
                   height={option.height}
-                  textAlign={option.textAlign}
+                textAlign={effectiveTextAlign}
                   bgColor={option.bgColor}
                   textColor={option.textColor}
                   fontSize={option.fontSize}
-                  allowWrap={showCircleIndicator}
-                  rightIcon={
-                    showCircleIndicator ? (
-                      <div
-                        style={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: 999,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          boxSizing: "border-box",
-                          border: optionSelected
-                            ? `2px solid ${selectedColor}`
-                            : "2px solid #c7c7c7",
-                          backgroundColor: optionSelected ? selectedColor : "transparent",
-                        }}
-                      >
-                        {optionSelected && (
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M20 6L9 17l-5-5"
-                              stroke="#fff"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        )}
-                      </div>
-                    ) : undefined
-                  }
-                />
+                allowWrap={showCircleIndicator}
+                rightIcon={rightIconContent}
+                  />
+                );
+              })()
               )}
             </div>
           );

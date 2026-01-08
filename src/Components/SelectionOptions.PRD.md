@@ -161,8 +161,33 @@ Each option must specify a `variant` that matches Button variants:
   bgColor?: string;
   textColor?: string;
   fontSize?: number;      // Overrides preset
+  rightLabel?: string | { text: string; textColor?: string; fontSize?: number; fontWeight?: number };
   id?: string | number;
   value?: string | number;
+}
+```
+
+#### `rightLabel` (Button Label on the Right)
+
+Use `rightLabel` to render a small label on the **right side** of a flat option (example: “Casual / Regular / Serious / Intense”).
+
+```json
+{
+  "type": "selection",
+  "mode": "radio",
+  "layout": "4x1",
+  "options": [
+    {
+      "variant": "flat",
+      "text": "👍 5 min/day",
+      "rightLabel": { "text": "Casual", "textColor": "#9ca3af", "fontSize": 14 }
+    },
+    {
+      "variant": "flat",
+      "text": "👌 10 min/day",
+      "rightLabel": { "text": "Regular", "textColor": "#9ca3af", "fontSize": 14 }
+    }
+  ]
 }
 ```
 

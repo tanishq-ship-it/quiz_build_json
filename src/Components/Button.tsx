@@ -354,7 +354,7 @@ const FlatButton: React.FC<FlatButtonProps> = ({
   const preset = size ? FLAT_BUTTON_SIZES[size] : null;
   const width = customWidth ?? preset?.width ?? 300;
   const height = customHeight ?? preset?.height ?? width * 0.2;
-  const fontSize = customFontSize ?? preset?.fontSize ?? height * 0.35;
+  const fontSize = customFontSize ?? preset?.fontSize ?? height * 0.30;
   
   const borderRadius = 12;
   const isLight = bgColor === "#fff" || bgColor === "white" || bgColor === "#ffffff";

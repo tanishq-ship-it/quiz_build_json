@@ -113,6 +113,7 @@ type FlatOption = {
   bgColor?: string;
   textColor?: string;
   fontSize?: number;
+  rightLabel?: { text: string; textColor?: string; fontSize?: number; fontWeight?: number } | string;
   id?: string | number;
   value?: string | number;
 };
