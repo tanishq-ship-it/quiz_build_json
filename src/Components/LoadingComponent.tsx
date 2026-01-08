@@ -169,89 +169,107 @@ const LoadingComponent: React.FC<LoadingComponentProps> = ({
       {showPopup && popup && (
         <div
           style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "90%",
-            maxWidth: 320,
-            backgroundColor: "#fff",
-            borderRadius: 12,
-            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-            padding: 24,
-            zIndex: 10,
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            textAlign: "center",
-            border: "1px solid #e5e5e5",
+            justifyContent: "center",
+            padding: 24,
+            backgroundColor: "rgba(0,0,0,0.25)",
+            boxSizing: "border-box",
           }}
         >
-          <h4
+          <div
             style={{
-              fontFamily: FONT_INTER,
-              fontSize: 18,
-              fontWeight: 700,
-              color: "#111",
-              margin: "0 0 8px 0",
+              width: "min(320px, 100%)",
+              backgroundColor: "#fff",
+              borderRadius: 12,
+              boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+              padding: 24,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+              border: "1px solid #e5e5e5",
+              boxSizing: "border-box",
             }}
           >
-            {popup.title}
-          </h4>
-          {popup.description && (
-            <p
+            <h4
               style={{
                 fontFamily: FONT_INTER,
-                fontSize: 14,
-                color: "#666",
-                margin: "0 0 20px 0",
-                lineHeight: 1.5,
+                fontSize: 18,
+                fontWeight: 700,
+                color: "#111",
+                margin: "0 0 8px 0",
               }}
             >
-              {popup.description}
-            </p>
-          )}
+              {popup.title}
+            </h4>
+            {popup.description && (
+              <p
+                style={{
+                  fontFamily: FONT_INTER,
+                  fontSize: 14,
+                  color: "#666",
+                  margin: "0 0 20px 0",
+                  lineHeight: 1.5,
+                }}
+              >
+                {popup.description}
+              </p>
+            )}
 
-          <div style={{ 
-            display: "flex", 
-            flexDirection: popup.layout === "row" ? "row" : "column", 
-            gap: 8, 
-            width: "100%",
-            justifyContent: "center"
-          }}>
-            {popup.options.map((opt, idx) => {
-              const isOutline = opt.variant === "outline";
-              // Use custom colors if provided, otherwise fallback to variant defaults
-              const defaultBg = isOutline ? "#ffffff" : "#2563eb";
-              const defaultText = isOutline ? "#333333" : "#ffffff";
-              
-              const bgColor = opt.bgColor ?? defaultBg;
-              const textColor = opt.textColor ?? defaultText;
-              
-              // Adjust dimensions for row layout to ensure they fit and look good
-              // Container is ~320px max, minus 48px padding = 272px space.
-              // Two buttons with gap=8 means max width ~132px each.
-              // We'll use 130px width, and explicit height/fontSize to prevent auto-scaling weirdness.
-              const isRow = popup.layout === "row";
-              const width = isRow ? 130 : 280;
-              const height = isRow ? 44 : undefined; // Standard height
-              const fontSize = isRow ? 14 : undefined; // Standard font size
-              
-              return (
-                <div key={idx} style={isRow ? { flex: 1, display: 'flex', justifyContent: 'center' } : {}}>
-                  <Button
-                    variant="flat"
-                    text={opt.text}
-                    bgColor={bgColor}
-                    textColor={textColor}
-                    width={width}
-                    height={height}
-                    fontSize={fontSize}
-                    onClick={() => handleOptionClick(opt)}
-                  />
-                </div>
-              );
-            })}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: popup.layout === "row" ? "row" : "column",
+                gap: 8,
+                width: "100%",
+                justifyContent: "center",
+              }}
+            >
+              {popup.options.map((opt, idx) => {
+                const isOutline = opt.variant === "outline";
+                // Use custom colors if provided, otherwise fallback to variant defaults
+                const defaultBg = isOutline ? "#ffffff" : "#2563eb";
+                const defaultText = isOutline ? "#333333" : "#ffffff";
+
+                const bgColor = opt.bgColor ?? defaultBg;
+                const textColor = opt.textColor ?? defaultText;
+
+                // Adjust dimensions for row layout to ensure they fit and look good
+                // Container is ~320px max, minus 48px padding = 272px space.
+                // Two buttons with gap=8 means max width ~132px each.
+                // We'll use 130px width, and explicit height/fontSize to prevent auto-scaling weirdness.
+                const isRow = popup.layout === "row";
+                const width = isRow ? 130 : 280;
+                const height = isRow ? 44 : undefined; // Standard height
+                const fontSize = isRow ? 14 : undefined; // Standard font size
+
+                return (
+                  <div
+                    key={idx}
+                    style={
+                      isRow
+                        ? { flex: 1, display: "flex", justifyContent: "center" }
+                        : {}
+                    }
+                  >
+                    <Button
+                      variant="flat"
+                      text={opt.text}
+                      bgColor={bgColor}
+                      textColor={textColor}
+                      width={width}
+                      height={height}
+                      fontSize={fontSize}
+                      onClick={() => handleOptionClick(opt)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
