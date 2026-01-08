@@ -160,7 +160,12 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
         return (
           <div
             key={getOptionId(option, index)}
-            style={wrapperStyle}
+            className="qb-option-arrive"
+            style={{
+              ...wrapperStyle,
+              // Stagger the entrance slightly (top-left -> bottom-right)
+              animationDelay: `${index * 70}ms`,
+            }}
             onClick={() => handleSelect(option, index)}
           >
             {option.variant === "square" && (
