@@ -7,6 +7,7 @@ import Carousel from "../Components/Carousel";
 import SelectionOptions from "../Components/SelectionOptions";
 import Card, { type InfoContentItem } from "../Components/Card";
 import LoadingComponent, { type LoadingPopupConfig } from "../Components/LoadingComponent";
+import ListBlock from "../Components/listBock";
 import { FONT_INTER } from "../styles/fonts";
 
 // Content item types
@@ -273,7 +274,33 @@ type ButtonItem = {
   width?: number;
 };
 
-type ContentItem = ImageItem | TextItem | HeadingItem | SelectionItem | CardItem | ButtonItem | InputItem | CarouselItem | LoadingItem;
+// Two-column list blocks (e.g., "Before" / "After")
+type ListBlockRowItem = {
+  type: "listBlockRow";
+  gap?: number;
+  blocks: Array<{
+    heading: string;
+    data: Array<{ icon: string; text: string }>;
+    width?: number | string;
+    height?: number | string;
+    bgColor?: string;
+    titleColor?: string;
+    textColor?: string;
+    iconSize?: number;
+  }>;
+};
+
+type ContentItem =
+  | ImageItem
+  | TextItem
+  | HeadingItem
+  | SelectionItem
+  | CardItem
+  | ButtonItem
+  | InputItem
+  | CarouselItem
+  | LoadingItem
+  | ListBlockRowItem;
 
 interface ScreensProps {
   content: ContentItem[];
@@ -450,6 +477,35 @@ const Screens: React.FC<ScreensProps> = ({
   };
 
   const renderContentItem = (item: ContentItem, index: number) => {
+    if (item.type === "listBlockRow") {
+      const rowGap = item.gap ?? 16;
+      return (
+        <div
+          key={index}
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            gap: rowGap,
+            flexWrap: "nowrap",
+          }}
+        >
+          {item.blocks.map((b, blockIndex) => (
+            <ListBlock
+              key={`${index}-${blockIndex}`}
+              content={{ heading: b.heading, data: b.data }}
+              width={b.width ?? `calc((100% - ${rowGap}px) / 2)`}
+              height={b.height}
+              bgColor={b.bgColor}
+              titleColor={b.titleColor}
+              textColor={b.textColor}
+              iconSize={b.iconSize}
+            />
+          ))}
+        </div>
+      );
+    }
+
     if (item.type === "image") {
       return (
         <Image

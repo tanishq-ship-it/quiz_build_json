@@ -115,10 +115,11 @@ Responsive container holding the screen component.
 
 ```css
 .mobile-frame {
-  width: 30vw;
-  height: 80vh;
-  height: 80dvh;
-  overflow: hidden;
+  width: clamp(360px, 34vw, 520px);
+  height: 90vh;
+  height: 90dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 ```
 
@@ -128,20 +129,20 @@ Responsive container holding the screen component.
 
 | Device | Breakpoint | Frame Width | Frame Height |
 |--------|------------|-------------|--------------|
-| Desktop (large) | ≥ 1440px | `30vw` | `80vh` |
-| Laptop (small) | 1024px - 1439px | `35vw` | `80vh` |
-| Tablet | 768px - 1023px | `50vw` | `80vh` |
+| Desktop (large) | ≥ 1440px | `clamp(360px, 34vw, 520px)` | `90vh` |
+| Laptop (small) | 1024px - 1439px | `clamp(360px, 40vw, 520px)` | `90vh` |
+| Tablet | 768px - 1023px | `min(92vw, 520px)` | `90vh` |
 | Mobile | < 768px | `100%` | `100%` |
 
 ```css
-/* Laptop (small): 35% width */
+/* Laptop (small) */
 @media (max-width: 1439px) {
-  .mobile-frame { width: 35vw; }
+  .mobile-frame { width: clamp(360px, 40vw, 520px); }
 }
 
-/* Tablet: 50% width */
+/* Tablet */
 @media (max-width: 1023px) {
-  .mobile-frame { width: 50vw; }
+  .mobile-frame { width: min(92vw, 520px); }
 }
 
 /* Mobile: Full width and height */

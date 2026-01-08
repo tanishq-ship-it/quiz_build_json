@@ -19,7 +19,8 @@ import ListBlock from "./Components/listBock";
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | `content` | `ListBlockContent` | Yes | - | The content data object |
-| `width` | `number` | No | `180` | Block width in pixels |
+| `width` | `number \| string` | No | `180` | Block width (px number or CSS width string, e.g. `"100%"`) |
+| `height` | `number \| string` | No | - | Optional block height (px number or CSS height string). If omitted and width is a number, height defaults to 2× width. |
 | `bgColor` | `string` | No | `"#fff"` | Background color |
 | `titleColor` | `string` | No | `"#999"` | Heading text color |
 | `textColor` | `string` | No | `"#333"` | Item text color |
@@ -63,7 +64,7 @@ interface ListItem {
 | Property | Value |
 |----------|-------|
 | Width | Customizable (default: 180px) |
-| Height | 2× width (auto-calculated) |
+| Height | 2× width (auto-calculated when width is a number), or `height` prop |
 | Border Radius | 16px |
 | Padding | 20px |
 

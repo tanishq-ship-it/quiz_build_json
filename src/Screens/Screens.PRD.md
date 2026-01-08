@@ -733,6 +733,48 @@ Conditional screens allow you to **replace the entire screen content** when an o
 />
 ```
 
+### Before / After Comparison (2-column List)
+
+Use `type: "listBlockRow"` to render two `ListBlock` cards side-by-side (e.g., Before vs After).
+
+```tsx
+<Screens
+  content={[
+    { type: "heading", content: "Unlock Your Full Potential" },
+    {
+      type: "listBlockRow",
+      gap: 16,
+      blocks: [
+        {
+          heading: "Before",
+          // width can be a number or a CSS string (defaults to 50% per column)
+          bgColor: "#e5e7eb",
+          titleColor: "#9ca3af",
+          textColor: "#6b7280",
+          iconSize: 26,
+          data: [
+            { icon: "😞", text: "Stagnation in personal growth" },
+            { icon: "😞", text: "Feeling stuck at work" },
+          ],
+        },
+        {
+          heading: "After",
+          bgColor: "#ffffff",
+          titleColor: "#9ca3af",
+          textColor: "#6b7280",
+          iconSize: 26,
+          data: [
+            { icon: "😀", text: "Achieved goals" },
+            { icon: "😀", text: "Career growth" },
+          ],
+        },
+      ],
+    },
+    { type: "button", text: "Continue", onClick: () => {} },
+  ]}
+/>
+```
+
 ### Quiz with Response Cards + Button
 
 ```tsx

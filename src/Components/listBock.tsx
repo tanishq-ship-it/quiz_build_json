@@ -13,7 +13,8 @@ interface ListBlockContent {
 
 interface ListBlockProps {
   content: ListBlockContent;
-  width?: number;
+  width?: number | string;
+  height?: number | string;
   bgColor?: string;
   titleColor?: string;
   textColor?: string;
@@ -23,20 +24,22 @@ interface ListBlockProps {
 const ListBlock: React.FC<ListBlockProps> = ({
   content,
   width = 180,
+  height,
   bgColor = "#fff",
   titleColor = "#999",
   textColor = "#333",
   iconSize = 32,
 }) => {
   const { heading, data } = content;
-  const height = width * 2;
+  const computedHeight =
+    height ?? (typeof width === "number" ? width * 2 : undefined);
   const borderRadius = 16;
 
   return (
     <div
       style={{
         width,
-        height,
+        height: computedHeight,
         backgroundColor: bgColor,
         borderRadius,
         padding: 20,
