@@ -391,6 +391,8 @@ Renders a text input field.
   "bgColor": "#2563eb",
   "textColor": "#fff",
   "width": 300,
+  "showBorder": true,
+  "borderColor": "#e5e5e5",
   "marginTop": 0,
   "marginBottom": 0,
   "offsetY": 0
@@ -404,6 +406,8 @@ Renders a text input field.
 | `bgColor` | `string` | `"#2563eb"` | Background color |
 | `textColor` | `string` | `"#fff"` | Text color |
 | `width` | `number` | `300` | Button width in px |
+| `showBorder` | `boolean` | `true` | If `bgColor` is `#fff`, a subtle border is added by default. Set `false` to remove it |
+| `borderColor` | `string` | `"#e5e5e5"` | Border color when `bgColor` is `#fff` and `showBorder=true` |
 | `marginTop` | `number` | `0` | Extra space above the button (px) |
 | `marginBottom` | `number` | `0` | Extra space below the button (px) |
 | `offsetY` | `number` | `0` | Nudge the button up/down (px) |
@@ -562,6 +566,7 @@ Perfect for text buttons, age ranges, categories.
   "height": 48,
   "bgColor": "#fff",
   "textColor": "#333",
+  "showBorder": false,
   "textAlign": "left",
   "fontSize": 14,
   "value": "leadership"
@@ -576,6 +581,8 @@ Perfect for text buttons, age ranges, categories.
 | `height` | `number` | from size | Custom height |
 | `bgColor` | `string` | `"#2563eb"` | Background color |
 | `textColor` | `string` | `"#fff"` | Text color |
+| `showBorder` | `boolean` | `true` | If `bgColor` is `#fff`, a subtle border is added by default. Set `false` to remove it |
+| `borderColor` | `string` | `"#e5e5e5"` | Border color when `bgColor` is `#fff` and `showBorder=true` |
 | `textAlign` | `string` | `"center"` | `left`, `center`, `right` |
 | `fontSize` | `number` | from size | Custom font size |
 | `value` | `string \| number` | index | Selection value |

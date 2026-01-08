@@ -301,6 +301,8 @@ type ButtonItem = {
   bgColor?: string;
   textColor?: string;
   width?: number;
+  showBorder?: boolean;
+  borderColor?: string;
   position?: VerticalPosition;
   marginTop?: number;
   marginBottom?: number;
@@ -942,6 +944,8 @@ const Screens: React.FC<ScreensProps> = ({
                 width={responseButtonItem.width ?? 300}
                 bgColor={responseButtonItem.bgColor ?? "#2563eb"}
                 textColor={responseButtonItem.textColor ?? "#fff"}
+                showBorder={responseButtonItem.showBorder}
+                borderColor={responseButtonItem.borderColor}
                 textAlign="center"
                 onClick={() => {
                   if (onScreenResponse && screenIndex != null && screenId) {
@@ -999,6 +1003,8 @@ const Screens: React.FC<ScreensProps> = ({
                 width={responseButtonItem.width ?? 300}
                 bgColor={responseButtonItem.bgColor ?? "#2563eb"}
                 textColor={responseButtonItem.textColor ?? "#fff"}
+                showBorder={responseButtonItem.showBorder}
+                borderColor={responseButtonItem.borderColor}
                 textAlign="center"
                 onClick={() => {
                   if (onScreenResponse && screenIndex != null && screenId) {
@@ -1054,6 +1060,8 @@ const Screens: React.FC<ScreensProps> = ({
                 width={responseButtonItem.width ?? 300}
                 bgColor={responseButtonItem.bgColor ?? "#2563eb"}
                 textColor={responseButtonItem.textColor ?? "#fff"}
+                showBorder={responseButtonItem.showBorder}
+                borderColor={responseButtonItem.borderColor}
                 textAlign="center"
                 onClick={() => {
                   if (onScreenResponse && screenIndex != null && screenId) {
@@ -1146,6 +1154,8 @@ const Screens: React.FC<ScreensProps> = ({
               width={buttonItem.width ?? 300}
               bgColor={buttonItem.bgColor ?? "#2563eb"}
               textColor={buttonItem.textColor ?? "#fff"}
+              showBorder={buttonItem.showBorder}
+              borderColor={buttonItem.borderColor}
               textAlign="center"
               onClick={() => {
                 // Basic validation for required inputs + required selection
@@ -1247,6 +1257,8 @@ const Screens: React.FC<ScreensProps> = ({
               width={buttonItem.width ?? 300}
               bgColor={buttonItem.bgColor ?? "#2563eb"}
               textColor={buttonItem.textColor ?? "#fff"}
+              showBorder={buttonItem.showBorder}
+              borderColor={buttonItem.borderColor}
               textAlign="center"
               onClick={() => {
                 // Basic validation for required inputs + required selection
@@ -1347,6 +1359,8 @@ const Screens: React.FC<ScreensProps> = ({
               width={buttonItem.width ?? 300}
               bgColor={buttonItem.bgColor ?? "#2563eb"}
               textColor={buttonItem.textColor ?? "#fff"}
+              showBorder={buttonItem.showBorder}
+              borderColor={buttonItem.borderColor}
               textAlign="center"
               onClick={() => {
                 // Basic validation for required inputs + required selection

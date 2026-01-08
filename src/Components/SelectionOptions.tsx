@@ -35,6 +35,15 @@ type FlatOption = {
   textColor?: string;
   fontSize?: number;
   /**
+   * Flat buttons add a subtle border automatically when bgColor is pure white (#fff).
+   * Set showBorder=false to force borderless.
+   */
+  showBorder?: boolean;
+  /**
+   * Optional border color when showBorder is enabled and bgColor is pure white.
+   */
+  borderColor?: string;
+  /**
    * Optional right-side label (e.g., "Casual", "Regular").
    * Rendered on the right side of the button.
    */
@@ -357,6 +366,8 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
                 textAlign={effectiveTextAlign}
                   bgColor={option.bgColor}
                   textColor={option.textColor}
+                  showBorder={option.showBorder}
+                  borderColor={option.borderColor}
                   fontSize={option.fontSize}
                 allowWrap={showCircleIndicator}
                 rightIcon={rightIconContent}

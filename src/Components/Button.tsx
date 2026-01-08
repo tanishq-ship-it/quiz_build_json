@@ -329,6 +329,15 @@ interface FlatButtonProps {
   textAlign?: "left" | "center" | "right";
   bgColor?: string;
   textColor?: string;
+  /**
+   * Flat buttons add a subtle border automatically when bgColor is pure white (#fff),
+   * to avoid white-on-white blending. Set showBorder=false to force borderless.
+   */
+  showBorder?: boolean;
+  /**
+   * Optional border color when showBorder is enabled and bgColor is pure white.
+   */
+  borderColor?: string;
   fontSize?: number;
   /**
    * Optional element rendered on the right (e.g., selection indicator).
@@ -351,6 +360,8 @@ const FlatButton: React.FC<FlatButtonProps> = ({
   textAlign = "center",
   bgColor = "#2563eb",
   textColor = "#fff",
+  showBorder = true,
+  borderColor,
   fontSize: customFontSize,
   rightIcon,
   allowWrap = false,
@@ -364,6 +375,8 @@ const FlatButton: React.FC<FlatButtonProps> = ({
   
   const borderRadius = 12;
   const isLight = bgColor === "#fff" || bgColor === "white" || bgColor === "#ffffff";
+  const resolvedBorder =
+    showBorder && isLight ? `1px solid ${borderColor ?? "#e5e5e5"}` : "none";
 
   return (
     <button
@@ -373,7 +386,7 @@ const FlatButton: React.FC<FlatButtonProps> = ({
         maxWidth: "100%",
         height,
         borderRadius,
-        border: isLight ? "1px solid #e5e5e5" : "none",
+        border: resolvedBorder,
         backgroundColor: bgColor,
         cursor: "pointer",
         display: "flex",
@@ -448,6 +461,8 @@ interface ButtonProps {
   imageFill?: boolean;
   // Flat button props
   bgColor?: string;
+  showBorder?: boolean;
+  borderColor?: string;
   fontSize?: number; // For flat button custom font size
   rightIcon?: React.ReactNode;
   allowWrap?: boolean;
@@ -494,6 +509,8 @@ const Button: React.FC<ButtonProps> = (props) => {
           textAlign={props.textAlign}
           bgColor={props.bgColor}
           textColor={props.textColor}
+          showBorder={props.showBorder}
+          borderColor={props.borderColor}
           fontSize={props.fontSize}
           rightIcon={props.rightIcon}
           allowWrap={props.allowWrap}
