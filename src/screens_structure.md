@@ -391,6 +391,7 @@ Renders a text input field.
   "bgColor": "#2563eb",
   "textColor": "#fff",
   "width": 300,
+  "fontSize": 16,
   "showBorder": true,
   "borderColor": "#e5e5e5",
   "marginTop": 0,
@@ -406,6 +407,7 @@ Renders a text input field.
 | `bgColor` | `string` | `"#2563eb"` | Background color |
 | `textColor` | `string` | `"#fff"` | Text color |
 | `width` | `number` | `300` | Button width in px |
+| `fontSize` | `number` | auto | Optional label font size (px) |
 | `showBorder` | `boolean` | `true` | If `bgColor` is `#fff`, a subtle border is added by default. Set `false` to remove it |
 | `borderColor` | `string` | `"#e5e5e5"` | Border color when `bgColor` is `#fff` and `showBorder=true` |
 | `marginTop` | `number` | `0` | Extra space above the button (px) |

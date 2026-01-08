@@ -301,6 +301,7 @@ type ButtonItem = {
   bgColor?: string;
   textColor?: string;
   width?: number;
+  fontSize?: number;
   showBorder?: boolean;
   borderColor?: string;
   position?: VerticalPosition;
@@ -944,6 +945,7 @@ const Screens: React.FC<ScreensProps> = ({
                 width={responseButtonItem.width ?? 300}
                 bgColor={responseButtonItem.bgColor ?? "#2563eb"}
                 textColor={responseButtonItem.textColor ?? "#fff"}
+                fontSize={responseButtonItem.fontSize}
                 showBorder={responseButtonItem.showBorder}
                 borderColor={responseButtonItem.borderColor}
                 textAlign="center"
@@ -1003,6 +1005,7 @@ const Screens: React.FC<ScreensProps> = ({
                 width={responseButtonItem.width ?? 300}
                 bgColor={responseButtonItem.bgColor ?? "#2563eb"}
                 textColor={responseButtonItem.textColor ?? "#fff"}
+                fontSize={responseButtonItem.fontSize}
                 showBorder={responseButtonItem.showBorder}
                 borderColor={responseButtonItem.borderColor}
                 textAlign="center"
@@ -1060,6 +1063,7 @@ const Screens: React.FC<ScreensProps> = ({
                 width={responseButtonItem.width ?? 300}
                 bgColor={responseButtonItem.bgColor ?? "#2563eb"}
                 textColor={responseButtonItem.textColor ?? "#fff"}
+                fontSize={responseButtonItem.fontSize}
                 showBorder={responseButtonItem.showBorder}
                 borderColor={responseButtonItem.borderColor}
                 textAlign="center"
@@ -1154,6 +1158,7 @@ const Screens: React.FC<ScreensProps> = ({
               width={buttonItem.width ?? 300}
               bgColor={buttonItem.bgColor ?? "#2563eb"}
               textColor={buttonItem.textColor ?? "#fff"}
+              fontSize={buttonItem.fontSize}
               showBorder={buttonItem.showBorder}
               borderColor={buttonItem.borderColor}
               textAlign="center"
@@ -1257,6 +1262,7 @@ const Screens: React.FC<ScreensProps> = ({
               width={buttonItem.width ?? 300}
               bgColor={buttonItem.bgColor ?? "#2563eb"}
               textColor={buttonItem.textColor ?? "#fff"}
+              fontSize={buttonItem.fontSize}
               showBorder={buttonItem.showBorder}
               borderColor={buttonItem.borderColor}
               textAlign="center"
@@ -1359,6 +1365,7 @@ const Screens: React.FC<ScreensProps> = ({
               width={buttonItem.width ?? 300}
               bgColor={buttonItem.bgColor ?? "#2563eb"}
               textColor={buttonItem.textColor ?? "#fff"}
+              fontSize={buttonItem.fontSize}
               showBorder={buttonItem.showBorder}
               borderColor={buttonItem.borderColor}
               textAlign="center"
