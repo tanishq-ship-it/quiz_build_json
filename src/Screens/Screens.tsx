@@ -50,6 +50,7 @@ type InputItem = {
   label?: string;
   width?: string | number;
   required?: boolean;
+  borderRadius?: number;
   responseKey?: string;
 };
 
@@ -733,6 +734,7 @@ const Screens: React.FC<ScreensProps> = ({
           label={item.label}
           width={item.width}
           required={item.required}
+          borderRadius={item.borderRadius}
           value={value}
           onChange={(val) => {
             setInputState(prev => ({

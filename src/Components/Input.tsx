@@ -15,6 +15,7 @@ type InputProps = {
   textColor?: string;
   fontSize?: number;
   padding?: number;
+  borderRadius?: number;
 };
 
 const Input: React.FC<InputProps> = ({
@@ -31,6 +32,7 @@ const Input: React.FC<InputProps> = ({
   textColor = "#1f2937",
   fontSize = 16,
   padding = 12,
+  borderRadius = 12,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -69,7 +71,7 @@ const Input: React.FC<InputProps> = ({
           padding,
           fontSize,
           border: `1.5px solid ${isFocused ? focusColor : borderColor}`,
-          borderRadius: 8,
+          borderRadius,
           outline: "none",
           backgroundColor: bgColor,
           color: textColor,

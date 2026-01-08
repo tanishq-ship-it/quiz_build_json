@@ -31,12 +31,13 @@ import Input from "../Components/Input";
 | `textColor` | `string` | `"#1f2937"` | Text color |
 | `fontSize` | `number` | `16` | Font size in px |
 | `padding` | `number` | `12` | Internal padding in px |
+| `borderRadius` | `number` | `12` | Border radius in px |
 
 ---
 
 ## Styling
 
-- **Border Radius**: `8px` (Standard rounded)
+- **Border Radius**: `12px` by default (configurable via `borderRadius`)
 - **Transition**: `border-color 0.2s ease, box-shadow 0.2s ease`
 - **Focus State**: Changes border color and adds a subtle shadow/ring.
 
