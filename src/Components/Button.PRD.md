@@ -59,6 +59,9 @@ A card-style button with an image on top and optional text label at the bottom. 
 | `segments` | `{ content: string; color?: string; fontWeight?: number; fontSize?: number }[]` | `undefined` | Optional: styled inline segments for the label. If provided, it takes precedence over `text`. |
 | `width` | `number` | `150` | Button width |
 | `textAlign` | `"left" \| "center" \| "right"` | `"center"` | Text alignment |
+| `bgColor` | `string` | `"#f5f5f5"` | Card background color (whole tile, not the footer) |
+| `showBorder` | `boolean` | auto | When `bgColor` is white (`#fff`/`white`/`#ffffff`), a subtle border is added by default. Set `false` to force no border; set `true` to force a border |
+| `borderColor` | `string` | `"#e5e5e5"` | Border color when `showBorder` is enabled |
 | `textBgColor` | `string` | `undefined` | Background color for text section |
 | `textColor` | `string` | `"#333"` | Text color |
 | `imageShape` | `"none" \| "circle"` | `"none"` | Image display style |
@@ -83,8 +86,8 @@ A card-style button with an image on top and optional text label at the bottom. 
    - Uses `object-fit: cover`
 
 3. **Default (neutral) styling:**
-   - Background: Light gray (`#f5f5f5`)
-   - No colored border by default
+   - Background: Light gray (`#f5f5f5`) (override with `bgColor`)
+   - If `bgColor` is white: subtle border is added automatically (configurable via `showBorder` / `borderColor`)
    - Border radius: 16px
 
 **Examples:**
@@ -97,6 +100,17 @@ A card-style button with an image on top and optional text label at the bottom. 
   text="Design"
   textBgColor="#2563eb"
   textColor="#fff"
+/>
+
+// White card with subtle border (auto-border on white unless showBorder=false)
+<Button
+  variant="imageCard"
+  imageSrc="/avatar.jpg"
+  text="Profile"
+  bgColor="#fff"
+  // optional:
+  // showBorder={true}
+  // borderColor="#e5e5e5"
 />
 
 // Image fills entire area
@@ -153,7 +167,10 @@ A simple, full-width style button. Perfect for primary actions (Continue, Submit
 | `textAlign` | `"left" \| "center" \| "right"` | `"center"` | Text alignment |
 | `bgColor` | `string` | `"#2563eb"` | Background color |
 | `textColor` | `string` | `"#fff"` | Text color |
+| `showBorder` | `boolean` | `true` | If `bgColor` is `#fff`, a subtle border is added by default. Set `false` to remove it |
+| `borderColor` | `string` | `"#e5e5e5"` | Border color when `bgColor` is `#fff` and `showBorder=true` |
 | `fontSize` | `number` | `height * 0.35` | Custom font size (overrides size) |
+| `borderRadius` | `number` | `12` | Border radius in pixels |
 | `onClick` | `() => void` | - | Click handler |
 
 **Size Presets:**
@@ -172,7 +189,7 @@ A simple, full-width style button. Perfect for primary actions (Continue, Submit
 
 **Responsive:** Button has `maxWidth: 100%` so it won't exceed its container.
 
-**Note:** When `bgColor` is white, a subtle border is automatically added.
+**Note:** When `bgColor` is white, a subtle border is automatically added (configurable via `showBorder` / `borderColor`).
 
 **Examples:**
 

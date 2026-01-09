@@ -18,6 +18,9 @@ type ImageCardOption = {
   segments?: TextSegment[];
   width?: number;
   textAlign?: "left" | "center" | "right";
+  bgColor?: string;
+  showBorder?: boolean;
+  borderColor?: string;
   textBgColor?: string;
   textColor?: string;
   imageShape?: "none" | "circle";
@@ -332,6 +335,9 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
                   segments={option.segments}
                   width={option.width ?? 140}
                   textAlign={option.textAlign}
+                  bgColor={option.bgColor}
+                  showBorder={option.showBorder}
+                  borderColor={option.borderColor}
                   textBgColor={option.textBgColor}
                   textColor={option.textColor}
                   imageShape={option.imageShape}

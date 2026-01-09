@@ -53,6 +53,19 @@ interface ImageCardButtonProps {
   segments?: TextSegment[];
   width?: number;
   textAlign?: "left" | "center" | "right";
+  /**
+   * Background color for the whole card (not the footer). Defaults to "#f5f5f5" (current behavior).
+   */
+  bgColor?: string;
+  /**
+   * When bgColor is white (#fff/white/#ffffff), we add a subtle border by default to avoid white-on-white.
+   * Set showBorder=false to force borderless; set true to force border even for non-white backgrounds.
+   */
+  showBorder?: boolean;
+  /**
+   * Optional border color when showBorder is enabled (or bgColor is white and showBorder is not false).
+   */
+  borderColor?: string;
   textBgColor?: string;
   textColor?: string;
   imageShape?: "none" | "circle";
@@ -66,6 +79,9 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
   segments,
   width = 150,
   textAlign = "center",
+  bgColor,
+  showBorder,
+  borderColor,
   textBgColor,
   textColor = "#333",
   imageShape = "none",
@@ -74,6 +90,10 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
 }) => {
   const borderRadius = 16;
   const imageSize = width * 0.55;
+  const resolvedBgColor = bgColor ?? "#f5f5f5";
+  const isLight = resolvedBgColor === "#fff" || resolvedBgColor === "white" || resolvedBgColor === "#ffffff";
+  const shouldShowBorder = showBorder ?? isLight;
+  const resolvedBorder = shouldShowBorder ? `1px solid ${borderColor ?? "#e5e5e5"}` : "none";
 
   const hasSegments =
     Array.isArray(segments) && segments.some((s) => typeof s.content === "string" && s.content.trim() !== "");
@@ -202,8 +222,8 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
         width,
         height,
         borderRadius,
-        border: "none",
-        backgroundColor: "#f5f5f5",
+        border: resolvedBorder,
+        backgroundColor: resolvedBgColor,
         cursor: "pointer",
         padding: 0,
         overflow: "hidden",
@@ -464,10 +484,13 @@ interface ButtonProps {
   textColor?: string;
   imageShape?: "none" | "circle";
   imageFill?: boolean;
-  // Flat button props
+  /**
+   * Shared style props used by multiple variants (flat, imageCard).
+   */
   bgColor?: string;
   showBorder?: boolean;
   borderColor?: string;
+  // Flat button props
   fontSize?: number; // For flat button custom font size
   borderRadius?: number; // For flat button border radius
   rightIcon?: React.ReactNode;
@@ -498,6 +521,9 @@ const Button: React.FC<ButtonProps> = (props) => {
           segments={props.segments}
           width={props.width}
           textAlign={props.textAlign}
+          bgColor={props.bgColor}
+          showBorder={props.showBorder}
+          borderColor={props.borderColor}
           textBgColor={props.textBgColor}
           textColor={props.textColor}
           imageShape={props.imageShape}

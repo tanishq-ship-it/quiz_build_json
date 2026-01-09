@@ -552,6 +552,9 @@ Perfect for category selection, role models, galleries.
 | `imageSrc` | `string` | required | Image URL |
 | `text` | `string` | `""` | Label (empty = image-only) |
 | `width` | `number` | `140` | Card width |
+| `bgColor` | `string` | `"#f5f5f5"` | Card background color (the whole tile, not the footer) |
+| `showBorder` | `boolean` | auto | When `bgColor` is white (`#fff`/`white`/`#ffffff`), a subtle border is added by default. Set `false` to force no border; set `true` to force a border |
+| `borderColor` | `string` | `"#e5e5e5"` | Border color when `showBorder` is enabled |
 | `textBgColor` | `string` | - | Footer background color |
 | `textColor` | `string` | `"#333"` | Footer text color |
 | `imageShape` | `string` | `"none"` | `none` or `circle` |
