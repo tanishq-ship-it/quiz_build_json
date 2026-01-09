@@ -212,6 +212,14 @@ type SelectionItem = {
   selectedColor?: string;
   selectedBorderWidth?: number;
   /**
+   * Optional style applied only when an option is selected.
+   * - borderColor: wrapper border color
+   * - bgColor: inner button background color
+   *
+   * This is a more explicit alternative to `selectedColor` when you also want a selected fill color.
+   */
+  selectedStyle?: { borderColor?: string; bgColor?: string };
+  /**
    * Optional override for the wrapper border radius around each option (px).
    * Useful when you want less rounding than the defaults (especially with indicator="circle").
    */
@@ -721,6 +729,7 @@ const Screens: React.FC<ScreensProps> = ({
             options={item.options}
             selectedColor={item.selectedColor}
             selectedBorderWidth={item.selectedBorderWidth}
+            selectedStyle={item.selectedStyle}
             optionBorderRadius={item.optionBorderRadius}
             indicator={item.indicator}
             unselectedBorderColor={item.unselectedBorderColor}

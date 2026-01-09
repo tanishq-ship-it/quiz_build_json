@@ -82,6 +82,12 @@ interface SelectionOptionsProps {
   selectedColor?: string;
   selectedBorderWidth?: number;
   /**
+   * Optional style applied only when an option is selected.
+   * - borderColor: wrapper border color
+   * - bgColor: inner button background color
+   */
+  selectedStyle?: { borderColor?: string; bgColor?: string };
+  /**
    * Optional override for the wrapper border radius around each option (px).
    * Useful when you want less rounding than the defaults (especially with indicator="circle").
    */
@@ -176,6 +182,7 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
   options,
   selectedColor = "#2563eb",
   selectedBorderWidth = 2,
+  selectedStyle,
   optionBorderRadius,
   indicator = "none",
   unselectedBorderColor = "#e5e7eb",
@@ -274,6 +281,8 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
         {visibleOptions.map((option, index) => {
           const optionSelected = isSelected(option, index);
           const showCircleIndicator = indicator === "circle" && option.variant === "flat";
+          const resolvedSelectedBorderColor = selectedStyle?.borderColor ?? selectedColor;
+          const selectedBgColor = selectedStyle?.bgColor;
 
           // Style for the clickable wrapper - fits exactly around button
           const defaultRadius =
@@ -284,7 +293,7 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
             cursor: "pointer",
             borderRadius: resolvedRadius,
             border: optionSelected
-              ? `${selectedBorderWidth}px solid ${selectedColor}`
+              ? `${selectedBorderWidth}px solid ${resolvedSelectedBorderColor}`
               : `${selectedBorderWidth}px solid ${
                   showCircleIndicator ? unselectedBorderColor : "transparent"
                 }`,
@@ -336,8 +345,9 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
                   segments={option.segments}
                   width={option.width ?? 140}
                   textAlign={option.textAlign}
-                  bgColor={option.bgColor}
-                  showBorder={option.showBorder}
+                  bgColor={optionSelected && selectedBgColor ? selectedBgColor : option.bgColor}
+                  // Avoid double-border when selected (wrapper draws the selection border).
+                  showBorder={!optionSelected ? option.showBorder : false}
                   borderColor={option.borderColor}
                   textBgColor={option.textBgColor}
                   textColor={option.textColor}
@@ -413,7 +423,7 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
                   height={option.height}
                   borderRadius={resolvedRadius}
                 textAlign={effectiveTextAlign}
-                  bgColor={option.bgColor}
+                  bgColor={optionSelected && selectedBgColor ? selectedBgColor : option.bgColor}
                   textColor={option.textColor}
                   // Avoid double-border when selected (wrapper draws the selection border).
                   showBorder={!optionSelected ? option.showBorder : false}
