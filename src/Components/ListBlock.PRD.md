@@ -25,6 +25,10 @@ import ListBlock from "./Components/listBock";
 | `titleColor` | `string` | No | `"#999"` | Heading text color |
 | `textColor` | `string` | No | `"#333"` | Item text color |
 | `iconSize` | `number` | No | `32` | Icon font size in pixels |
+| `titleFontSize` | `number` | No | `18` | Heading font size in pixels |
+| `titleFontWeight` | `number` | No | `400` | Heading font weight |
+| `itemFontSize` | `number` | No | `13` | Item text font size in pixels |
+| `itemFontWeight` | `number` | No | `500` | Item text font weight |
 
 ---
 

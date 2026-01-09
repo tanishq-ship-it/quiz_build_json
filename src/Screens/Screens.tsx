@@ -351,6 +351,10 @@ type ListBlockRowItem = {
     titleColor?: string;
     textColor?: string;
     iconSize?: number;
+    titleFontSize?: number;
+    titleFontWeight?: number;
+    itemFontSize?: number;
+    itemFontWeight?: number;
   }>;
 } & LayoutAdjustments;
 
@@ -592,6 +596,10 @@ const Screens: React.FC<ScreensProps> = ({
                 titleColor={b.titleColor}
                 textColor={b.textColor}
                 iconSize={b.iconSize}
+                titleFontSize={b.titleFontSize}
+                titleFontWeight={b.titleFontWeight}
+                itemFontSize={b.itemFontSize}
+                itemFontWeight={b.itemFontWeight}
               />
             );
           })}

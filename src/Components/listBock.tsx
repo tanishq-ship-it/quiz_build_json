@@ -20,6 +20,10 @@ interface ListBlockProps {
   titleColor?: string;
   textColor?: string;
   iconSize?: number;
+  titleFontSize?: number;
+  titleFontWeight?: number;
+  itemFontSize?: number;
+  itemFontWeight?: number;
 }
 
 const ListBlock: React.FC<ListBlockProps> = ({
@@ -30,6 +34,10 @@ const ListBlock: React.FC<ListBlockProps> = ({
   titleColor = "#999",
   textColor = "#333",
   iconSize = 32,
+  titleFontSize = 18,
+  titleFontWeight = 400,
+  itemFontSize = 13,
+  itemFontWeight = 500,
 }) => {
   const heading = content?.heading ?? "";
   const data: ListItem[] = Array.isArray(content?.data) ? content.data : [];
@@ -58,8 +66,8 @@ const ListBlock: React.FC<ListBlockProps> = ({
       <div
         style={{
           color: titleColor,
-          fontSize: 18,
-          fontWeight: 400,
+          fontSize: titleFontSize,
+          fontWeight: titleFontWeight,
           marginBottom: 12,
           flexShrink: 0,
         }}
@@ -94,8 +102,8 @@ const ListBlock: React.FC<ListBlockProps> = ({
             <span
               style={{
                 color: textColor,
-                fontSize: 13,
-                fontWeight: 500,
+                fontSize: itemFontSize,
+                fontWeight: itemFontWeight,
                 textAlign: "center",
                 lineHeight: 1.2,
               }}
