@@ -44,6 +44,9 @@ const ListBlock: React.FC<ListBlockProps> = ({
   const computedHeight =
     height ?? (typeof width === "number" ? width * 2 : undefined);
   const borderRadius = 16;
+  const itemLineHeight = 1.2;
+  const itemMaxLines = 2;
+  const reservedItemTextHeight = Math.ceil(itemFontSize * itemLineHeight * itemMaxLines);
 
   return (
     <div
@@ -81,7 +84,7 @@ const ListBlock: React.FC<ListBlockProps> = ({
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-evenly",
+          justifyContent: "stretch",
           alignItems: "center",
           width: "100%",
           paddingBottom: 10,
@@ -94,8 +97,9 @@ const ListBlock: React.FC<ListBlockProps> = ({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
+              justifyContent: "center",
               gap: 4,
-              flexShrink: 0,
+              flex: 1,
             }}
           >
             <span style={{ fontSize: iconSize, lineHeight: 1 }}>{item.icon}</span>
@@ -105,7 +109,15 @@ const ListBlock: React.FC<ListBlockProps> = ({
                 fontSize: itemFontSize,
                 fontWeight: itemFontWeight,
                 textAlign: "center",
-                lineHeight: 1.2,
+                lineHeight: itemLineHeight,
+                minHeight: reservedItemTextHeight,
+                // Clamp to 2 lines so all rows stay visually consistent even when some labels are short.
+                display: "-webkit-box",
+                // @ts-ignore
+                WebkitLineClamp: itemMaxLines,
+                // @ts-ignore
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
               }}
             >
               {item.text}
