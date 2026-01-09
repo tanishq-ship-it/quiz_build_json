@@ -171,6 +171,7 @@ A simple, full-width style button. Perfect for primary actions (Continue, Submit
 | `borderColor` | `string` | `"#e5e5e5"` | Border color when `bgColor` is `#fff` and `showBorder=true` |
 | `fontSize` | `number` | `height * 0.35` | Custom font size (overrides size) |
 | `borderRadius` | `number` | `12` | Border radius in pixels |
+| `segments` | `{ content: string; color?: string; fontWeight?: number; fontSize?: number }[]` | `undefined` | Optional: rich text segments for the label (overrides plain `text`) |
 | `onClick` | `() => void` | - | Click handler |
 
 **Size Presets:**
@@ -216,6 +217,22 @@ A simple, full-width style button. Perfect for primary actions (Continue, Submit
   variant="flat" 
   text="🚀 Leadership"
   size="sm"
+  bgColor="#fff"
+  textColor="#333"
+  textAlign="left"
+/>
+
+// Rich text label (segments overrides plain text)
+<Button
+  variant="flat"
+  text=""
+  segments={[
+    { content: "Join millions who trust " },
+    { content: "micro-learning", color: "#6d3be8", fontWeight: 700 },
+    { content: " to build life skills." },
+  ]}
+  width={350}
+  height={60}
   bgColor="#fff"
   textColor="#333"
   textAlign="left"

@@ -590,7 +590,8 @@ Perfect for text buttons, age ranges, categories.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `text` | `string` | required | Button text |
+| `text` | `string \| { segments: TextSegment[] }` | required | Button label. Supports rich text via `segments` (either via top-level `segments` or via `text.segments`) |
+| `segments` | `TextSegment[]` | - | Optional rich text segments for the label (overrides plain `text` when provided) |
 | `size` | `string` | - | Preset: `xs`, `sm`, `md`, `lg`, `xl` |
 | `width` | `number` | from size | Custom width |
 | `height` | `number` | from size | Custom height |
@@ -601,6 +602,33 @@ Perfect for text buttons, age ranges, categories.
 | `textAlign` | `string` | `"center"` | `left`, `center`, `right` |
 | `fontSize` | `number` | from size | Custom font size |
 | `value` | `string \| number` | index | Selection value |
+
+**Rich text examples (Flat Option):**
+
+```json
+{
+  "variant": "flat",
+  "text": "",
+  "segments": [
+    { "content": "Join millions who trust " },
+    { "content": "micro-learning", "color": "#6d3be8", "fontWeight": 700 },
+    { "content": " to build life skills." }
+  ]
+}
+```
+
+```json
+{
+  "variant": "flat",
+  "text": {
+    "segments": [
+      { "content": "Join millions who trust " },
+      { "content": "micro-learning", "color": "#6d3be8", "fontWeight": 700 },
+      { "content": " to build life skills." }
+    ]
+  }
+}
+```
 
 **Size Presets:**
 

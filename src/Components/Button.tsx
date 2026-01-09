@@ -343,6 +343,7 @@ const FLAT_BUTTON_SIZES: Record<FlatButtonSize, { width: number; height: number;
 
 interface FlatButtonProps {
   text: string;
+  segments?: TextSegment[];
   size?: FlatButtonSize; // Preset size: xs, sm, md, lg, xl
   width?: number;
   height?: number;
@@ -378,6 +379,7 @@ interface FlatButtonProps {
 
 const FlatButton: React.FC<FlatButtonProps> = ({
   text,
+  segments,
   size,
   width: customWidth,
   height: customHeight,
@@ -402,6 +404,31 @@ const FlatButton: React.FC<FlatButtonProps> = ({
   const isLight = bgColor === "#fff" || bgColor === "white" || bgColor === "#ffffff";
   const resolvedBorder =
     showBorder && isLight ? `1px solid ${borderColor ?? "#e5e5e5"}` : "none";
+
+  const hasSegments =
+    Array.isArray(segments) &&
+    segments.some((s) => typeof s.content === "string" && s.content.trim() !== "");
+
+  const renderLabel = (): React.ReactNode => {
+    if (!hasSegments || !segments) return text;
+    return (
+      <span>
+        {segments.map((segment, idx) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <span
+            key={idx}
+            style={{
+              ...(segment.color ? { color: segment.color } : null),
+              ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+              ...(segment.fontSize ? { fontSize: segment.fontSize } : null),
+            }}
+          >
+            {String(segment.content ?? "")}
+          </span>
+        ))}
+      </span>
+    );
+  };
 
   return (
     <button
@@ -452,7 +479,7 @@ const FlatButton: React.FC<FlatButtonProps> = ({
             : {}),
         }}
       >
-        {text}
+        {renderLabel()}
       </span>
       {rightIcon && (
         <span style={{ marginLeft: 12, display: "flex", alignItems: "center", flexShrink: 0 }}>
@@ -475,7 +502,7 @@ interface ButtonProps {
   fontWeight?: number; // square button custom font weight
   // Image card button props
   imageSrc?: string;
-  text?: string;
+  text?: string | { segments: TextSegment[] };
   segments?: TextSegment[];
   width?: number;
   height?: number; // For flat button custom height
@@ -502,6 +529,12 @@ interface ButtonProps {
 const Button: React.FC<ButtonProps> = (props) => {
   const { variant } = props;
 
+  const extractSegmentsFromText = (value: unknown): TextSegment[] | null => {
+    if (typeof value !== "object" || value == null) return null;
+    const maybe = value as { segments?: unknown };
+    return Array.isArray(maybe.segments) ? (maybe.segments as TextSegment[]) : null;
+  };
+
   switch (variant) {
     case "square":
       return (
@@ -514,10 +547,11 @@ const Button: React.FC<ButtonProps> = (props) => {
         />
       );
     case "imageCard":
+      const imageCardText = typeof props.text === "string" ? props.text : "";
       return (
         <ImageCardButton
           imageSrc={props.imageSrc || ""}
-          text={props.text || ""}
+          text={imageCardText || ""}
           segments={props.segments}
           width={props.width}
           textAlign={props.textAlign}
@@ -532,9 +566,13 @@ const Button: React.FC<ButtonProps> = (props) => {
         />
       );
     case "flat":
+      const flatText = typeof props.text === "string" ? props.text : "";
+      const segmentsFromText = extractSegmentsFromText(props.text);
+      const flatSegments = props.segments ?? segmentsFromText ?? undefined;
       return (
         <FlatButton
-          text={props.text || ""}
+          text={flatText || ""}
+          segments={flatSegments}
           size={typeof props.size === "string" ? props.size : undefined}
           width={props.width}
           height={props.height}

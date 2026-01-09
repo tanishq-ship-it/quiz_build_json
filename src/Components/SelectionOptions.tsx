@@ -29,7 +29,8 @@ type ImageCardOption = {
 
 type FlatOption = {
   variant: "flat";
-  text: string;
+  text: string | { segments: TextSegment[] };
+  segments?: TextSegment[];
   size?: "xs" | "sm" | "md" | "lg" | "xl"; // Preset size
   width?: number;
   height?: number;
@@ -406,6 +407,7 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
                   <Button
                   variant="flat"
                   text={option.text}
+                  segments={option.segments}
                   size={option.size}
                   width={option.width}
                   height={option.height}
