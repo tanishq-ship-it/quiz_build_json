@@ -202,7 +202,19 @@ type InfoTextItem = {
   fontWeight?: number;
 };
 
-type InfoContentItem = InfoImageItem | InfoTextItem;
+type InfoRowItem = {
+  /**
+   * Layout group to render multiple content items horizontally inside an InfoCard.
+   * The InfoCard itself remains a vertical stack, but you can place a row anywhere in the content array.
+   */
+  type: "row";
+  items: InfoContentItem[];
+  gap?: number;
+  alignItems?: "flex-start" | "center" | "flex-end" | "stretch";
+  justifyContent?: "flex-start" | "center" | "flex-end" | "space-between" | "space-around";
+};
+
+type InfoContentItem = InfoImageItem | InfoTextItem | InfoRowItem;
 
 interface InfoCardProps {
   content: InfoContentItem[];
@@ -219,11 +231,11 @@ const InfoCard: React.FC<InfoCardProps> = ({
   gap = 12,
   padding = 20,
 }) => {
-  const renderItem = (item: InfoContentItem, index: number) => {
+  const renderItem = (item: InfoContentItem, key: React.Key) => {
     if (item.type === "image") {
       return (
         <Image
-          key={index}
+          key={key}
           src={item.src}
           alt={item.alt}
           width={item.width ?? "100%"}
@@ -235,14 +247,51 @@ const InfoCard: React.FC<InfoCardProps> = ({
 
     if (item.type === "text") {
       return (
-        <Text
-          key={index}
-          content={item.content}
-          align={item.align}
-          fontSize={item.fontSize}
-          color={item.color}
-          fontWeight={item.fontWeight}
-        />
+        <div key={key} style={{ flex: 1, minWidth: 0 }}>
+          <Text
+            content={item.content}
+            align={item.align}
+            fontSize={item.fontSize}
+            color={item.color}
+            fontWeight={item.fontWeight}
+          />
+        </div>
+      );
+    }
+
+    if (item.type === "row") {
+      const rowItems = Array.isArray(item.items) ? item.items : [];
+      return (
+        <div
+          key={key}
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: item.gap ?? gap,
+            alignItems: item.alignItems ?? "center",
+            justifyContent: item.justifyContent ?? "flex-start",
+            width: "100%",
+            minWidth: 0,
+          }}
+        >
+          {rowItems.map((child, idx) => {
+            const childKey = `${String(key)}-row-${idx}`;
+
+            // The shared `Image` component renders with an outer wrapper `width: 100%`,
+            // which is great for vertical layouts but breaks horizontal rows (it squeezes siblings).
+            // In rows, constrain image items to a fixed container width so text can take remaining space.
+            if (child.type === "image") {
+              const rowImageWidth = child.width ?? 32;
+              return (
+                <div key={`${childKey}-wrap`} style={{ width: rowImageWidth, flexShrink: 0, minWidth: 0 }}>
+                  {renderItem({ ...child, width: "100%" }, childKey)}
+                </div>
+              );
+            }
+
+            return renderItem(child, childKey);
+          })}
+        </div>
       );
     }
 

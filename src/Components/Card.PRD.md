@@ -189,6 +189,15 @@ A flexible card that can contain any combination of images and text in any order
   color?: string;
   fontWeight?: number;
 }
+
+// Row group (horizontal layout inside the vertical card)
+{
+  type: "row";
+  gap?: number;             // Defaults to card `gap`
+  alignItems?: "flex-start" | "center" | "flex-end" | "stretch";
+  justifyContent?: "flex-start" | "center" | "flex-end" | "space-between" | "space-around";
+  items: InfoContentItem[]; // Nested image/text items rendered in a flex row
+}
 ```
 
 **Styling:**
@@ -239,6 +248,26 @@ A flexible card that can contain any combination of images and text in any order
     { type: "text", content: "**Step 1**", align: "left", fontSize: 14, color: "#2563eb" },
     { type: "text", content: "Create your profile", align: "left", fontSize: 18 },
     { type: "text", content: "Fill in your details to get started with personalized recommendations.", align: "left", color: "#666" },
+  ]}
+/>
+
+// Mixed layout: vertical card with a horizontal row inside (icon/image + text)
+<Card
+  variant="info"
+  width="90%"
+  bgColor="#fff"
+  padding={16}
+  content={[
+    {
+      type: "row",
+      gap: 10,
+      alignItems: "center",
+      items: [
+        { type: "image", src: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg", width: 20, align: "left" },
+        { type: "text", content: "To use the app, you'll need an iPhone", fontSize: 14, color: "#333", align: "left" },
+      ],
+    },
+    { type: "text", content: "Optional second line under the row.", fontSize: 12, color: "#666", align: "left" },
   ]}
 />
 ```
