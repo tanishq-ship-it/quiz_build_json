@@ -326,6 +326,10 @@ interface FlatButtonProps {
   size?: FlatButtonSize; // Preset size: xs, sm, md, lg, xl
   width?: number;
   height?: number;
+  /**
+   * Border radius in px. Used by SelectionOptions to keep wrapper and button corners consistent.
+   */
+  borderRadius?: number;
   textAlign?: "left" | "center" | "right";
   bgColor?: string;
   textColor?: string;
@@ -357,6 +361,7 @@ const FlatButton: React.FC<FlatButtonProps> = ({
   size,
   width: customWidth,
   height: customHeight,
+  borderRadius: customBorderRadius,
   textAlign = "center",
   bgColor = "#2563eb",
   textColor = "#fff",
@@ -373,7 +378,7 @@ const FlatButton: React.FC<FlatButtonProps> = ({
   const height = customHeight ?? preset?.height ?? width * 0.2;
   const fontSize = customFontSize ?? preset?.fontSize ?? height * 0.24;
   
-  const borderRadius = 12;
+  const borderRadius = customBorderRadius ?? 12;
   const isLight = bgColor === "#fff" || bgColor === "white" || bgColor === "#ffffff";
   const resolvedBorder =
     showBorder && isLight ? `1px solid ${borderColor ?? "#e5e5e5"}` : "none";
@@ -464,6 +469,7 @@ interface ButtonProps {
   showBorder?: boolean;
   borderColor?: string;
   fontSize?: number; // For flat button custom font size
+  borderRadius?: number; // For flat button border radius
   rightIcon?: React.ReactNode;
   allowWrap?: boolean;
   // Common
@@ -506,6 +512,7 @@ const Button: React.FC<ButtonProps> = (props) => {
           size={typeof props.size === "string" ? props.size : undefined}
           width={props.width}
           height={props.height}
+          borderRadius={props.borderRadius}
           textAlign={props.textAlign}
           bgColor={props.bgColor}
           textColor={props.textColor}
