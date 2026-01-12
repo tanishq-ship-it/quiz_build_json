@@ -7,6 +7,19 @@ export type TextSegment = {
   color?: string;
   fontWeight?: number;
   fontSize?: number;
+  /**
+   * Optional hyperlink for this segment.
+   * When provided, the segment renders as an <a>.
+   */
+  url?: string;
+  /**
+   * When true, opens the link in a new tab (target="_blank").
+   */
+  openInNewTab?: boolean;
+  /**
+   * Optional underline toggle for links.
+   */
+  underline?: boolean;
 };
 
 interface TextProps {
@@ -42,17 +55,36 @@ const Text: React.FC<TextProps> = ({
       {Array.isArray(segments) && segments.length > 0 ? (
         <span>
           {segments.map((segment, idx) => (
-            <span
-              // eslint-disable-next-line react/no-array-index-key
-              key={idx}
-              style={{
-                ...(segment.color ? { color: segment.color } : null),
-                ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
-                ...(segment.fontSize ? { fontSize: segment.fontSize } : null),
-              }}
-            >
-              {segment.content}
-            </span>
+            segment.url ? (
+              <a
+                // eslint-disable-next-line react/no-array-index-key
+                key={idx}
+                href={segment.url}
+                target={segment.openInNewTab ? "_blank" : undefined}
+                rel={segment.openInNewTab ? "noopener noreferrer" : undefined}
+                style={{
+                  color: segment.color ?? "#1677ff",
+                  cursor: "pointer",
+                  textDecoration: segment.underline === false ? "none" : "underline",
+                  ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+                  ...(segment.fontSize ? { fontSize: segment.fontSize } : null),
+                }}
+              >
+                {segment.content}
+              </a>
+            ) : (
+              <span
+                // eslint-disable-next-line react/no-array-index-key
+                key={idx}
+                style={{
+                  ...(segment.color ? { color: segment.color } : null),
+                  ...(segment.fontWeight ? { fontWeight: segment.fontWeight } : null),
+                  ...(segment.fontSize ? { fontSize: segment.fontSize } : null),
+                }}
+              >
+                {segment.content}
+              </span>
+            )
           ))}
         </span>
       ) : (
@@ -63,6 +95,16 @@ const Text: React.FC<TextProps> = ({
               <strong style={{ fontWeight: 700 }}>{children}</strong>
             ),
             em: ({ children }) => <em>{children}</em>,
+            a: ({ children, href }) => (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#1677ff", textDecoration: "underline" }}
+              >
+                {children}
+              </a>
+            ),
             h1: ({ children }) => (
               <h1 style={{ fontSize: fontSize * 2, margin: "0.5em 0", fontWeight: 700 }}>
                 {children}
