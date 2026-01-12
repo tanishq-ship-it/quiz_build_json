@@ -253,6 +253,11 @@ type SelectionItem = {
   position?: VerticalPosition;
   responseKey?: string;
   labels?: SelectionLabels;
+  /**
+   * Backward-compatible alias for `labels`.
+   * Some JSON builders/screens use `scaleLabels` for rating rows (e.g. "1x5").
+   */
+  scaleLabels?: SelectionLabels;
   marginTop?: number;
   marginBottom?: number;
   offsetY?: number;
@@ -748,7 +753,7 @@ const Screens: React.FC<ScreensProps> = ({
             onComplete={item.onComplete}
             autoComplete={autoComplete}
             defaultSelected={item.defaultSelected}
-            labels={item.labels}
+            labels={item.labels ?? item.scaleLabels}
           />
           
           {/* Response card below selection */}
