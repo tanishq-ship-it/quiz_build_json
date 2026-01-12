@@ -253,8 +253,11 @@ const SelectionOptions: React.FC<SelectionOptionsProps> = ({
     onChange?.(newSelected);
 
     // Auto-complete for radio mode when no button exists
+    // Add 600ms delay so user can see their selection before navigating
     if (mode === "radio" && autoComplete && onComplete) {
-      onComplete(newSelected);
+      setTimeout(() => {
+        onComplete(newSelected);
+      }, 600);
     }
   };
 
