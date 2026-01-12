@@ -89,7 +89,7 @@ const ImageCardButton: React.FC<ImageCardButtonProps> = ({
   onClick,
 }) => {
   const borderRadius = 16;
-  const imageSize = width * 0.55;
+  const imageSize = width * 0.65;
   const resolvedBgColor = bgColor ?? "#f5f5f5";
   const isLight = resolvedBgColor === "#fff" || resolvedBgColor === "white" || resolvedBgColor === "#ffffff";
   const shouldShowBorder = showBorder ?? isLight;
