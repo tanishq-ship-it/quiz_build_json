@@ -248,6 +248,13 @@ type SelectionItem = {
   responsePosition?: "top" | "bottom"; // Where to show the response card relative to selection
   // Conditional screens - replaces entire screen content when an option is selected
   conditionalScreens?: Record<string | number, ConditionalScreenContent>;
+  /**
+   * Optional delay (ms) before applying a conditional screen swap.
+   * Useful to let the user see their selection before the UI shifts.
+   *
+   * Default: 0 (immediate).
+   */
+  conditionalDelayMs?: number;
   // Position of the selection on screen: "top" (default), "middle", "bottom"
   // If not specified and no button exists, defaults to "bottom"
   position?: VerticalPosition;
@@ -258,6 +265,12 @@ type SelectionItem = {
    * Some JSON builders/screens use `scaleLabels` for rating rows (e.g. "1x5").
    */
   scaleLabels?: SelectionLabels;
+  /**
+   * Backward-compatible aliases for `labels`:
+   * - leftLabel/rightLabel: simple string edge labels for rating rows (e.g. "1x5")
+   */
+  leftLabel?: string;
+  rightLabel?: string;
   marginTop?: number;
   marginBottom?: number;
   offsetY?: number;
@@ -411,6 +424,7 @@ const Screens: React.FC<ScreensProps> = ({
   // scroll to the confirm button on the first selection interaction.
   const confirmButtonContainerRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolledToConfirmRef = useRef<boolean>(false);
+  const conditionalApplyTimeoutRef = useRef<number | null>(null);
 
   // Reset sequential state when screen changes
   useEffect(() => {
@@ -696,6 +710,12 @@ const Screens: React.FC<ScreensProps> = ({
           [selectionIndex]: selected,
         }));
         setValidationError(null);
+
+        // Cancel any pending conditional-screen swap (supports rapid re-selection).
+        if (conditionalApplyTimeoutRef.current != null) {
+          window.clearTimeout(conditionalApplyTimeoutRef.current);
+          conditionalApplyTimeoutRef.current = null;
+        }
         
         // Check if there's a conditional screen for the selected option
         let branchValue: string | number | undefined;
@@ -705,13 +725,26 @@ const Screens: React.FC<ScreensProps> = ({
           const key = String(selectedValue);
           const conditionalScreen = item.conditionalScreens[key];
           
-          // Set or clear explicitly
-          setActiveConditionalScreen(conditionalScreen ?? null);
-          
+          // Set or clear explicitly.
+          // Optionally delay the swap so the user can see their selection before the UI shifts.
           if (conditionalScreen) {
             branchValue = selectedValue;
-            setActiveBranch(selectedValue);
+            const delayMs = item.conditionalDelayMs ?? 0;
+            const apply = () => {
+              setActiveConditionalScreen(conditionalScreen);
+              setActiveBranch(selectedValue);
+            };
+
+            if (delayMs > 0) {
+              conditionalApplyTimeoutRef.current = window.setTimeout(() => {
+                conditionalApplyTimeoutRef.current = null;
+                apply();
+              }, delayMs);
+            } else {
+              apply();
+            }
           } else {
+            setActiveConditionalScreen(null);
             setActiveBranch(undefined);
           }
         } else {
@@ -753,7 +786,11 @@ const Screens: React.FC<ScreensProps> = ({
             onComplete={item.onComplete}
             autoComplete={autoComplete}
             defaultSelected={item.defaultSelected}
-            labels={item.labels ?? item.scaleLabels}
+            labels={
+              item.labels ??
+              item.scaleLabels ??
+              (item.leftLabel || item.rightLabel ? { left: item.leftLabel, right: item.rightLabel } : undefined)
+            }
           />
           
           {/* Response card below selection */}
