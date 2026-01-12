@@ -322,7 +322,7 @@ Renders a scrollable carousel of content items.
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `content` | `string` | required | Markdown-enabled text |
-| `segments` | `TextSegment[]` | - | Optional: render inline colored segments (no HTML/CSS). If provided, `content` is ignored. |
+| `segments` | `TextSegment[]` | - | Optional: render inline segments (no HTML/CSS). If provided, `content` is ignored. Supports link segments (`url`) that can open in a new tab. |
 | `align` | `string` | `"left"` | `left`, `center`, `right` |
 | `fontSize` | `number` | `16` | Font size in px |
 | `color` | `string` | `"#333"` | Text color |
@@ -350,6 +350,26 @@ Renders a scrollable carousel of content items.
     { "content": "Join millions who trust " },
     { "content": "micro-learning", "color": "#2563eb" },
     { "content": " to build life skills." }
+  ]
+}
+```
+
+**Inline links (segments):**
+
+```json
+{
+  "type": "text",
+  "align": "center",
+  "fontSize": 12,
+  "color": "#888",
+  "segments": [
+    { "content": "By selecting your age, you agree with the " },
+    { "content": "Terms of Use and Service", "url": "https://example.com/terms", "openInNewTab": true },
+    { "content": ", " },
+    { "content": "Privacy Policy", "url": "https://example.com/privacy", "openInNewTab": true },
+    { "content": " and " },
+    { "content": "Cookie Policy", "url": "https://example.com/cookies", "openInNewTab": true },
+    { "content": "." }
   ]
 }
 ```
@@ -473,6 +493,11 @@ The `CompletionScreen` component has been deprecated in favor of `Card variant="
 | `selectedStyle` | `{ borderColor?: string; bgColor?: string }` | - | Optional selected-state styling. `borderColor` controls the selected wrapper border; `bgColor` sets the inner button background only when selected |
 | `indicator` | `"none" \| "circle"` | `"none"` | Visual indicator style. `"circle"` shows a right-side checked/unchecked circle for `flat` options and a neutral border when not selected |
 | `unselectedBorderColor` | `string` | `"#e5e7eb"` | Border color when not selected (only used when `indicator="circle"`) |
+| `labels` | `{ left?: string \| {text,...}, right?: string \| {text,...} } \| [left,right]` | - | Optional edge labels for rating rows (recommended for `"1x5"`). Renders a label under the first and last option |
+| `scaleLabels` | same as `labels` | - | Backward-compatible alias for `labels` (supported by `Screens`) |
+| `leftLabel` | `string` | - | Backward-compatible alias for `labels.left` (simple string) |
+| `rightLabel` | `string` | - | Backward-compatible alias for `labels.right` (simple string) |
+| `conditionalDelayMs` | `number` | `0` | Optional delay (ms) before applying `conditionalScreens` swap (lets user see selection before UI shifts) |
 | `required` | `boolean` | `false` | If `true`, user must select at least one option before pressing the bottom button |
 | `position` | `string` | varies | `"top"`, `"middle"`, or `"bottom"` - where selection appears on screen |
 | `selectedBorderWidth` | `number` | `2` | Border thickness around each option (px) |

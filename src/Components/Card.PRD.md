@@ -184,6 +184,7 @@ A flexible card that can contain any combination of images and text in any order
 {
   type: "text";
   content: string;          // Markdown supported
+  segments?: TextSegment[]; // Optional: inline segments (supports hyperlinks)
   align?: "left" | "center" | "right";
   fontSize?: number;
   color?: string;

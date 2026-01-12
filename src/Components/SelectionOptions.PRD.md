@@ -112,7 +112,7 @@ labels: [
 ### Notes
 
 - Labels are only rendered for `layout: "1x5"`.
-- Use `labels` (not `scaleLabels`).
+- Prefer `labels`. For backward compatibility, `Screens` also accepts `scaleLabels` as an alias and maps it to `labels`.
 
 ## Option Types
 

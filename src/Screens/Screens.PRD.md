@@ -84,11 +84,18 @@ import Screens from "./Screens/Screens";
   onChange?: (selected: (string | number)[]) => void;
   onComplete?: (selected: (string | number)[]) => void;  // Auto-fires for radio without button
   defaultSelected?: (string | number)[];
+  // Rating labels (recommended for layout "1x5")
+  labels?: { left?: string; right?: string } | [string, string];
+  // Backward-compatible aliases for rating labels
+  scaleLabels?: { left?: string; right?: string } | [string, string];
+  leftLabel?: string;
+  rightLabel?: string;
   // Response Cards Feature (inline card on same screen)
   responseCards?: Record<string | number, ResponseCard>;  // Map option values to cards
   responsePosition?: "top" | "bottom";  // Default: "top" (where response card appears)
   // Conditional Screens Feature (replaces entire screen)
   conditionalScreens?: Record<string | number, ConditionalScreenContent>;  // Map option values to full screens
+  conditionalDelayMs?: number; // Default: 0. Delay (ms) before swapping in a conditional screen
   // Analytics
   responseKey?: string; // Optional key for tracking this specific response
 }
@@ -232,7 +239,7 @@ conditionalScreens: {
 
 // InfoContentItem types:
 { type: "image"; src: string; width?: string | number; shape?: "none" | "circle" | "rounded" | "blob"; align?: "left" | "center" | "right"; }
-{ type: "text"; content: string; align?: "left" | "center" | "right"; fontSize?: number; color?: string; fontWeight?: number; }
+{ type: "text"; content: string; segments?: TextSegment[]; align?: "left" | "center" | "right"; fontSize?: number; color?: string; fontWeight?: number; }
 ```
 
 ---

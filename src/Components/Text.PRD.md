@@ -19,12 +19,45 @@ import Text from "./Components/Text";
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | `content` | `string` | Yes | - | Markdown text content |
-| `segments` | `{ content: string; color?: string; fontWeight?: number }[]` | No | - | Optional: inline segments (no HTML/CSS). If provided, `content` is ignored. |
+| `segments` | `TextSegment[]` | No | - | Optional: inline segments (no HTML/CSS). If provided, `content` is ignored. Supports hyperlinks per segment. |
 | `align` | `"left" \| "center" \| "right"` | No | `"left"` | Text alignment |
 | `fontSize` | `number` | No | `16` | Base font size in pixels |
 | `color` | `string` | No | `"#333"` | Text color |
 | `fontWeight` | `number` | No | `400` | Font weight |
 | `lineHeight` | `number` | No | `1.5` | Line height multiplier |
+
+---
+
+## TextSegment
+
+When using `segments`, each segment supports styling and optional hyperlinks:
+
+```ts
+type TextSegment = {
+  content: string;
+  color?: string;
+  fontWeight?: number;
+  fontSize?: number;
+  /**
+   * Optional hyperlink for this segment.
+   * When provided, the segment renders as an <a>.
+   */
+  url?: string;
+  /**
+   * When true, opens the link in a new tab (target="_blank").
+   */
+  openInNewTab?: boolean;
+  /**
+   * Optional underline toggle for links.
+   */
+  underline?: boolean;
+};
+```
+
+**Link behavior:**
+- If a segment has `url`, it renders as a clickable link.
+- Link default color (when `color` is not set): `#1677ff`
+- When `openInNewTab: true`, the link opens in a new tab with `rel="noopener noreferrer"`.
 
 ---
 
@@ -41,6 +74,7 @@ The component supports the following markdown syntax:
 | `### Heading` | H3 | Small heading (1.25× font size) |
 | `- item` | Bullet list | • item |
 | `1. item` | Numbered list | 1. item |
+| `[text](https://...)` | Link | Opens in a new tab |
 
 ---
 
@@ -101,6 +135,35 @@ Use `segments` when you want to color only part of the text without embedding HT
     { content: " to build life skills." },
   ]}
 />
+```
+
+### Inline Links (Segments)
+
+Use `segments` when you want certain words to be clickable links (e.g., Terms / Privacy / Cookie):
+
+```tsx
+<Text
+  align="center"
+  fontSize={12}
+  color="#888"
+  segments={[
+    { content: "By selecting your age, you agree with the " },
+    { content: "Terms of Use and Service", url: "https://example.com/terms", openInNewTab: true },
+    { content: ", " },
+    { content: "Privacy Policy", url: "https://example.com/privacy", openInNewTab: true },
+    { content: " and " },
+    { content: "Cookie Policy", url: "https://example.com/cookies", openInNewTab: true },
+    { content: "." },
+  ]}
+/>
+```
+
+### Links in Markdown Content
+
+Markdown links also work and open in a new tab:
+
+```tsx
+<Text content="Read our [Terms of Use](https://example.com/terms)." />
 ```
 
 ### Multi-line with Headings and Lists
