@@ -163,7 +163,7 @@ const PreviewPlay: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen w-full bg-white text-slate-900 relative"
+      className="quiz-play min-h-screen w-full bg-white text-slate-900 relative"
     >
       {/* Main content: ScreenRouter full-page */}
       <div className="w-full h-screen flex items-center justify-center">

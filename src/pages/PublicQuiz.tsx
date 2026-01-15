@@ -249,7 +249,7 @@ const PublicQuiz: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen w-full ${
+      className={`quiz-play min-h-screen w-full ${
         isDark ? "bg-slate-950 text-slate-50" : "bg-white text-slate-900"
       } relative`}
     >
