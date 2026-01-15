@@ -6,9 +6,9 @@ import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
 import sandyLoading from "../assests/Sandy Loading.json";
 import {
-  getQuiz,
-  createQuizResponse,
-  appendQuizScreenResponse,
+  getPublicQuiz,
+  createPublicQuizResponse,
+  appendPublicQuizScreenResponse,
   type ScreenResponseItem,
 } from "../services/api";
 
@@ -141,7 +141,7 @@ const PublicQuiz: React.FC = () => {
         setScreenEnteredAt(null);
         responsesByIndexRef.current = {};
 
-        const quiz = await getQuiz(quizId);
+        const quiz = await getPublicQuiz(quizId);
         const rawContent = quiz.content ?? DEFAULT_SCREENS;
 
         if (cancelled) return;
@@ -156,7 +156,7 @@ const PublicQuiz: React.FC = () => {
 
           if (quizIsLive) {
             try {
-              const quizResponse = await createQuizResponse(quiz.id);
+              const quizResponse = await createPublicQuizResponse(quiz.id);
               if (!cancelled) {
                 const initialIndex = getInitialIndexFromHash(parsedScreens);
                 setQuizResponseId(quizResponse.id);
@@ -213,7 +213,7 @@ const PublicQuiz: React.FC = () => {
     };
 
     try {
-      await appendQuizScreenResponse(quizResponseId, screenItem);
+      await appendPublicQuizScreenResponse(quizResponseId, screenItem);
     } catch {
       // eslint-disable-next-line no-console
       console.error("Failed to append screen response");

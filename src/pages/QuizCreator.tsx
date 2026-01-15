@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2 } from "lucide-react";
+import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut } from "lucide-react";
 import Lottie from "lottie-react";
 import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import loadingAnimation from "../assests/Loding.json";
 
 type QuizListItem = {
@@ -13,6 +14,7 @@ type QuizListItem = {
 
 function QuizCreator() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const [quizzes, setQuizzes] = useState<QuizListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -194,14 +196,37 @@ function QuizCreator() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleOpenDialog}
-            className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-md text-sm font-inter-medium bg-violet-600 text-white shadow-sm shadow-violet-500/40 hover:bg-violet-500 hover:shadow-md hover:shadow-violet-500/40 transition-all w-full sm:w-auto"
-          >
-            <Plus className="w-4 h-4" />
-            Create Quiz
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => navigate('/users')}
+              className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md text-sm font-inter-medium border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all"
+              title="Manage Users"
+            >
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">Users</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenDialog}
+              className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-md text-sm font-inter-medium bg-violet-600 text-white shadow-sm shadow-violet-500/40 hover:bg-violet-500 hover:shadow-md hover:shadow-violet-500/40 transition-all flex-1 sm:flex-none"
+            >
+              <Plus className="w-4 h-4" />
+              Create Quiz
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md text-sm font-inter-medium border border-rose-100 bg-rose-50/80 text-rose-600 hover:bg-rose-100 hover:border-rose-200 transition-all"
+              title={`Logout ${user?.name || ''}`}
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </div>
         </header>
 
         {/* Glass panel (matches Screen Preview panel style) */}

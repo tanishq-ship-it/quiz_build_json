@@ -1,5 +1,73 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api';
 
+const TOKEN_KEY = 'quiz_builder_token';
+
+const getAuthHeaders = (): HeadersInit => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+};
+
+const handleResponse = async <T>(response: Response): Promise<T> => {
+  if (response.status === 401) {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('quiz_builder_user');
+    window.location.href = '/login';
+    throw new Error('Session expired. Please log in again.');
+  }
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Request failed');
+  }
+
+  return response.json() as Promise<T>;
+};
+
+// Auth types
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+  };
+};
+
+// User types
+export type UserDto = {
+  id: string;
+  email: string;
+  name: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateUserPayload = {
+  email: string;
+  password: string;
+  name: string;
+};
+
+export type UpdateUserPayload = {
+  email?: string;
+  password?: string;
+  name?: string;
+  isActive?: boolean;
+};
+
+// Quiz types
 export interface CreateQuizPayload {
   title: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,147 +103,151 @@ export interface ScreenResponseItem {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface QuizResponseDto { id: string; quizId: string; content: any; createdAt: string }
 
-export const createQuiz = async (payload: CreateQuizPayload): Promise<QuizDto> => {
-  const response = await fetch(`${API_BASE_URL}/quizzes`, {
-    method: "POST",
+// Auth API
+export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to create quiz");
+    const data = await response.json().catch(() => ({ error: 'Login failed' }));
+    throw new Error(data.error || 'Login failed');
   }
 
-  return response.json() as Promise<QuizDto>;
+  return response.json() as Promise<LoginResponse>;
 };
 
-export const getQuiz = async (id: string): Promise<QuizDto> => {
-  const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}`);
+// User API
+export const getUsers = async (): Promise<UserDto[]> => {
+  const response = await fetch(`${API_BASE_URL}/users`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<UserDto[]>(response);
+};
+
+export const getUser = async (id: string): Promise<UserDto> => {
+  const response = await fetch(`${API_BASE_URL}/users/${encodeURIComponent(id)}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<UserDto>(response);
+};
+
+export const createUser = async (payload: CreateUserPayload): Promise<UserDto> => {
+  const response = await fetch(`${API_BASE_URL}/users`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<UserDto>(response);
+};
+
+export const updateUser = async (id: string, payload: UpdateUserPayload): Promise<UserDto> => {
+  const response = await fetch(`${API_BASE_URL}/users/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<UserDto>(response);
+};
+
+export const deleteUser = async (id: string): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/users/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('quiz_builder_user');
+    window.location.href = '/login';
+    throw new Error('Session expired. Please log in again.');
+  }
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(message || "Failed to load quiz");
+    throw new Error(message || 'Failed to delete user');
+  }
+};
+
+// Quiz API
+export const createQuiz = async (payload: CreateQuizPayload): Promise<QuizDto> => {
+  const response = await fetch(`${API_BASE_URL}/quizzes`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<QuizDto>(response);
+};
+
+export const getQuiz = async (id: string): Promise<QuizDto> => {
+  const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<QuizDto>(response);
+};
+
+// Public endpoint - no auth required (for customers)
+export const getPublicQuiz = async (id: string): Promise<QuizDto> => {
+  const response = await fetch(`${API_BASE_URL}/public/quizzes/${encodeURIComponent(id)}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to load quiz');
   }
 
   return response.json() as Promise<QuizDto>;
 };
 
 export const getQuizzes = async (): Promise<QuizDto[]> => {
-  const response = await fetch(`${API_BASE_URL}/quizzes`);
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to load quizzes");
-  }
-
-  return response.json() as Promise<QuizDto[]>;
+  const response = await fetch(`${API_BASE_URL}/quizzes`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<QuizDto[]>(response);
 };
 
 export const appendQuizScreens = async (id: string, payload: AppendScreensPayload): Promise<QuizDto> => {
   const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/screens`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    method: 'POST',
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to add screens");
-  }
-
-  return response.json() as Promise<QuizDto>;
+  return handleResponse<QuizDto>(response);
 };
 
 export const replaceQuizScreens = async (id: string, payload: ReplaceScreensPayload): Promise<QuizDto> => {
   const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/screens`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    method: 'PUT',
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to update screens");
-  }
-
-  return response.json() as Promise<QuizDto>;
+  return handleResponse<QuizDto>(response);
 };
 
 export const updateQuizLive = async (id: string, payload: UpdateQuizLivePayload): Promise<QuizDto> => {
   const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/live`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    method: 'PATCH',
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to update live status");
-  }
-
-  return response.json() as Promise<QuizDto>;
+  return handleResponse<QuizDto>(response);
 };
 
 export const updateQuizDeletion = async (id: string, payload: UpdateQuizDeletionPayload): Promise<QuizDto> => {
   const response = await fetch(`${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/deletion`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    method: 'PATCH',
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to update deletion status");
-  }
-
-  return response.json() as Promise<QuizDto>;
+  return handleResponse<QuizDto>(response);
 };
-
-export const createQuizResponse = async (quizId: string): Promise<QuizResponseDto> => {
-  const response = await fetch(`${API_BASE_URL}/quiz-responses`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ quizId }),
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to create quiz response");
-  }
-
-  return response.json() as Promise<QuizResponseDto>;
-};
-
-export const appendQuizScreenResponse = async (id: string, screen: ScreenResponseItem): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/quiz-responses/${encodeURIComponent(id)}/screens`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ screen }),
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to append screen response");
-  }
-};
-
-
-
 
 export const deleteQuizScreen = async (id: string, screenId: string, index?: number): Promise<QuizDto> => {
   let url = `${API_BASE_URL}/quizzes/${encodeURIComponent(id)}/screens/${encodeURIComponent(screenId)}`;
@@ -184,13 +256,71 @@ export const deleteQuizScreen = async (id: string, screenId: string, index?: num
   }
 
   const response = await fetch(url, {
-    method: "DELETE",
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<QuizDto>(response);
+};
+
+// Quiz Response API (protected - for admin)
+export const createQuizResponse = async (quizId: string): Promise<QuizResponseDto> => {
+  const response = await fetch(`${API_BASE_URL}/quiz-responses`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ quizId }),
+  });
+  return handleResponse<QuizResponseDto>(response);
+};
+
+export const appendQuizScreenResponse = async (id: string, screen: ScreenResponseItem): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/quiz-responses/${encodeURIComponent(id)}/screens`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ screen }),
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('quiz_builder_user');
+    window.location.href = '/login';
+    throw new Error('Session expired. Please log in again.');
+  }
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to append screen response');
+  }
+};
+
+// Public Quiz Response API (for customers - no auth)
+export const createPublicQuizResponse = async (quizId: string): Promise<QuizResponseDto> => {
+  const response = await fetch(`${API_BASE_URL}/public/quiz-responses`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ quizId }),
   });
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(message || "Failed to delete screen");
+    throw new Error(message || 'Failed to create quiz response');
   }
 
-  return response.json() as Promise<QuizDto>;
+  return response.json() as Promise<QuizResponseDto>;
+};
+
+export const appendPublicQuizScreenResponse = async (id: string, screen: ScreenResponseItem): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/public/quiz-responses/${encodeURIComponent(id)}/screens`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ screen }),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to append screen response');
+  }
 };
