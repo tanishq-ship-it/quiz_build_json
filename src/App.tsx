@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./Components/ProtectedRoute";
 import QuizCreator from "./pages/QuizCreator";
 import NotFound from "./pages/NotFound";
 import Preview from "./pages/preview";
