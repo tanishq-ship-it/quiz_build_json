@@ -436,6 +436,20 @@ const Screens: React.FC<ScreensProps> = ({
     hasAutoScrolledToConfirmRef.current = false;
   }, [screenId]);
 
+  // Reset per-screen answer state so buttons don't "carry over" across screens
+  useEffect(() => {
+    setSelectionState({});
+    setInputState({});
+    setValidationError(null);
+    setActiveConditionalScreen(null);
+    setActiveBranch(undefined);
+
+    if (conditionalApplyTimeoutRef.current != null) {
+      window.clearTimeout(conditionalApplyTimeoutRef.current);
+      conditionalApplyTimeoutRef.current = null;
+    }
+  }, [screenId]);
+
   // Extract button from content (if exists)
   const buttonItem = content.find((item) => item.type === "button") as ButtonItem | undefined;
   const buttonPosition: VerticalPosition = buttonItem?.position ?? "bottom";
@@ -481,6 +495,58 @@ const Screens: React.FC<ScreensProps> = ({
   // - Otherwise default to "top"
   const selectionPosition: VerticalPosition = selectionItem?.position ?? (!buttonItem ? "bottom" : "top");
 
+  // Initialize selection state for defaultSelected so "answered" gating works without user tapping.
+  useEffect(() => {
+    if (!selectionItem?.defaultSelected || selectionItem.defaultSelected.length === 0) return;
+    const idx = getSelectionIndex();
+    if (idx < 0) return;
+    setSelectionState((prev) => {
+      if ((prev[idx] ?? []).length > 0) return prev;
+      return { ...prev, [idx]: selectionItem.defaultSelected ?? [] };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screenId, selectionItem?.defaultSelected]);
+
+  const getButtonGateState = () => {
+    // If a screen has no answerable inputs/selections, we always allow the action button.
+    const inputsInScreen = content
+      .map((i, idx) => ({ i, idx }))
+      .filter(({ i }) => i.type === "input") as { i: InputItem; idx: number }[];
+
+    const hasInputs = inputsInScreen.length > 0;
+    const requiredInputs = inputsInScreen.filter(({ i }) => Boolean(i.required));
+
+    const isInputAnswered = !hasInputs
+      ? true
+      : requiredInputs.length > 0
+        ? requiredInputs.every(({ i, idx }) => {
+            const key = getInputKey(i, idx);
+            const val = inputState[key] ?? "";
+            return Boolean(val.trim());
+          })
+        : inputsInScreen.some(({ i, idx }) => {
+            const key = getInputKey(i, idx);
+            const val = inputState[key] ?? "";
+            return Boolean(val.trim());
+          });
+
+    const selectionIndex = getSelectionIndex();
+    const selectedValues =
+      selectionItem && selectionIndex >= 0
+        ? (selectionState[selectionIndex] ?? selectionItem.defaultSelected ?? [])
+        : [];
+    const hasSelection = Boolean(selectionItem);
+    const isSelectionAnswered = !hasSelection ? true : selectedValues.length > 0;
+
+    const hasAnswerable = hasInputs || hasSelection;
+    const canProceed = !hasAnswerable ? true : isInputAnswered && isSelectionAnswered;
+
+    return { canProceed };
+  };
+
+  const { canProceed } = getButtonGateState();
+  const shouldShowActionButton = allLoadingComplete && canProceed;
+
   const resolveItemPosition = (item: ContentItem): VerticalPosition => {
     if (item.type === "selection") return selectionPosition;
     const p = (item as unknown as { position?: VerticalPosition }).position;
@@ -492,9 +558,9 @@ const Screens: React.FC<ScreensProps> = ({
   const bottomItems = regularContent.filter((item) => resolveItemPosition(item) === "bottom");
 
   // Find the selection item index for state tracking
-  const getSelectionIndex = (): number => {
+  function getSelectionIndex(): number {
     return regularContent.findIndex((item) => item.type === "selection");
-  };
+  }
 
   // Render a response card based on selection
   const renderResponseCard = (responseCard: ResponseCard, key: string) => {
@@ -1195,7 +1261,7 @@ const Screens: React.FC<ScreensProps> = ({
         }}
       >
         {topItems.map((item, index) => renderContentItem(item, index))}
-        {buttonItem && buttonPosition === "top" && allLoadingComplete && (
+        {buttonItem && buttonPosition === "top" && shouldShowActionButton && (
           <div
             ref={confirmButtonContainerRef}
             style={{
@@ -1206,80 +1272,82 @@ const Screens: React.FC<ScreensProps> = ({
               transform: buttonItem.offsetY != null ? `translateY(${buttonItem.offsetY}px)` : undefined,
             }}
           >
-            {validationError && (
-              <div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  marginBottom: 10,
-                }}
-              >
+            <div className="qb-action-arrive">
+              {validationError && (
                 <div
                   style={{
-                    maxWidth: 420,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "#ef4444",
-                    textAlign: "center",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    marginBottom: 10,
                   }}
                 >
-                  {validationError}
+                  <div
+                    style={{
+                      maxWidth: 420,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#ef4444",
+                      textAlign: "center",
+                    }}
+                  >
+                    {validationError}
+                  </div>
                 </div>
-              </div>
-            )}
-            <Button
-              variant="flat"
-              text={buttonItem.text}
-              width={buttonItem.width ?? 300}
-              height={buttonItem.height}
-              bgColor={buttonItem.bgColor ?? "#2563eb"}
-              textColor={buttonItem.textColor ?? "#fff"}
-              fontSize={buttonItem.fontSize}
-              showBorder={buttonItem.showBorder}
-              borderColor={buttonItem.borderColor}
-              textAlign="center"
-              onClick={() => {
-                // Basic validation for required inputs + required selection
-                const isInputInvalid = content.some((i, idx) => {
-                  if (i.type !== "input" || !i.required) return false;
-                  const key = getInputKey(i, idx);
-                  const val = inputState[key] ?? "";
-                  return !val.trim();
-                });
-
-                const selectionIndex = getSelectionIndex();
-                const selectedValues =
-                  selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
-                const isSelectionInvalid =
-                  Boolean(selectionItem?.required) && selectedValues.length === 0;
-
-                if (isInputInvalid || isSelectionInvalid) {
-                  setValidationError("Please answer all required question(s) to continue.");
-                  return;
-                }
-
-                setValidationError(null);
-
-                if (onScreenResponse && screenIndex != null && screenId) {
-                  // Collect all input values
-                  const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
-                    if (i.type !== "input") return acc;
+              )}
+              <Button
+                variant="flat"
+                text={buttonItem.text}
+                width={buttonItem.width ?? 300}
+                height={buttonItem.height}
+                bgColor={buttonItem.bgColor ?? "#2563eb"}
+                textColor={buttonItem.textColor ?? "#fff"}
+                fontSize={buttonItem.fontSize}
+                showBorder={buttonItem.showBorder}
+                borderColor={buttonItem.borderColor}
+                textAlign="center"
+                onClick={() => {
+                  // Basic validation for required inputs + required selection
+                  const isInputInvalid = content.some((i, idx) => {
+                    if (i.type !== "input" || !i.required) return false;
                     const key = getInputKey(i, idx);
-                    acc[key] = inputState[key] ?? "";
-                    return acc;
-                  }, {});
-
-                  onScreenResponse({
-                    button: {
-                      text: buttonItem.text,
-                    },
-                    ...inputValues
+                    const val = inputState[key] ?? "";
+                    return !val.trim();
                   });
-                }
-                buttonItem.onClick?.();
-              }}
-            />
+
+                  const selectionIndex = getSelectionIndex();
+                  const selectedValues =
+                    selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
+                  const isSelectionInvalid =
+                    Boolean(selectionItem?.required) && selectedValues.length === 0;
+
+                  if (isInputInvalid || isSelectionInvalid) {
+                    setValidationError("Please answer all required question(s) to continue.");
+                    return;
+                  }
+
+                  setValidationError(null);
+
+                  if (onScreenResponse && screenIndex != null && screenId) {
+                    // Collect all input values
+                    const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
+                      if (i.type !== "input") return acc;
+                      const key = getInputKey(i, idx);
+                      acc[key] = inputState[key] ?? "";
+                      return acc;
+                    }, {});
+
+                    onScreenResponse({
+                      button: {
+                        text: buttonItem.text,
+                      },
+                      ...inputValues
+                    });
+                  }
+                  buttonItem.onClick?.();
+                }}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -1300,7 +1368,7 @@ const Screens: React.FC<ScreensProps> = ({
         }}
       >
         {middleItems.map((item, index) => renderContentItem(item, index))}
-        {buttonItem && buttonPosition === "middle" && allLoadingComplete && (
+        {buttonItem && buttonPosition === "middle" && shouldShowActionButton && (
           <div
             ref={confirmButtonContainerRef}
             style={{
@@ -1311,80 +1379,82 @@ const Screens: React.FC<ScreensProps> = ({
               transform: buttonItem.offsetY != null ? `translateY(${buttonItem.offsetY}px)` : undefined,
             }}
           >
-            {validationError && (
-              <div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  marginBottom: 10,
-                }}
-              >
+            <div className="qb-action-arrive">
+              {validationError && (
                 <div
                   style={{
-                    maxWidth: 420,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "#ef4444",
-                    textAlign: "center",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    marginBottom: 10,
                   }}
                 >
-                  {validationError}
+                  <div
+                    style={{
+                      maxWidth: 420,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#ef4444",
+                      textAlign: "center",
+                    }}
+                  >
+                    {validationError}
+                  </div>
                 </div>
-              </div>
-            )}
-            <Button
-              variant="flat"
-              text={buttonItem.text}
-              width={buttonItem.width ?? 300}
-              height={buttonItem.height}
-              bgColor={buttonItem.bgColor ?? "#2563eb"}
-              textColor={buttonItem.textColor ?? "#fff"}
-              fontSize={buttonItem.fontSize}
-              showBorder={buttonItem.showBorder}
-              borderColor={buttonItem.borderColor}
-              textAlign="center"
-              onClick={() => {
-                // Basic validation for required inputs + required selection
-                const isInputInvalid = content.some((i, idx) => {
-                  if (i.type !== "input" || !i.required) return false;
-                  const key = getInputKey(i, idx);
-                  const val = inputState[key] ?? "";
-                  return !val.trim();
-                });
-
-                const selectionIndex = getSelectionIndex();
-                const selectedValues =
-                  selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
-                const isSelectionInvalid =
-                  Boolean(selectionItem?.required) && selectedValues.length === 0;
-
-                if (isInputInvalid || isSelectionInvalid) {
-                  setValidationError("Please answer all required question(s) to continue.");
-                  return;
-                }
-
-                setValidationError(null);
-
-                if (onScreenResponse && screenIndex != null && screenId) {
-                  // Collect all input values
-                  const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
-                    if (i.type !== "input") return acc;
+              )}
+              <Button
+                variant="flat"
+                text={buttonItem.text}
+                width={buttonItem.width ?? 300}
+                height={buttonItem.height}
+                bgColor={buttonItem.bgColor ?? "#2563eb"}
+                textColor={buttonItem.textColor ?? "#fff"}
+                fontSize={buttonItem.fontSize}
+                showBorder={buttonItem.showBorder}
+                borderColor={buttonItem.borderColor}
+                textAlign="center"
+                onClick={() => {
+                  // Basic validation for required inputs + required selection
+                  const isInputInvalid = content.some((i, idx) => {
+                    if (i.type !== "input" || !i.required) return false;
                     const key = getInputKey(i, idx);
-                    acc[key] = inputState[key] ?? "";
-                    return acc;
-                  }, {});
-
-                  onScreenResponse({
-                    button: {
-                      text: buttonItem.text,
-                    },
-                    ...inputValues
+                    const val = inputState[key] ?? "";
+                    return !val.trim();
                   });
-                }
-                buttonItem.onClick?.();
-              }}
-            />
+
+                  const selectionIndex = getSelectionIndex();
+                  const selectedValues =
+                    selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
+                  const isSelectionInvalid =
+                    Boolean(selectionItem?.required) && selectedValues.length === 0;
+
+                  if (isInputInvalid || isSelectionInvalid) {
+                    setValidationError("Please answer all required question(s) to continue.");
+                    return;
+                  }
+
+                  setValidationError(null);
+
+                  if (onScreenResponse && screenIndex != null && screenId) {
+                    // Collect all input values
+                    const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
+                      if (i.type !== "input") return acc;
+                      const key = getInputKey(i, idx);
+                      acc[key] = inputState[key] ?? "";
+                      return acc;
+                    }, {});
+
+                    onScreenResponse({
+                      button: {
+                        text: buttonItem.text,
+                      },
+                      ...inputValues
+                    });
+                  }
+                  buttonItem.onClick?.();
+                }}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -1404,7 +1474,7 @@ const Screens: React.FC<ScreensProps> = ({
       >
         {bottomItems.map((item, index) => renderContentItem(item, index))}
 
-        {buttonItem && buttonPosition === "bottom" && allLoadingComplete && (
+        {buttonItem && buttonPosition === "bottom" && shouldShowActionButton && (
           <div
             ref={confirmButtonContainerRef}
             style={{
@@ -1415,80 +1485,82 @@ const Screens: React.FC<ScreensProps> = ({
               transform: buttonItem.offsetY != null ? `translateY(${buttonItem.offsetY}px)` : undefined,
             }}
           >
-            {validationError && (
-              <div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  marginBottom: 10,
-                }}
-              >
+            <div className="qb-action-arrive">
+              {validationError && (
                 <div
                   style={{
-                    maxWidth: 420,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "#ef4444",
-                    textAlign: "center",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    marginBottom: 10,
                   }}
                 >
-                  {validationError}
+                  <div
+                    style={{
+                      maxWidth: 420,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#ef4444",
+                      textAlign: "center",
+                    }}
+                  >
+                    {validationError}
+                  </div>
                 </div>
-              </div>
-            )}
-            <Button
-              variant="flat"
-              text={buttonItem.text}
-              width={buttonItem.width ?? 300}
-              height={buttonItem.height}
-              bgColor={buttonItem.bgColor ?? "#2563eb"}
-              textColor={buttonItem.textColor ?? "#fff"}
-              fontSize={buttonItem.fontSize}
-              showBorder={buttonItem.showBorder}
-              borderColor={buttonItem.borderColor}
-              textAlign="center"
-              onClick={() => {
-                // Basic validation for required inputs + required selection
-                const isInputInvalid = content.some((i, idx) => {
-                  if (i.type !== "input" || !i.required) return false;
-                  const key = getInputKey(i, idx);
-                  const val = inputState[key] ?? "";
-                  return !val.trim();
-                });
-
-                const selectionIndex = getSelectionIndex();
-                const selectedValues =
-                  selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
-                const isSelectionInvalid =
-                  Boolean(selectionItem?.required) && selectedValues.length === 0;
-
-                if (isInputInvalid || isSelectionInvalid) {
-                  setValidationError("Please answer all required question(s) to continue.");
-                  return;
-                }
-
-                setValidationError(null);
-
-                if (onScreenResponse && screenIndex != null && screenId) {
-                  // Collect all input values
-                  const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
-                    if (i.type !== "input") return acc;
+              )}
+              <Button
+                variant="flat"
+                text={buttonItem.text}
+                width={buttonItem.width ?? 300}
+                height={buttonItem.height}
+                bgColor={buttonItem.bgColor ?? "#2563eb"}
+                textColor={buttonItem.textColor ?? "#fff"}
+                fontSize={buttonItem.fontSize}
+                showBorder={buttonItem.showBorder}
+                borderColor={buttonItem.borderColor}
+                textAlign="center"
+                onClick={() => {
+                  // Basic validation for required inputs + required selection
+                  const isInputInvalid = content.some((i, idx) => {
+                    if (i.type !== "input" || !i.required) return false;
                     const key = getInputKey(i, idx);
-                    acc[key] = inputState[key] ?? "";
-                    return acc;
-                  }, {});
-
-                  onScreenResponse({
-                    button: {
-                      text: buttonItem.text,
-                    },
-                    ...inputValues
+                    const val = inputState[key] ?? "";
+                    return !val.trim();
                   });
-                }
-                buttonItem.onClick?.();
-              }}
-            />
+
+                  const selectionIndex = getSelectionIndex();
+                  const selectedValues =
+                    selectionIndex >= 0 ? (selectionState[selectionIndex] ?? []) : [];
+                  const isSelectionInvalid =
+                    Boolean(selectionItem?.required) && selectedValues.length === 0;
+
+                  if (isInputInvalid || isSelectionInvalid) {
+                    setValidationError("Please answer all required question(s) to continue.");
+                    return;
+                  }
+
+                  setValidationError(null);
+
+                  if (onScreenResponse && screenIndex != null && screenId) {
+                    // Collect all input values
+                    const inputValues = content.reduce<Record<string, string>>((acc, i, idx) => {
+                      if (i.type !== "input") return acc;
+                      const key = getInputKey(i, idx);
+                      acc[key] = inputState[key] ?? "";
+                      return acc;
+                    }, {});
+
+                    onScreenResponse({
+                      button: {
+                        text: buttonItem.text,
+                      },
+                      ...inputValues
+                    });
+                  }
+                  buttonItem.onClick?.();
+                }}
+              />
+            </div>
           </div>
         )}
       </div>
