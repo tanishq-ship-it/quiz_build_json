@@ -9,6 +9,11 @@ import Editorial from "./pages/Editorial";
 import PublicQuiz from "./pages/PublicQuiz";
 import Login from "./pages/Login";
 import UserManagement from "./pages/UserManagement";
+import EmailCollection from "./pages/EmailCollection";
+import PaymentPage from "./pages/PaymentPage";
+import EmailConfirm from "./pages/EmailConfirm";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCancel from "./pages/PaymentCancel";
 
 function App() {
   return (
@@ -16,6 +21,15 @@ function App() {
       <Routes>
         {/* Public routes - for customers */}
         <Route path="/login" element={<Login />} />
+
+        {/* Payment flow routes (must be before /:quizId catch-all) */}
+        <Route path="/email/:quizId" element={<EmailCollection />} />
+        <Route path="/payment/:quizId" element={<PaymentPage />} />
+        <Route path="/email-confirm/:quizId" element={<EmailConfirm />} />
+        <Route path="/success" element={<PaymentSuccess />} />
+        <Route path="/payment/cancel" element={<PaymentCancel />} />
+
+        {/* Quiz playback (catch-all for quiz IDs) */}
         <Route path="/:quizId" element={<PublicQuiz />} />
 
         {/* Protected routes - admin only */}

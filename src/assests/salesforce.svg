@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40">
+  <rect fill="#00a1e0" width="120" height="40" rx="4"/>
+  <text x="60" y="26" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">salesforce</text>
+  <g fill="white" transform="translate(12, 20)">
+    <circle cx="0" cy="-2" r="4"/>
+    <circle cx="4" cy="2" r="3"/>
+    <circle cx="-4" cy="2" r="3"/>
+  </g>
+</svg>

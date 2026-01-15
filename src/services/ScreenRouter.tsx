@@ -238,14 +238,13 @@ function processContent(
   content: any[],
   callbacks: {
     onNext: () => void;
-    onReset: () => void;
     onDelayedNext: () => void;
   },
   placeholders: Record<string, string> = {},
   isLast: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any[] {
-  const { onNext, onReset, onDelayedNext } = callbacks;
+  const { onNext, onDelayedNext } = callbacks;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return content.map((item: any) => {
@@ -260,8 +259,9 @@ function processContent(
     }
 
     // Button: add onClick
+    // On the last screen, clicking the button triggers onNext which calls onComplete
     if (copy.type === "button") {
-      copy.onClick = isLast ? onReset : onNext;
+      copy.onClick = onNext;
     }
 
     // Selection: add callbacks
@@ -297,13 +297,13 @@ function processContent(
         for (const key of Object.keys(copy.conditionalScreens)) {
           const cs = copy.conditionalScreens[key];
           if (cs && cs.content) {
-            // If conditional screen has NO button, inject default Continue/Restart
+            // If conditional screen has NO button, inject default Continue button
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const hasButton = cs.content.some((item: any) => item?.type === "button");
             if (!hasButton) {
               cs.content = [
                 ...cs.content,
-                { type: "button", text: isLast ? "Restart" : "Continue" },
+                { type: "button", text: isLast ? "Finish" : "Continue" },
               ];
             }
 
@@ -342,7 +342,6 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
     currentScreen,
     isLastScreen,
     goToNext,
-    reset,
     delayedNext,
   } = useScreenRouter(config);
 
@@ -403,7 +402,6 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
     currentScreen.content,
     {
       onNext: goToNext,
-      onReset: reset,
       onDelayedNext: delayedNext,
     },
     config.placeholders,

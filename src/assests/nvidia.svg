@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 35">
+  <rect fill="#76b900" width="100" height="35" rx="4"/>
+  <text x="50" y="23" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">NVIDIA</text>
+  <g fill="white" transform="translate(12, 17)">
+    <path d="M-4 -5 L-4 5 L0 5 L0 -2 L4 5 L4 -5 L0 -5 L0 2 L-4 -5" fill="white" opacity="0.3"/>
+  </g>
+</svg>

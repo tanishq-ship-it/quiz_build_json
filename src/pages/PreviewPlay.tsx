@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
@@ -103,10 +103,18 @@ const rotateScreensFromIndex = (list: ScreenData[], startIndex: number): ScreenD
 
 const PreviewPlay: React.FC = () => {
   const { quizId } = useParams<{ quizId?: string }>();
+  const navigate = useNavigate();
 
   const [screens, setScreens] = useState<ScreenData[]>(DEFAULT_SCREENS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleComplete = (): void => {
+    // Navigate to email collection page after quiz completion
+    if (quizId) {
+      navigate(`/email/${quizId}`);
+    }
+  };
 
   useEffect(() => {
     if (!quizId) {
@@ -182,6 +190,7 @@ const PreviewPlay: React.FC = () => {
               screens,
               placeholders: PLACEHOLDERS,
               hashHistory: "push",
+              onComplete: handleComplete,
             }}
           />
         )}

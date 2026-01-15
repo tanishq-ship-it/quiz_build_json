@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 40">
+  <rect fill="#012169" width="150" height="40" rx="4"/>
+  <text x="75" y="26" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white" text-anchor="middle">Bank of America</text>
+  <g fill="#e31837" transform="translate(12, 20)">
+    <rect x="-4" y="-8" width="8" height="4" rx="1"/>
+    <rect x="-4" y="-2" width="8" height="4" rx="1"/>
+    <rect x="-4" y="4" width="8" height="4" rx="1"/>
+  </g>
+</svg>

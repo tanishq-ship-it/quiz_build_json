@@ -324,3 +324,159 @@ export const appendPublicQuizScreenResponse = async (id: string, screen: ScreenR
     throw new Error(message || 'Failed to append screen response');
   }
 };
+
+// ========== PAYMENT LEAD API (Public) ==========
+
+export type PlanType = '1_month' | '3_month' | '1_year';
+
+export interface PaymentLeadDto {
+  id: string;
+  email1: string;
+  email2: string | null;
+  quizId: string | null;
+  quizResponseId: string | null;
+  planType: PlanType | null;
+  paid: boolean;
+  createdAt: string;
+}
+
+export interface CreateLeadPayload {
+  email1: string;
+  quizId?: string;
+  quizResponseId?: string;
+}
+
+export interface CreateLeadResponse {
+  id: string;
+  email1: string;
+  quizId: string | null;
+}
+
+export interface UpdateLeadPayload {
+  email2: string;
+  planType?: PlanType | null;
+  paid: boolean;
+  stripeSessionId?: string | null;
+}
+
+export interface UpdateLeadResponse {
+  id: string;
+  email1: string;
+  email2: string;
+  planType: PlanType | null;
+  paid: boolean;
+}
+
+export interface CheckoutSessionPayload {
+  leadId: string;
+  planType: PlanType;
+}
+
+export interface CheckoutSessionResponse {
+  sessionId: string;
+  url: string;
+}
+
+// Create lead (Email Page 1 - before payment)
+export const createPaymentLead = async (payload: CreateLeadPayload): Promise<CreateLeadResponse> => {
+  const response = await fetch(`${API_BASE_URL}/public/payments/leads`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to create lead');
+  }
+
+  return response.json() as Promise<CreateLeadResponse>;
+};
+
+// Update lead (Email Page 2 - after payment/skip)
+export const updatePaymentLead = async (leadId: string, payload: UpdateLeadPayload): Promise<UpdateLeadResponse> => {
+  const response = await fetch(`${API_BASE_URL}/public/payments/leads/${encodeURIComponent(leadId)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to update lead');
+  }
+
+  return response.json() as Promise<UpdateLeadResponse>;
+};
+
+// Get lead by ID
+export const getPaymentLead = async (leadId: string): Promise<PaymentLeadDto> => {
+  const response = await fetch(`${API_BASE_URL}/public/payments/leads/${encodeURIComponent(leadId)}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to get lead');
+  }
+
+  return response.json() as Promise<PaymentLeadDto>;
+};
+
+// Get lead by Stripe session ID
+export const getPaymentLeadBySession = async (sessionId: string): Promise<PaymentLeadDto> => {
+  const response = await fetch(`${API_BASE_URL}/public/payments/leads/session/${encodeURIComponent(sessionId)}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to get lead');
+  }
+
+  return response.json() as Promise<PaymentLeadDto>;
+};
+
+// Create Stripe checkout session
+export const createCheckoutSession = async (payload: CheckoutSessionPayload): Promise<CheckoutSessionResponse> => {
+  const response = await fetch(`${API_BASE_URL}/public/payments/checkout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to create checkout session');
+  }
+
+  return response.json() as Promise<CheckoutSessionResponse>;
+};
+
+// ========== PAYMENT LEAD API (Admin - Protected) ==========
+
+// Get all leads (admin)
+export const getAllPaymentLeads = async (): Promise<PaymentLeadDto[]> => {
+  const response = await fetch(`${API_BASE_URL}/payments/leads`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<PaymentLeadDto[]>(response);
+};
+
+// Get leads by quiz (admin)
+export const getPaymentLeadsByQuiz = async (quizId: string): Promise<PaymentLeadDto[]> => {
+  const response = await fetch(`${API_BASE_URL}/payments/leads/quiz/${encodeURIComponent(quizId)}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<PaymentLeadDto[]>(response);
+};

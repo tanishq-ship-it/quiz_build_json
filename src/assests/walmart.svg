@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40">
+  <rect fill="#0071ce" width="120" height="40" rx="4"/>
+  <text x="60" y="26" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">Walmart</text>
+  <g fill="#ffc220" transform="translate(100, 20)">
+    <ellipse cx="0" cy="-6" rx="1.5" ry="4"/>
+    <ellipse cx="5.2" cy="-3" rx="1.5" ry="4" transform="rotate(60)"/>
+    <ellipse cx="5.2" cy="3" rx="1.5" ry="4" transform="rotate(120)"/>
+    <ellipse cx="0" cy="6" rx="1.5" ry="4"/>
+    <ellipse cx="-5.2" cy="3" rx="1.5" ry="4" transform="rotate(60)"/>
+    <ellipse cx="-5.2" cy="-3" rx="1.5" ry="4" transform="rotate(120)"/>
+  </g>
+</svg>
