@@ -436,7 +436,17 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
   // This padding ensures the absolute-positioned header (logo + optional category label/bar)
   // never visually overlaps the first content item (e.g. heading), especially on mobile/embedded
   // where `.screen-router-header { top: 8px; }`.
-  const headerPaddingTop = showLogoHeader ? (showCategoryBar ? 96 : 56) : 0;
+  //
+  // Header height calculation:
+  // - Logo container: 40px
+  // - Gap: 8px
+  // - CategoryProgressBar (if shown): 28px (4px + 20px + 4px)
+  // - Gap: 8px
+  // - Category label (if shown): ~18px (fontSize 11px + line-height)
+  // - Additional spacing buffer: 8px
+  // Total with category bar: 40 + 8 + 28 + 8 + 18 + 8 = 110px
+  // Total without category bar: 40 + 16 = 56px
+  const headerPaddingTop = showLogoHeader ? (showCategoryBar ? 110 : 56) : 0;
 
   return (
     <div className="app-container">
@@ -504,7 +514,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
                     alt="Logo"
                     style={{
                       position: "relative",
-                      height: 26,
+                      height: 36,
                       objectFit: "contain",
                     }}
                   />
