@@ -304,6 +304,11 @@ button:focus-visible {
   height: 100%;
 }
 
+/* In full-bleed play mode, avoid negative header top (gets clipped). */
+.quiz-play .screen-router-header {
+  top: 8px;
+}
+
 /* ========== Option "arrive" animation (right -> left) ========== */
 
 @keyframes qb-option-arrive-rtl {
