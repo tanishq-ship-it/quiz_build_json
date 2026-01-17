@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { updatePaymentLead, getPaymentLead, type PlanType } from '../services/api';
+import { detectDeviceType } from '../utils/platformDetection';
 import logo from '../assests/logo.svg';
 
 interface LocationState {
@@ -88,20 +89,25 @@ const EmailConfirm: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
+    // Detect device type for analytics
+    const deviceType = detectDeviceType();
+
     try {
       await updatePaymentLead(leadId, {
         email2: email.trim(),
         planType: planType,
         paid: paid,
         stripeSessionId: sessionIdFromUrl,
+        deviceType: deviceType,
       });
 
-      // Navigate to success page
+      // Navigate to success page with device type
       navigate('/success', {
         state: {
           paid,
           planType,
           email: email.trim(),
+          deviceType,
         },
       });
     } catch (err) {

@@ -352,11 +352,14 @@ export interface CreateLeadResponse {
   quizId: string | null;
 }
 
+export type DeviceType = 'ios' | 'android' | 'desktop';
+
 export interface UpdateLeadPayload {
   email2: string;
   planType?: PlanType | null;
   paid: boolean;
   stripeSessionId?: string | null;
+  deviceType?: DeviceType | null;
 }
 
 export interface UpdateLeadResponse {
