@@ -127,27 +127,27 @@ const EmailConfirm: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f5f5f5] flex flex-col">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
         {/* Logo */}
-        <div className="mb-10">
-          <img src={logo} alt="Logo" className="h-12" />
+        <div className="mb-6 sm:mb-10">
+          <img src={logo} alt="Logo" className="h-10 sm:h-12" />
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-3 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 text-center px-2">
           {paid ? 'Payment Successful!' : 'Confirm Your Email'}
         </h1>
 
         {/* Subtitle */}
-        <p className="text-gray-500 text-center mb-8 text-lg max-w-sm">
+        <p className="text-gray-500 text-center mb-6 sm:mb-8 text-base sm:text-lg max-w-sm px-2">
           {paid
             ? 'Enter your email to receive your receipt and access details'
             : 'Enter your email to create a personal account'}
         </p>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full max-w-md">
-          <div className="mb-6">
+        <form onSubmit={handleSubmit} className="w-full max-w-md px-2">
+          <div className="mb-4 sm:mb-6">
             <input
               type="email"
               value={email}
@@ -156,7 +156,7 @@ const EmailConfirm: React.FC = () => {
                 setError(null);
               }}
               placeholder="Your email"
-              className={`w-full px-6 py-4 rounded-2xl border bg-white text-gray-900 text-lg outline-none transition-all ${
+              className={`w-full px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border bg-white text-gray-900 text-base sm:text-lg outline-none transition-all ${
                 error
                   ? 'border-red-300 focus:border-red-500'
                   : 'border-gray-200 focus:border-gray-400'
@@ -177,7 +177,7 @@ const EmailConfirm: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading || !email.trim()}
-            className={`w-full font-semibold py-4 px-6 rounded-2xl transition-colors text-lg ${
+            className={`w-full font-semibold py-3 sm:py-4 px-6 rounded-2xl transition-colors text-base sm:text-lg ${
               email.trim()
                 ? 'bg-[#6d3be8] hover:bg-[#5c32c7] text-white'
                 : 'bg-[#e8e4df] text-[#9a958f] cursor-not-allowed'
@@ -195,8 +195,8 @@ const EmailConfirm: React.FC = () => {
         </form>
 
         {/* Terms */}
-        <p className="text-sm text-gray-400 text-center mt-8 px-4 max-w-md">
-          By continuining you indicate that you've read and agree our{' '}
+        <p className="text-xs sm:text-sm text-gray-400 text-center mt-6 sm:mt-8 px-4 max-w-md">
+          By continuing you indicate that you've read and agree our{' '}
           <a href="#" className="text-gray-600 underline" onClick={(e) => e.preventDefault()}>
             Terms & Conditions
           </a>
