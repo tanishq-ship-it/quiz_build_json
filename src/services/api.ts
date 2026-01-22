@@ -337,6 +337,9 @@ export interface PaymentLeadDto {
   quizResponseId: string | null;
   planType: PlanType | null;
   paid: boolean;
+  clerkUserId: string | null;
+  subscriptionStatus: string | null;
+  subscriptionExpiresAt: string | null;
   createdAt: string;
 }
 
@@ -350,6 +353,7 @@ export interface CreateLeadResponse {
   id: string;
   email1: string;
   quizId: string | null;
+  clerkUserId: string | null; // This is used as RevenueCat app_user_id
 }
 
 export type DeviceType = 'ios' | 'android' | 'desktop';
@@ -358,7 +362,7 @@ export interface UpdateLeadPayload {
   email2: string;
   planType?: PlanType | null;
   paid: boolean;
-  stripeSessionId?: string | null;
+  revenuecatUserId?: string | null;
   deviceType?: DeviceType | null;
 }
 
@@ -370,14 +374,10 @@ export interface UpdateLeadResponse {
   paid: boolean;
 }
 
-export interface CheckoutSessionPayload {
-  leadId: string;
-  planType: PlanType;
-}
-
-export interface CheckoutSessionResponse {
-  sessionId: string;
-  url: string;
+export interface SubscriptionStatus {
+  isPremium: boolean;
+  status: string | null;
+  expiresAt: string | null;
 }
 
 // Create lead (Email Page 1 - before payment)
@@ -432,9 +432,9 @@ export const getPaymentLead = async (leadId: string): Promise<PaymentLeadDto> =>
   return response.json() as Promise<PaymentLeadDto>;
 };
 
-// Get lead by Stripe session ID
-export const getPaymentLeadBySession = async (sessionId: string): Promise<PaymentLeadDto> => {
-  const response = await fetch(`${API_BASE_URL}/public/payments/leads/session/${encodeURIComponent(sessionId)}`, {
+// Check subscription status
+export const checkSubscriptionStatus = async (leadId: string): Promise<SubscriptionStatus> => {
+  const response = await fetch(`${API_BASE_URL}/public/payments/leads/${encodeURIComponent(leadId)}/subscription`, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -442,28 +442,10 @@ export const getPaymentLeadBySession = async (sessionId: string): Promise<Paymen
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(message || 'Failed to get lead');
+    throw new Error(message || 'Failed to check subscription');
   }
 
-  return response.json() as Promise<PaymentLeadDto>;
-};
-
-// Create Stripe checkout session
-export const createCheckoutSession = async (payload: CheckoutSessionPayload): Promise<CheckoutSessionResponse> => {
-  const response = await fetch(`${API_BASE_URL}/public/payments/checkout`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || 'Failed to create checkout session');
-  }
-
-  return response.json() as Promise<CheckoutSessionResponse>;
+  return response.json() as Promise<SubscriptionStatus>;
 };
 
 // ========== PAYMENT LEAD API (Admin - Protected) ==========
