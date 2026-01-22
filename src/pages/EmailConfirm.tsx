@@ -21,7 +21,6 @@ const EmailConfirm: React.FC = () => {
   const stateFromNav = location.state as LocationState | null;
 
   // Get params from URL (from Stripe redirect) or state (from skip)
-  const sessionIdFromUrl = searchParams.get('session_id');
   const paidFromUrl = searchParams.get('paid') === 'true';
   const planFromUrl = searchParams.get('plan') as PlanType | null;
   const leadIdFromUrl = searchParams.get('lead_id');
@@ -97,7 +96,6 @@ const EmailConfirm: React.FC = () => {
         email2: email.trim(),
         planType: planType,
         paid: paid,
-        stripeSessionId: sessionIdFromUrl,
         deviceType: deviceType,
       });
 
@@ -169,6 +167,9 @@ const EmailConfirm: React.FC = () => {
                 Pre-filled with your previous email
               </p>
             )}
+            <p className="mt-2 text-xs text-gray-400 px-2">
+              This email will be used to create your account
+            </p>
             {error && (
               <p className="mt-2 text-sm text-red-600 px-2">{error}</p>
             )}

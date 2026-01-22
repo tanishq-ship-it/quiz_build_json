@@ -5,7 +5,6 @@ import {
   getCustomerInfo,
   getSubscriptionExpirationDate,
   isRevenueCatInitialized,
-  PREMIUM_ENTITLEMENT_ID,
   type CustomerInfo,
 } from '../services/revenuecat';
 
