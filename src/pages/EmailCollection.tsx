@@ -73,12 +73,13 @@ const EmailCollection: React.FC = () => {
         quizResponseId: state?.quizResponseId,
       });
 
-      // Navigate to payment page with lead ID
+      // Navigate to payment page with lead ID and clerkUserId (for RevenueCat)
       navigate(`/payment/${quizId}`, {
         state: {
           leadId: lead.id,
           email1: lead.email1,
           quizResponseId: state?.quizResponseId,
+          clerkUserId: lead.clerkUserId, // Used as RevenueCat app_user_id
         },
       });
     } catch (err) {

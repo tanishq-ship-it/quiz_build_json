@@ -1,7 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BookOpen, Headphones, Instagram, Loader2, ShieldCheck, Star } from 'lucide-react';
-import { getPublicQuiz, createCheckoutSession, type PlanType } from '../services/api';
+import { getPublicQuiz, type PlanType } from '../services/api';
+import {
+  initializePurchases,
+  getOfferings,
+  purchasePackage,
+  isRevenueCatInitialized,
+  PREMIUM_ENTITLEMENT_ID,
+  type Package,
+} from '../services/revenuecat';
 import logo from '../assests/logo.svg';
 import visaLogo from '../assests/visa.svg';
 import mastercardLogo from '../assests/mastercard.svg';
@@ -108,6 +116,7 @@ interface LocationState {
   leadId?: string;
   email1?: string;
   quizResponseId?: string;
+  clerkUserId?: string; // Used as RevenueCat app_user_id
 }
 
 const PaymentPage: React.FC = () => {
@@ -120,8 +129,9 @@ const PaymentPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [paymentState, setPaymentState] = useState<PaymentState>('idle');
-  const [selectedPlan, setSelectedPlan] = useState<PlanType>('3_month');
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>('1_year');
   const [countdownSeconds, setCountdownSeconds] = useState<number>(DEFAULT_COUNTDOWN_SECONDS);
+  const [rcPackages, setRcPackages] = useState<Package[]>([]);
 
   // Check if we have leadId from navigation
   useEffect(() => {
@@ -130,6 +140,38 @@ const PaymentPage: React.FC = () => {
       navigate(`/email/${quizId}`, { replace: true });
     }
   }, [state?.leadId, quizId, navigate]);
+
+  // Initialize RevenueCat
+  useEffect(() => {
+    if (!state?.clerkUserId) {
+      console.warn('PaymentPage: No clerkUserId provided in state');
+      return;
+    }
+
+    const initRC = async () => {
+      try {
+        console.log('Initializing RevenueCat with userId:', state.clerkUserId);
+        if (!isRevenueCatInitialized()) {
+          initializePurchases(state.clerkUserId!);
+        }
+        // Fetch offerings
+        console.log('Fetching RevenueCat offerings...');
+        const offerings = await getOfferings();
+        console.log('RevenueCat offerings:', offerings);
+
+        if (offerings.current?.availablePackages) {
+          console.log('Available packages:', offerings.current.availablePackages);
+          setRcPackages(offerings.current.availablePackages);
+        } else {
+          console.warn('No offerings or packages available from RevenueCat');
+        }
+      } catch (err) {
+        console.error('Failed to initialize RevenueCat:', err);
+      }
+    };
+
+    initRC();
+  }, [state?.clerkUserId]);
 
   // Load quiz info
   useEffect(() => {
@@ -197,16 +239,60 @@ const PaymentPage: React.FC = () => {
       setPaymentState('processing');
       setError(null);
 
-      // Create Stripe checkout session
-      const session = await createCheckoutSession({
-        leadId: state.leadId,
-        planType: selectedPlan,
-      });
+      // Find the matching RevenueCat package for the selected plan
+      // Package types use $rc_ prefix (e.g., "$rc_monthly", "$rc_three_month", "$rc_annual")
+      const planToPackageType: Record<PlanType, string> = {
+        '1_month': '$rc_monthly',
+        '3_month': '$rc_three_month',
+        '1_year': '$rc_annual',
+      };
 
-      // Redirect to Stripe Checkout
-      window.location.href = session.url;
+      const targetPackageType = planToPackageType[selectedPlan];
+      const packageInfo = rcPackages.map(p => ({ id: p.identifier, type: p.packageType }));
+      console.log('Looking for package type:', targetPackageType);
+      console.log('Available packages:', JSON.stringify(packageInfo, null, 2));
+      const rcPackage = rcPackages.find((pkg) => pkg.packageType === targetPackageType);
+      console.log('Found package:', rcPackage ? rcPackage.identifier : 'NONE');
+
+      if (!rcPackage) {
+        // Fallback: If no RevenueCat packages loaded, navigate to email-confirm with skip
+        console.warn('No RevenueCat package found for plan:', selectedPlan);
+        setError('Unable to load payment options. Please try again.');
+        setPaymentState('idle');
+        return;
+      }
+
+      // Purchase using RevenueCat
+      const customerInfo = await purchasePackage(rcPackage);
+
+      if (customerInfo && PREMIUM_ENTITLEMENT_ID in customerInfo.entitlements.active) {
+        // Payment successful - navigate to email confirmation
+        navigate(`/email-confirm/${quizId}`, {
+          state: {
+            leadId: state.leadId,
+            email1: state.email1,
+            planType: selectedPlan,
+            paid: true,
+            quizResponseId: state.quizResponseId,
+          },
+        });
+      } else if (customerInfo === null) {
+        // User cancelled
+        setPaymentState('idle');
+      } else {
+        // Payment completed but entitlement not active yet (webhook may be processing)
+        navigate(`/email-confirm/${quizId}`, {
+          state: {
+            leadId: state.leadId,
+            email1: state.email1,
+            planType: selectedPlan,
+            paid: true,
+            quizResponseId: state.quizResponseId,
+          },
+        });
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start checkout');
+      setError(err instanceof Error ? err.message : 'Failed to process payment');
       setPaymentState('idle');
     }
   };
@@ -239,17 +325,6 @@ const PaymentPage: React.FC = () => {
         badgeColor: 'text-[#6d3be8] border-[#6d3be8]',
       },
       {
-        id: '3_month',
-        duration: '3 months',
-        originalPrice: '$59.99',
-        discountedPrice: '$29.99',
-        perDay: '$0.33',
-        strikePrice: '$0.67',
-        badge: 'SAVE 50%',
-        badgeColor: 'text-[#6d3be8] border-[#6d3be8]',
-        popular: true,
-      },
-      {
         id: '1_year',
         duration: '1 year',
         originalPrice: '$199.99',
@@ -258,6 +333,7 @@ const PaymentPage: React.FC = () => {
         strikePrice: '$0.55',
         badge: 'BEST OFFER',
         badgeColor: 'text-[#6d3be8] border-[#6d3be8]',
+        popular: true,
       },
     ],
     []

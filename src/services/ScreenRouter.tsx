@@ -149,6 +149,12 @@ export function useScreenRouter(config: ScreenRouterConfig) {
   }, [currentScreen?.id, hashHistory, syncHash]);
 
   // Allow manual hash navigation: `#<screenId>`
+  // Use a ref to track currentIndex to avoid recreating event listeners on every screen change
+  const currentIndexRef = useRef(currentIndex);
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
   useEffect(() => {
     if (!syncHash) return;
     if (typeof window === "undefined") return;
@@ -157,7 +163,8 @@ export function useScreenRouter(config: ScreenRouterConfig) {
       const hashId = getHashScreenId();
       if (!hashId) return;
       const idx = findScreenIndexById(hashId);
-      if (idx >= 0 && idx !== currentIndex) {
+      // Use ref to get latest currentIndex without causing listener recreation
+      if (idx >= 0 && idx !== currentIndexRef.current) {
         isApplyingHistoryNavigationRef.current = true;
         setCurrentIndex(idx);
       }
@@ -169,7 +176,7 @@ export function useScreenRouter(config: ScreenRouterConfig) {
       window.removeEventListener("hashchange", applyHashToIndex);
       window.removeEventListener("popstate", applyHashToIndex);
     };
-  }, [currentIndex, findScreenIndexById, getHashScreenId, syncHash]);
+  }, [findScreenIndexById, getHashScreenId, syncHash]);
 
   const goToNext = useCallback(() => {
     if (isLastScreen) {
