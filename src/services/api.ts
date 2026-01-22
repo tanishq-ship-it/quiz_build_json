@@ -327,7 +327,7 @@ export const appendPublicQuizScreenResponse = async (id: string, screen: ScreenR
 
 // ========== PAYMENT LEAD API (Public) ==========
 
-export type PlanType = '1_month' | '3_month' | '1_year';
+export type PlanType = '1_month' | '1_year';
 
 export interface PaymentLeadDto {
   id: string;

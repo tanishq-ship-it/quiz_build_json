@@ -17,8 +17,6 @@ const getPlanLabel = (planType: PlanType | null | undefined): string => {
   switch (planType) {
     case '1_month':
       return '1 Month Plan';
-    case '3_month':
-      return '3 Months Plan';
     case '1_year':
       return '1 Year Plan';
     default:

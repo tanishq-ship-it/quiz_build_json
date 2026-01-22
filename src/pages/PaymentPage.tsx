@@ -243,7 +243,6 @@ const PaymentPage: React.FC = () => {
       // Package types use $rc_ prefix (e.g., "$rc_monthly", "$rc_three_month", "$rc_annual")
       const planToPackageType: Record<PlanType, string> = {
         '1_month': '$rc_monthly',
-        '3_month': '$rc_three_month',
         '1_year': '$rc_annual',
       };
 

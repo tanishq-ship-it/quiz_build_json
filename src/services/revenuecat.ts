@@ -1,8 +1,9 @@
 import { Purchases, type CustomerInfo, type Offerings, type Package } from '@revenuecat/purchases-js';
 
-// RevenueCat API Keys
-const REVENUECAT_PUBLIC_KEY = 'rcb_DdsTBxcBdGpcvZJsrhuYSTHpbDNm'; // Production
-const REVENUECAT_SANDBOX_KEY = 'rcb_sb_simKVfpByivwLCDyPgBLHmLET'; // Sandbox/Testing
+// RevenueCat API Keys (must match backend config)
+const REVENUECAT_PUBLIC_KEY = 'rcb_NsfaLLSgQYGCCbHbtoCErUZcNJIc'; // Production
+
+const REVENUECAT_SANDBOX_KEY = 'rcb_sb_VxqhPCleFgrPtzHoJdwVWlTii'; // Sandbox/Testing
 
 // Use sandbox key for development, production key for production
 const API_KEY = import.meta.env.DEV ? REVENUECAT_SANDBOX_KEY : REVENUECAT_PUBLIC_KEY;
