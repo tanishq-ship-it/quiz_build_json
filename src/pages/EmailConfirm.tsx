@@ -139,7 +139,7 @@ const EmailConfirm: React.FC = () => {
         {/* Subtitle */}
         <p className="text-gray-500 text-center mb-6 sm:mb-8 text-base sm:text-lg max-w-sm px-2">
           {paid
-            ? 'Enter your email to receive your receipt and access details'
+            ? 'Enter your email to receive your receipt and create your account'
             : 'Enter your email to create a personal account'}
         </p>
 
@@ -163,13 +163,11 @@ const EmailConfirm: React.FC = () => {
               autoFocus
             />
             {prefillEmail && email === prefillEmail && (
-              <p className="mt-2 text-xs text-gray-400 px-2">
+              <p className="mt-2 text-xs text-gray-400 px-2 text-center">
                 Pre-filled with your previous email
               </p>
             )}
-            <p className="mt-2 text-xs text-gray-400 px-2">
-              This email will be used to create your account
-            </p>
+            
             {error && (
               <p className="mt-2 text-sm text-red-600 px-2">{error}</p>
             )}
