@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut } from "lucide-react";
+import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Check } from "lucide-react";
 import Lottie from "lottie-react";
 import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -26,6 +26,7 @@ function QuizCreator() {
   const [dialogError, setDialogError] = useState<string | null>(null);
   const [updatingLiveId, setUpdatingLiveId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleToggleLive = async (quizId: string, currentLive: boolean) => {
     try {
@@ -50,6 +51,25 @@ function QuizCreator() {
       setLoadError(message);
     } finally {
       setUpdatingLiveId(null);
+    }
+  };
+
+  const handleCopyLink = async (quizId: string) => {
+    const url = new URL(`/${quizId}`, window.location.origin).toString();
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(quizId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedId(quizId);
+      setTimeout(() => setCopiedId(null), 2000);
     }
   };
 
@@ -328,6 +348,27 @@ function QuizCreator() {
                     >
                       <Link2 className="w-4 h-4" />
                       <span className="hidden md:inline text-[11px]">Public link</span>
+                    </button>
+
+                    {/* Copy link */}
+                    <button
+                      type="button"
+                      onClick={() => handleCopyLink(quiz.id)}
+                      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-2.5 transition-colors ${
+                        copiedId === quiz.id
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                          : "border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
+                      }`}
+                      title="Copy public link"
+                    >
+                      {copiedId === quiz.id ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                      <span className="hidden md:inline text-[11px]">
+                        {copiedId === quiz.id ? "Copied!" : "Copy"}
+                      </span>
                     </button>
 
                     {/* Live */}
