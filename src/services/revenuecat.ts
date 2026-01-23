@@ -1,4 +1,4 @@
-import { Purchases, type CustomerInfo, type Offerings, type Package } from '@revenuecat/purchases-js';
+import { Purchases, type CustomerInfo, type Offerings, type Package, ReservedCustomerAttribute } from '@revenuecat/purchases-js';
 
 // RevenueCat API Keys (must match backend config)
 const REVENUECAT_PUBLIC_KEY = 'rcb_NsfaLLSgQYGCCbHbtoCErUZcNJIc'; // Production
@@ -19,7 +19,6 @@ let isInitialized = false;
  */
 export const initializePurchases = (userId: string): void => {
   if (isInitialized) {
-    console.log('RevenueCat already initialized');
     return;
   }
 
@@ -29,7 +28,6 @@ export const initializePurchases = (userId: string): void => {
       appUserId: userId,
     });
     isInitialized = true;
-    console.log('RevenueCat initialized for user:', userId);
   } catch (error) {
     console.error('Failed to initialize RevenueCat:', error);
     throw error;
@@ -57,19 +55,39 @@ export const getOfferings = async (): Promise<Offerings> => {
 };
 
 /**
+ * Set the customer's email attribute
+ * @param email - The customer's email address
+ */
+export const setCustomerEmail = async (email: string): Promise<void> => {
+  try {
+    await Purchases.getSharedInstance().setAttributes({
+      [ReservedCustomerAttribute.Email]: email.trim(),
+    });
+  } catch (error) {
+    // Don't throw - this is optional and shouldn't block purchase
+  }
+};
+
+/**
  * Purchase a subscription package
  * @param pkg - The package to purchase
+ * @param customerEmail - Optional email to prefill in checkout (skips email collection step)
  */
-export const purchasePackage = async (pkg: Package): Promise<CustomerInfo | null> => {
+export const purchasePackage = async (pkg: Package, customerEmail?: string): Promise<CustomerInfo | null> => {
   try {
+    // Set email attribute on customer before purchase
+    if (customerEmail) {
+      await setCustomerEmail(customerEmail);
+    }
+
     const result = await Purchases.getSharedInstance().purchase({
       rcPackage: pkg,
+      customerEmail: customerEmail?.trim(),
     });
     return result.customerInfo;
   } catch (error: any) {
     // Check if user cancelled
     if (error?.errorCode === 'UserCancelledError' || error?.code === 'USER_CANCELLED') {
-      console.log('User cancelled purchase');
       return null;
     }
     console.error('Purchase error:', error);
@@ -129,7 +147,6 @@ export const closePurchases = (): void => {
     if (isInitialized) {
       Purchases.getSharedInstance().close();
       isInitialized = false;
-      console.log('RevenueCat connection closed');
     }
   } catch (error) {
     console.error('Error closing RevenueCat:', error);

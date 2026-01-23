@@ -235,6 +235,8 @@ const PaymentPage: React.FC = () => {
     if (!quizId || !state?.leadId) return;
     if (paymentState === 'processing') return;
 
+   
+
     try {
       setPaymentState('processing');
       setError(null);
@@ -247,11 +249,7 @@ const PaymentPage: React.FC = () => {
       };
 
       const targetPackageType = planToPackageType[selectedPlan];
-      const packageInfo = rcPackages.map(p => ({ id: p.identifier, type: p.packageType }));
-      console.log('Looking for package type:', targetPackageType);
-      console.log('Available packages:', JSON.stringify(packageInfo, null, 2));
       const rcPackage = rcPackages.find((pkg) => pkg.packageType === targetPackageType);
-      console.log('Found package:', rcPackage ? rcPackage.identifier : 'NONE');
 
       if (!rcPackage) {
         // Fallback: If no RevenueCat packages loaded, navigate to email-confirm with skip
@@ -261,8 +259,8 @@ const PaymentPage: React.FC = () => {
         return;
       }
 
-      // Purchase using RevenueCat
-      const customerInfo = await purchasePackage(rcPackage);
+      // Purchase using RevenueCat - pass email to prefill checkout
+      const customerInfo = await purchasePackage(rcPackage, state.email1);
 
       if (customerInfo && PREMIUM_ENTITLEMENT_ID in customerInfo.entitlements.active) {
         // Payment successful - navigate to email confirmation
