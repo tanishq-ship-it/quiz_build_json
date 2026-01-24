@@ -80,6 +80,7 @@ const EmailCollection: React.FC = () => {
           email1: lead.email1,
           quizResponseId: state?.quizResponseId,
           clerkUserId: lead.clerkUserId, // Used as RevenueCat app_user_id
+          signInToken: lead.signInToken, // Token for web-to-app auto-login
         },
       });
     } catch (err) {

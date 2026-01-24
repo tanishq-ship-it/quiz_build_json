@@ -11,6 +11,7 @@ interface LocationState {
   planType?: PlanType | null;
   paid?: boolean;
   quizResponseId?: string;
+  signInToken?: string; // Token for web-to-app auto-login
 }
 
 const EmailConfirm: React.FC = () => {
@@ -106,6 +107,7 @@ const EmailConfirm: React.FC = () => {
           planType,
           email: email.trim(),
           deviceType,
+          signInToken: stateFromNav?.signInToken,
         },
       });
     } catch (err) {

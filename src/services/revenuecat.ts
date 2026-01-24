@@ -1,7 +1,8 @@
 import { Purchases, type CustomerInfo, type Offerings, type Package, ReservedCustomerAttribute } from '@revenuecat/purchases-js';
 
 // RevenueCat API Keys (must match backend config)
-const REVENUECAT_PUBLIC_KEY = 'rcb_NsfaLLSgQYGCCbHbtoCErUZcNJIc'; // Production
+// const REVENUECAT_PUBLIC_KEY = 'rcb_NsfaLLSgQYGCCbHbtoCErUZcNJIc'; // Production
+const REVENUECAT_PUBLIC_KEY = 'rcb_sb_VxqhPCleFgrPtzHoJdwVWlTii'; // Production
 
 const REVENUECAT_SANDBOX_KEY = 'rcb_sb_VxqhPCleFgrPtzHoJdwVWlTii'; // Sandbox/Testing
 

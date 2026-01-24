@@ -117,6 +117,7 @@ interface LocationState {
   email1?: string;
   quizResponseId?: string;
   clerkUserId?: string; // Used as RevenueCat app_user_id
+  signInToken?: string; // Token for web-to-app auto-login
 }
 
 const PaymentPage: React.FC = () => {
@@ -271,6 +272,7 @@ const PaymentPage: React.FC = () => {
             planType: selectedPlan,
             paid: true,
             quizResponseId: state.quizResponseId,
+            signInToken: state.signInToken,
           },
         });
       } else if (customerInfo === null) {
@@ -285,6 +287,7 @@ const PaymentPage: React.FC = () => {
             planType: selectedPlan,
             paid: true,
             quizResponseId: state.quizResponseId,
+            signInToken: state.signInToken,
           },
         });
       }
@@ -305,6 +308,7 @@ const PaymentPage: React.FC = () => {
         planType: null,
         paid: false,
         quizResponseId: state?.quizResponseId,
+        signInToken: state?.signInToken,
       },
     });
   };

@@ -11,6 +11,7 @@ interface LocationState {
   planType?: PlanType | null;
   email?: string;
   deviceType?: DeviceType;
+  signInToken?: string; // Token for web-to-app auto-login
 }
 
 const getPlanLabel = (planType: PlanType | null | undefined): string => {
@@ -25,14 +26,29 @@ const getPlanLabel = (planType: PlanType | null | undefined): string => {
 };
 
 // iOS Screen - Auto redirects to App Store
-const IOSSuccessScreen: React.FC<{ paid: boolean; planType?: PlanType | null; email?: string }> = ({
+const IOSSuccessScreen: React.FC<{ paid: boolean; planType?: PlanType | null; email?: string; signInToken?: string }> = ({
   paid,
   planType,
   email,
+  signInToken,
 }) => {
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
+    // Copy sign-in token to clipboard for auto-login in the app
+    const copyTokenAndRedirect = async () => {
+      if (signInToken) {
+        try {
+          await navigator.clipboard.writeText(`mindsnack://auth/${signInToken}`);
+          console.log('Sign-in token copied to clipboard');
+        } catch (err) {
+          console.warn('Failed to copy token to clipboard:', err);
+        }
+      }
+    };
+
+    copyTokenAndRedirect();
+
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -45,7 +61,7 @@ const IOSSuccessScreen: React.FC<{ paid: boolean; planType?: PlanType | null; em
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [signInToken]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -309,6 +325,7 @@ const PaymentSuccess: React.FC = () => {
   const paid = state?.paid ?? false;
   const planType = state?.planType;
   const email = state?.email;
+  const signInToken = state?.signInToken;
 
   // Use device type from state or detect it
   const deviceType = state?.deviceType ?? detectDeviceType();
@@ -316,7 +333,7 @@ const PaymentSuccess: React.FC = () => {
   // Render device-specific screen
   switch (deviceType) {
     case 'ios':
-      return <IOSSuccessScreen paid={paid} planType={planType} email={email} />;
+      return <IOSSuccessScreen paid={paid} planType={planType} email={email} signInToken={signInToken} />;
     case 'android':
       return <AndroidSuccessScreen paid={paid} planType={planType} email={email} />;
     case 'desktop':

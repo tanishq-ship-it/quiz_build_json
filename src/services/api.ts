@@ -354,6 +354,7 @@ export interface CreateLeadResponse {
   email1: string;
   quizId: string | null;
   clerkUserId: string | null; // This is used as RevenueCat app_user_id
+  signInToken: string | null; // Token for web-to-app auto-login
 }
 
 export type DeviceType = 'ios' | 'android' | 'desktop';
