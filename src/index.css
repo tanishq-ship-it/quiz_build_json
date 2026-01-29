@@ -368,3 +368,43 @@ button:focus-visible {
     opacity: 1 !important;
   }
 }
+
+/* ========== Landing Page Styles ========== */
+
+/* Custom scrollbar for landing page */
+.landing-scrollbar::-webkit-scrollbar { width: 6px; }
+.landing-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.landing-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.landing-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Brand colors */
+.brand-text { color: #6d3be8; }
+.bg-brand { background-color: #6d3be8; }
+.border-brand { border-color: #6d3be8; }
+
+/* Mesh gradient background */
+.mesh-gradient {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(109, 59, 232, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(255, 129, 42, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+}
+
+/* Glass panel effect */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Phone mockup shadow */
+.mockup-shadow {
+  box-shadow: 0 25px 50px -12px rgba(109, 59, 232, 0.25);
+}
+
+/* Smooth scroll */
+.scroll-smooth {
+  scroll-behavior: smooth;
+}

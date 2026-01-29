@@ -466,3 +466,66 @@ export const getPaymentLeadsByQuiz = async (quizId: string): Promise<PaymentLead
   });
   return handleResponse<PaymentLeadDto[]>(response);
 };
+
+// ========== WEB QUIZ API ==========
+
+export interface WebQuizDto {
+  id: string;
+  quizId: string;
+  isActive: boolean;
+  setBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WebQuizWithQuizDto extends WebQuizDto {
+  quiz: {
+    id: string;
+    title: string;
+    content: any;
+    live: boolean;
+  } | null;
+}
+
+// Get current active web quiz (admin - protected)
+export const getWebQuiz = async (): Promise<WebQuizDto | null> => {
+  const response = await fetch(`${API_BASE_URL}/web-quiz`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<WebQuizDto | null>(response);
+};
+
+// Set a quiz as the website quiz (admin - protected)
+export const setWebQuiz = async (quizId: string): Promise<WebQuizDto> => {
+  const response = await fetch(`${API_BASE_URL}/web-quiz`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ quizId }),
+  });
+  return handleResponse<WebQuizDto>(response);
+};
+
+// Unset a quiz as website quiz (admin - protected)
+export const unsetWebQuiz = async (quizId: string): Promise<WebQuizDto> => {
+  const response = await fetch(`${API_BASE_URL}/web-quiz/${encodeURIComponent(quizId)}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<WebQuizDto>(response);
+};
+
+// Get current active web quiz with quiz details (public - no auth)
+export const getPublicWebQuiz = async (): Promise<WebQuizWithQuizDto | null> => {
+  const response = await fetch(`${API_BASE_URL}/public/web-quiz`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to get web quiz');
+  }
+
+  return response.json() as Promise<WebQuizWithQuizDto | null>;
+};

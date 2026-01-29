@@ -164,7 +164,7 @@ function UserManagement() {
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/admin')}
               className="w-9 h-9 rounded-lg flex items-center justify-center bg-white/70 border border-white/80 backdrop-blur-xl shadow-sm hover:bg-white/90 transition-colors"
             >
               <ArrowLeft className="w-4 h-4 text-slate-600" />

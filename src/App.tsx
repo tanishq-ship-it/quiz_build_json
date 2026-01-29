@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import LandingPage from "./pages/Landing";
 import QuizCreator from "./pages/QuizCreator";
 import NotFound from "./pages/NotFound";
 import Preview from "./pages/preview";
@@ -19,6 +20,9 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
+        {/* Landing page - main public page */}
+        <Route path="/" element={<LandingPage />} />
+
         {/* Public routes - for customers */}
         <Route path="/login" element={<Login />} />
 
@@ -29,12 +33,9 @@ function App() {
         <Route path="/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
 
-        {/* Quiz playback (catch-all for quiz IDs) */}
-        <Route path="/:quizId" element={<PublicQuiz />} />
-
         {/* Protected routes - admin only */}
         <Route
-          path="/"
+          path="/admin"
           element={
             <ProtectedRoute>
               <QuizCreator />
@@ -81,6 +82,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Quiz playback (catch-all for quiz IDs - must be last) */}
+        <Route path="/:quizId" element={<PublicQuiz />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Check } from "lucide-react";
+import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Check, Globe } from "lucide-react";
 import Lottie from "lottie-react";
-import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive } from "../services/api";
+import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive, getWebQuiz, setWebQuiz, unsetWebQuiz } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import loadingAnimation from "../assests/Loding.json";
 
@@ -27,6 +27,8 @@ function QuizCreator() {
   const [updatingLiveId, setUpdatingLiveId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [webQuizId, setWebQuizId] = useState<string | null>(null);
+  const [updatingWebQuizId, setUpdatingWebQuizId] = useState<string | null>(null);
 
   const handleToggleLive = async (quizId: string, currentLive: boolean) => {
     try {
@@ -81,12 +83,40 @@ function QuizCreator() {
       await updateQuizDeletion(quizId, { deletion: true });
 
       setQuizzes((current) => current.filter((quiz) => quiz.id !== quizId));
+
+      // If this was the web quiz, clear it
+      if (webQuizId === quizId) {
+        setWebQuizId(null);
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to delete quiz.";
       setLoadError(message);
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleToggleWebQuiz = async (quizId: string, isCurrentlyWebQuiz: boolean) => {
+    try {
+      setUpdatingWebQuizId(quizId);
+      setLoadError(null);
+
+      if (isCurrentlyWebQuiz) {
+        // Unset this quiz as web quiz
+        await unsetWebQuiz(quizId);
+        setWebQuizId(null);
+      } else {
+        // Set this quiz as web quiz
+        await setWebQuiz(quizId);
+        setWebQuizId(quizId);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to update website quiz.";
+      setLoadError(message);
+    } finally {
+      setUpdatingWebQuizId(null);
     }
   };
 
@@ -98,7 +128,11 @@ function QuizCreator() {
         setIsLoading(true);
         setLoadError(null);
 
-        const quizzesFromApi = await getQuizzes();
+        // Fetch quizzes and web quiz in parallel
+        const [quizzesFromApi, webQuizData] = await Promise.all([
+          getQuizzes(),
+          getWebQuiz(),
+        ]);
 
         if (cancelled) return;
 
@@ -111,6 +145,11 @@ function QuizCreator() {
               status: { live: quiz.live },
             })),
         );
+
+        // Set the current web quiz ID
+        if (webQuizData && webQuizData.isActive) {
+          setWebQuizId(webQuizData.quizId);
+        }
       } catch (error) {
         if (cancelled) return;
         const message =
@@ -309,6 +348,12 @@ function QuizCreator() {
                         />
                         {quiz.status.live ? "Live" : "Draft"}
                       </span>
+                      {webQuizId === quiz.id && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium bg-violet-50 text-violet-700 border-violet-100">
+                          <Globe className="w-3 h-3" />
+                          Website
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -388,6 +433,26 @@ function QuizCreator() {
                         {quiz.status.live ? "Unlive" : "Make live"}
                       </span>
                     </button>
+
+                    {/* Website Quiz Toggle - Only show for live quizzes */}
+                    {quiz.status.live && (
+                      <button
+                        type="button"
+                        onClick={() => handleToggleWebQuiz(quiz.id, webQuizId === quiz.id)}
+                        disabled={updatingWebQuizId === quiz.id}
+                        className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-inter-medium transition-colors ${
+                          webQuizId === quiz.id
+                            ? "border-violet-200 bg-violet-100 text-violet-700 hover:bg-violet-150 hover:border-violet-300"
+                            : "border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
+                        } disabled:opacity-60 disabled:cursor-not-allowed`}
+                        title={webQuizId === quiz.id ? "Remove from website" : "Set as website quiz"}
+                      >
+                        <Globe className="w-4 h-4" />
+                        <span className="hidden md:inline text-[11px]">
+                          {webQuizId === quiz.id ? "On Website" : "Website"}
+                        </span>
+                      </button>
+                    )}
 
                     {/* Delete (soft delete) */}
                     <button

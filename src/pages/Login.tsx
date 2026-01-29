@@ -27,7 +27,7 @@ function Login() {
       setIsLoading(true);
       const response = await loginApi({ email: email.trim(), password });
       login(response.token, response.user);
-      navigate('/');
+      navigate('/admin');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
       setError(message);
