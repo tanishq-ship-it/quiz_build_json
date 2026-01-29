@@ -392,8 +392,15 @@ export const createPaymentLead = async (payload: CreateLeadPayload): Promise<Cre
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || 'Failed to create lead');
+    try {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create lead');
+    } catch (parseError) {
+      if (parseError instanceof Error && parseError.message !== 'Failed to create lead') {
+        throw parseError;
+      }
+      throw new Error('Failed to create lead');
+    }
   }
 
   return response.json() as Promise<CreateLeadResponse>;
