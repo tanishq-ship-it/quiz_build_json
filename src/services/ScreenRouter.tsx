@@ -1,6 +1,119 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Screens from "../Screens/Screens";
 import logoImage from "../assests/logo.svg";
+
+// ============================================================
+// ANIMATION VARIANTS
+// ============================================================
+
+const screenTransitionVariants = {
+  initial: {
+    opacity: 0,
+    x: 40,
+    scale: 0.98,
+  },
+  animate: {
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    transition: {
+      duration: 0.4,
+      ease: [0.25, 0.46, 0.45, 0.94] as const, // Smooth ease-out
+    },
+  },
+  exit: {
+    opacity: 0,
+    x: -40,
+    scale: 0.98,
+    transition: {
+      duration: 0.3,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+    },
+  },
+};
+
+// ============================================================
+// IMAGE PRELOADING
+// ============================================================
+
+/**
+ * Extracts all image URLs from a screen's content (recursively).
+ * Handles: src, imageSrc, image, logo, options with images, conditionalScreens, etc.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractImageUrls(content: any[], placeholders: Record<string, string> = {}): string[] {
+  const urls: string[] = [];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const processItem = (item: any) => {
+    if (!item || typeof item !== "object") return;
+
+    // Direct image properties
+    if (item.src) {
+      const resolved = placeholders[item.src] || item.src;
+      if (resolved.startsWith("http")) urls.push(resolved);
+    }
+    if (item.imageSrc) {
+      const resolved = placeholders[item.imageSrc] || item.imageSrc;
+      if (resolved.startsWith("http")) urls.push(resolved);
+    }
+    if (item.image) {
+      const resolved = placeholders[item.image] || item.image;
+      if (resolved.startsWith("http")) urls.push(resolved);
+    }
+    if (item.logo) {
+      const resolved = placeholders[item.logo] || item.logo;
+      if (resolved.startsWith("http")) urls.push(resolved);
+    }
+
+    // Options with images (e.g., imageCard selections)
+    if (Array.isArray(item.options)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      item.options.forEach((opt: any) => {
+        if (opt.imageSrc) {
+          const resolved = placeholders[opt.imageSrc] || opt.imageSrc;
+          if (resolved.startsWith("http")) urls.push(resolved);
+        }
+      });
+    }
+
+    // Conditional screens (nested content)
+    if (item.conditionalScreens) {
+      Object.values(item.conditionalScreens).forEach((cs) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const screen = cs as any;
+        if (screen?.content && Array.isArray(screen.content)) {
+          urls.push(...extractImageUrls(screen.content, placeholders));
+        }
+      });
+    }
+
+    // Card content (info cards with nested items)
+    if (Array.isArray(item.content)) {
+      urls.push(...extractImageUrls(item.content, placeholders));
+    }
+
+    // Carousel items
+    if (Array.isArray(item.items)) {
+      urls.push(...extractImageUrls(item.items, placeholders));
+    }
+  };
+
+  content.forEach(processItem);
+  return [...new Set(urls)]; // Remove duplicates
+}
+
+/**
+ * Preloads images by creating Image objects.
+ * Browser caches these, so subsequent renders are instant.
+ */
+function preloadImages(urls: string[]): void {
+  urls.forEach((url) => {
+    const img = new Image();
+    img.src = url;
+  });
+}
 
 // ============================================================
 // TYPES
@@ -352,6 +465,17 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
     delayedNext,
   } = useScreenRouter(config);
 
+  // Preload ALL quiz images on mount for instant display
+  useEffect(() => {
+    const allUrls: string[] = [];
+    config.screens.forEach((screen) => {
+      const urls = extractImageUrls(screen.content, config.placeholders);
+      allUrls.push(...urls);
+    });
+    const uniqueUrls = [...new Set(allUrls)];
+    preloadImages(uniqueUrls);
+  }, [config.screens, config.placeholders]);
+
   // Derive ordered category steps from screens (first occurrence wins)
   interface CategoryStep {
     key: string;
@@ -565,25 +689,39 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
               height: "100%",
               boxSizing: "border-box",
               paddingTop: headerPaddingTop,
+              overflow: "hidden",
             }}
           >
-            <Screens
-              key={currentScreen.id}
-              content={processedContent}
-              screenIndex={currentIndex}
-              screenId={currentScreen.id}
-              onScreenResponse={
-                config.onScreenResponse
-                  ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (response: any) =>
-                      config.onScreenResponse?.({
-                        index: currentIndex,
-                        screenId: currentScreen.id,
-                        response,
-                      })
-                  : undefined
-              }
-            />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentScreen.id}
+                variants={screenTransitionVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                style={{
+                  height: "100%",
+                  width: "100%",
+                }}
+              >
+                <Screens
+                  content={processedContent}
+                  screenIndex={currentIndex}
+                  screenId={currentScreen.id}
+                  onScreenResponse={
+                    config.onScreenResponse
+                      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (response: any) =>
+                          config.onScreenResponse?.({
+                            index: currentIndex,
+                            screenId: currentScreen.id,
+                            response,
+                          })
+                      : undefined
+                  }
+                />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </section>

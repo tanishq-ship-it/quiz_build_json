@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "../Components/Image";
 import Text, { type TextSegment } from "../Components/Text";
 import Button from "../Components/Button";
@@ -9,6 +10,90 @@ import Card, { type InfoContentItem } from "../Components/Card";
 import LoadingComponent, { type LoadingPopupConfig } from "../Components/LoadingComponent";
 import ListBlock from "../Components/listBock";
 import { FONT_INTER } from "../styles/fonts";
+
+// ============================================================
+// ANIMATION VARIANTS
+// ============================================================
+
+// Animation for conditional/response screens
+const conditionalScreenVariants = {
+  initial: {
+    opacity: 0,
+    y: 30,
+    scale: 0.97,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.45,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+    scale: 0.98,
+    transition: {
+      duration: 0.3,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+    },
+  },
+};
+
+// Animation for response cards (inline feedback)
+const responseCardVariants = {
+  initial: {
+    opacity: 0,
+    y: 15,
+    scale: 0.95,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.35,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
+    scale: 0.95,
+    transition: {
+      duration: 0.2,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+    },
+  },
+};
+
+// Staggered container for content items
+const contentContainerVariants = {
+  animate: {
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+// Individual content item animation
+const contentItemVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+    },
+  },
+};
 
 type VerticalPosition = "top" | "middle" | "bottom";
 
@@ -833,8 +918,21 @@ const Screens: React.FC<ScreensProps> = ({
       return applyLayout(
         <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", width: "100%" }}>
           {/* Response card above selection */}
-          {responsePosition === "top" && responseCard}
-          
+          <AnimatePresence mode="wait">
+            {responsePosition === "top" && responseCard && (
+              <motion.div
+                key="response-card-top"
+                variants={responseCardVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                style={{ width: "100%", display: "flex", justifyContent: "center" }}
+              >
+                {responseCard}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <SelectionOptions
             mode={item.mode}
             layout={item.layout}
@@ -858,9 +956,22 @@ const Screens: React.FC<ScreensProps> = ({
               (item.leftLabel || item.rightLabel ? { left: item.leftLabel, right: item.rightLabel } : undefined)
             }
           />
-          
+
           {/* Response card below selection */}
-          {responsePosition === "bottom" && responseCard}
+          <AnimatePresence mode="wait">
+            {responsePosition === "bottom" && responseCard && (
+              <motion.div
+                key="response-card-bottom"
+                variants={responseCardVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                style={{ width: "100%", display: "flex", justifyContent: "center" }}
+              >
+                {responseCard}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       );
     }
@@ -1037,8 +1148,12 @@ const Screens: React.FC<ScreensProps> = ({
     const responseBottomItems = responseRegularContent.filter((item) => resolveResponseItemPosition(item) === "bottom");
 
     return (
-      <div
+      <motion.div
         className="scrollbar-hide"
+        variants={conditionalScreenVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
         style={{
           display: "flex",
           flexDirection: "column",
@@ -1052,7 +1167,10 @@ const Screens: React.FC<ScreensProps> = ({
         }}
       >
         {/* Response Screen: Top Stack */}
-        <div
+        <motion.div
+          variants={contentContainerVariants}
+          initial="initial"
+          animate="animate"
           style={{
             display: "flex",
             flexDirection: "column",
@@ -1063,9 +1181,14 @@ const Screens: React.FC<ScreensProps> = ({
             paddingTop: 16,
           }}
         >
-          {responseTopItems.map((item, index) => renderContentItem(item, index))}
+          {responseTopItems.map((item, index) => (
+            <motion.div key={index} variants={contentItemVariants} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+              {renderContentItem(item, index)}
+            </motion.div>
+          ))}
           {responseButtonItem && responseButtonPosition === "top" && (
-            <div
+            <motion.div
+              variants={contentItemVariants}
               ref={confirmButtonContainerRef}
               style={{
                 paddingTop: 16,
@@ -1105,12 +1228,15 @@ const Screens: React.FC<ScreensProps> = ({
                   responseButtonItem.onClick?.();
                 }}
               />
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* Response Screen: Middle Stack (centered) */}
-        <div
+        <motion.div
+          variants={contentContainerVariants}
+          initial="initial"
+          animate="animate"
           style={{
             flex: 1,
             width: "100%",
@@ -1124,9 +1250,14 @@ const Screens: React.FC<ScreensProps> = ({
             paddingBottom: responseMiddleItems.length > 0 ? 16 : 0,
           }}
         >
-          {responseMiddleItems.map((item, index) => renderContentItem(item, index))}
+          {responseMiddleItems.map((item, index) => (
+            <motion.div key={index} variants={contentItemVariants} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+              {renderContentItem(item, index)}
+            </motion.div>
+          ))}
           {responseButtonItem && responseButtonPosition === "middle" && (
-            <div
+            <motion.div
+              variants={contentItemVariants}
               ref={confirmButtonContainerRef}
               style={{
                 paddingTop: 16,
@@ -1166,12 +1297,15 @@ const Screens: React.FC<ScreensProps> = ({
                   responseButtonItem.onClick?.();
                 }}
               />
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* Response Screen: Bottom Stack */}
-        <div
+        <motion.div
+          variants={contentContainerVariants}
+          initial="initial"
+          animate="animate"
           style={{
             width: "100%",
             maxWidth: 500,
@@ -1183,9 +1317,14 @@ const Screens: React.FC<ScreensProps> = ({
             paddingBottom: 16,
           }}
         >
-          {responseBottomItems.map((item, index) => renderContentItem(item, index))}
+          {responseBottomItems.map((item, index) => (
+            <motion.div key={index} variants={contentItemVariants} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+              {renderContentItem(item, index)}
+            </motion.div>
+          ))}
           {responseButtonItem && responseButtonPosition === "bottom" && (
-            <div
+            <motion.div
+              variants={contentItemVariants}
               ref={confirmButtonContainerRef}
               style={{
                 paddingTop: 16,
@@ -1225,11 +1364,11 @@ const Screens: React.FC<ScreensProps> = ({
                   responseButtonItem.onClick?.();
                 }}
               />
-            </div>
+            </motion.div>
           )}
-        </div>
-        
-      </div>
+        </motion.div>
+
+      </motion.div>
     );
   }
 
