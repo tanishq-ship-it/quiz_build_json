@@ -1,0 +1,13 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin and protected routes
+Disallow: /admin
+Disallow: /users
+Disallow: /preview
+Disallow: /preview-play
+Disallow: /editorion
+
+# Sitemap location
+Sitemap: https://mindsnack.app/sitemap.xml
