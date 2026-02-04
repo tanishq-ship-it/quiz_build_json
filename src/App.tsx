@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import LandingPage from "./pages/Landing";
@@ -16,8 +17,16 @@ import EmailConfirm from "./pages/EmailConfirm";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import Analytics from "./pages/Analytics";
+import { trackPageView } from "./services/analytics";
 
 function App() {
+  const location = useLocation();
+
+  // Track page views on route change
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+
   return (
     <AuthProvider>
       <Routes>

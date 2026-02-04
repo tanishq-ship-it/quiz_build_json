@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { createPaymentLead, getPublicQuiz } from '../services/api';
+import { PaymentAnalytics } from '../services/analytics';
 import logo from '../assests/logo.svg';
 
 interface LocationState {
@@ -19,13 +20,16 @@ const EmailCollection: React.FC = () => {
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check quiz exists
+  // Check quiz exists and track page view
   useEffect(() => {
     if (!quizId) {
       setError('Quiz not found');
       setIsLoadingQuiz(false);
       return;
     }
+
+    // Track email page view in GA4
+    PaymentAnalytics.emailPageView(quizId);
 
     const loadQuiz = async () => {
       try {
@@ -72,6 +76,9 @@ const EmailCollection: React.FC = () => {
         quizId,
         quizResponseId: state?.quizResponseId,
       });
+
+      // Track email submit in GA4
+      PaymentAnalytics.emailSubmit(quizId, lead.id);
 
       // Navigate to payment page with lead ID and clerkUserId (for RevenueCat)
       navigate(`/payment/${quizId}`, {

@@ -10,6 +10,7 @@ import {
   PREMIUM_ENTITLEMENT_ID,
   type Package,
 } from '../services/revenuecat';
+import { PaymentAnalytics } from '../services/analytics';
 import logo from '../assests/logo.svg';
 import visaLogo from '../assests/visa.svg';
 import mastercardLogo from '../assests/mastercard.svg';
@@ -174,13 +175,16 @@ const PaymentPage: React.FC = () => {
     initRC();
   }, [state?.clerkUserId]);
 
-  // Load quiz info
+  // Load quiz info and track page view
   useEffect(() => {
     if (!quizId) {
       setError('Missing quiz id.');
       setIsLoading(false);
       return;
     }
+
+    // Track payment page view in GA4
+    PaymentAnalytics.paymentPageView(quizId, selectedPlan);
 
     let cancelled = false;
 
@@ -264,6 +268,11 @@ const PaymentPage: React.FC = () => {
       const customerInfo = await purchasePackage(rcPackage, state.email1);
 
       if (customerInfo && PREMIUM_ENTITLEMENT_ID in customerInfo.entitlements.active) {
+        // Track successful purchase in GA4
+        const plan = plans.find((p) => p.id === selectedPlan);
+        const value = plan ? parseFloat(plan.discountedPrice.replace('$', '')) : 0;
+        PaymentAnalytics.purchase(quizId, selectedPlan, value);
+
         // Payment successful - navigate to email confirmation
         navigate(`/email-confirm/${quizId}`, {
           state: {
@@ -276,7 +285,8 @@ const PaymentPage: React.FC = () => {
           },
         });
       } else if (customerInfo === null) {
-        // User cancelled
+        // User cancelled - track in GA4
+        PaymentAnalytics.purchaseCancel(quizId);
         setPaymentState('idle');
       } else {
         // Payment completed but entitlement not active yet (webhook may be processing)
@@ -349,6 +359,15 @@ const PaymentPage: React.FC = () => {
     void handlePay();
   };
 
+  const handlePlanSelect = (planId: PlanType) => {
+    setSelectedPlan(planId);
+    const plan = plans.find((p) => p.id === planId);
+    if (quizId && plan) {
+      const price = parseFloat(plan.discountedPrice.replace('$', ''));
+      PaymentAnalytics.planSelect(quizId, planId, price);
+    }
+  };
+
   return (
     <div className="app-container">
       <section className="screen-section">
@@ -400,11 +419,11 @@ const PaymentPage: React.FC = () => {
                   plans.map((plan) => (
                     <div
                       key={plan.id}
-                      onClick={() => setSelectedPlan(plan.id)}
+                      onClick={() => handlePlanSelect(plan.id)}
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') setSelectedPlan(plan.id);
+                        if (e.key === 'Enter' || e.key === ' ') handlePlanSelect(plan.id);
                       }}
                       className={`relative border-2 rounded-2xl p-4 cursor-pointer transition ${
                         plan.popular

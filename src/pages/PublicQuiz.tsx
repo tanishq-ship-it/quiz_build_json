@@ -11,6 +11,7 @@ import {
   appendPublicQuizScreenResponse,
   type ScreenResponseItem,
 } from "../services/api";
+import { QuizAnalytics } from "../services/analytics";
 
 type InputMode = "single" | "array" | "config";
 
@@ -105,6 +106,7 @@ const PublicQuiz: React.FC = () => {
   const [currentScreenId, setCurrentScreenId] = useState<string | null>(null);
   const [screenEnteredAt, setScreenEnteredAt] = useState<number | null>(null);
   const responsesByIndexRef = useRef<Record<number, unknown>>({});
+  const quizStartTimeRef = useRef<number | null>(null);
 
   const getInitialIndexFromHash = (availableScreens: ScreenData[]): number => {
     if (typeof window === "undefined") return 0;
@@ -164,6 +166,11 @@ const PublicQuiz: React.FC = () => {
                 setCurrentScreenIndex(initialIndex);
                 setCurrentScreenId(parsedScreens[initialIndex]?.id ?? null);
                 setScreenEnteredAt(Date.now());
+
+                // Track quiz start in GA4
+                quizStartTimeRef.current = Date.now();
+                QuizAnalytics.quizStart(quiz.id, quiz.title);
+                QuizAnalytics.screenView(quiz.id, parsedScreens[initialIndex]?.id ?? "", initialIndex);
               }
             } catch {
               // If creating a response fails, we still allow viewing the quiz
@@ -222,14 +229,30 @@ const PublicQuiz: React.FC = () => {
   };
 
   const handleScreenChange = (index: number, screenId: string): void => {
+    // Track question answer for the previous screen
+    if (quizId && currentScreenId && screenEnteredAt) {
+      QuizAnalytics.questionAnswer(quizId, currentScreenId, currentScreenIndex, Date.now() - screenEnteredAt);
+    }
+
     void appendCurrentScreenIfNeeded();
     setCurrentScreenIndex(index);
     setCurrentScreenId(screenId);
     setScreenEnteredAt(Date.now());
+
+    // Track new screen view in GA4
+    if (quizId) {
+      QuizAnalytics.screenView(quizId, screenId, index);
+    }
   };
 
   const handleComplete = (): void => {
     void appendCurrentScreenIfNeeded();
+
+    // Track quiz completion in GA4
+    if (quizId && quizStartTimeRef.current) {
+      const totalTimeMs = Date.now() - quizStartTimeRef.current;
+      QuizAnalytics.quizComplete(quizId, totalTimeMs, screens.length);
+    }
 
     // Navigate to email collection page after quiz completion
     if (quizId) {
