@@ -15,6 +15,7 @@ import PaymentPage from "./pages/PaymentPage";
 import EmailConfirm from "./pages/EmailConfirm";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
+import Analytics from "./pages/Analytics";
 
 function App() {
   return (
@@ -79,6 +80,14 @@ function App() {
           element={
             <ProtectedRoute>
               <PreviewPlay />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <Analytics />
             </ProtectedRoute>
           }
         />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Check, Globe } from "lucide-react";
+import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Check, Globe, BarChart3 } from "lucide-react";
 import Lottie from "lottie-react";
 import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive, getWebQuiz, setWebQuiz, unsetWebQuiz } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -256,6 +256,15 @@ function QuizCreator() {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => navigate('/analytics')}
+              className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md text-sm font-inter-medium border border-violet-200 bg-violet-50/80 text-violet-600 hover:bg-violet-100 hover:border-violet-300 transition-all"
+              title="View Analytics"
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Analytics</span>
+            </button>
             <button
               type="button"
               onClick={() => navigate('/users')}

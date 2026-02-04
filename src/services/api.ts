@@ -292,14 +292,25 @@ export const appendQuizScreenResponse = async (id: string, screen: ScreenRespons
   }
 };
 
+// Device detection utility
+export const detectDeviceType = (): 'iphone' | 'android' | 'desktop' => {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/iphone|ipad|ipod/.test(ua)) return 'iphone';
+  if (/android/.test(ua)) return 'android';
+  return 'desktop';
+};
+
 // Public Quiz Response API (for customers - no auth)
-export const createPublicQuizResponse = async (quizId: string): Promise<QuizResponseDto> => {
+export const createPublicQuizResponse = async (
+  quizId: string,
+  deviceType?: 'iphone' | 'android' | 'desktop'
+): Promise<QuizResponseDto> => {
   const response = await fetch(`${API_BASE_URL}/public/quiz-responses`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ quizId }),
+    body: JSON.stringify({ quizId, deviceType: deviceType ?? detectDeviceType() }),
   });
 
   if (!response.ok) {
@@ -535,4 +546,56 @@ export const getPublicWebQuiz = async (): Promise<WebQuizWithQuizDto | null> => 
   }
 
   return response.json() as Promise<WebQuizWithQuizDto | null>;
+};
+
+// ========== ANALYTICS API (Admin - Protected) ==========
+
+import type {
+  QuizListItemDto as AnalyticsQuizListItemDto,
+  QuizAnalyticsDto,
+  DeviceType as AnalyticsDeviceType,
+  DateRangePreset,
+} from '../types/analytics';
+
+// Re-export types for convenience
+export type { AnalyticsQuizListItemDto, QuizAnalyticsDto, AnalyticsDeviceType };
+
+// Get quizzes with response counts for analytics
+export const getAnalyticsQuizzes = async (): Promise<AnalyticsQuizListItemDto[]> => {
+  const response = await fetch(`${API_BASE_URL}/analytics/quizzes`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<AnalyticsQuizListItemDto[]>(response);
+};
+
+// Get full analytics for a specific quiz
+export const getQuizAnalytics = async (
+  quizId: string,
+  options?: {
+    deviceFilter?: AnalyticsDeviceType[];
+    dateRange?: DateRangePreset;
+    startDate?: string;
+    endDate?: string;
+  }
+): Promise<QuizAnalyticsDto> => {
+  const params = new URLSearchParams();
+
+  if (options?.deviceFilter && options.deviceFilter.length > 0) {
+    params.set('devices', options.deviceFilter.join(','));
+  }
+
+  if (options?.dateRange && options.dateRange !== 'custom') {
+    params.set('range', options.dateRange);
+  } else if (options?.startDate || options?.endDate) {
+    if (options.startDate) params.set('startDate', options.startDate);
+    if (options.endDate) params.set('endDate', options.endDate);
+  }
+
+  const queryString = params.toString();
+  const url = `${API_BASE_URL}/analytics/quizzes/${encodeURIComponent(quizId)}${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<QuizAnalyticsDto>(response);
 };
