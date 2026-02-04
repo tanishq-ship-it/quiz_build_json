@@ -16,9 +16,6 @@
     fbq('init', '727882020361712');
     fbq('track', 'PageView');
     </script>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=727882020361712&ev=PageView&noscript=1"
-    /></noscript>
     <!-- End Meta Pixel Code -->
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="apple-touch-icon" href="/logo.png" />
@@ -59,6 +56,10 @@
     <link rel="canonical" href="https://mindsnack.app/" />
   </head>
   <body>
+    <!-- Meta Pixel noscript fallback -->
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=727882020361712&ev=PageView&noscript=1"
+    /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
