@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Check, Globe, BarChart3, MoreVertical } from "lucide-react";
+import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Globe, BarChart3, MoreVertical } from "lucide-react";
 import Lottie from "lottie-react";
 import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive, getWebQuiz, setWebQuiz, unsetWebQuiz } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -26,7 +26,7 @@ function QuizCreator() {
   const [dialogError, setDialogError] = useState<string | null>(null);
   const [updatingLiveId, setUpdatingLiveId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [, setCopiedId] = useState<string | null>(null);
   const [webQuizId, setWebQuizId] = useState<string | null>(null);
   const [updatingWebQuizId, setUpdatingWebQuizId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
