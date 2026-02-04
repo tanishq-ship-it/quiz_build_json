@@ -1,6 +1,5 @@
 import { Icon } from "@iconify/react";
 import PhoneMockup from "./PhoneMockup";
-import { useState } from "react";
 import mobileUI from '../../assests/App UI.png'
 
 interface HeroSectionProps {
@@ -16,7 +15,7 @@ export default function HeroSection({ quizId }: HeroSectionProps) {
       document.getElementById("quiz")?.scrollIntoView({ behavior: "smooth" });
     }
   };
-  const [isphone, setIsPhone] = useState(false);
+  const isphone =false;
 
   return (
     <section className="overflow-hidden bg-slate-50 pt-32 pr-6 pb-20 pl-6 relative">
