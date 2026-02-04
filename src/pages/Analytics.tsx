@@ -4,13 +4,13 @@ import Lottie from 'lottie-react';
 import { BarChart3 } from 'lucide-react';
 
 import { useAnalytics } from '../hooks/useAnalytics';
-import { AnalyticsHeader } from '../components/analytics/AnalyticsHeader';
-import { TabNavigation } from '../components/analytics/TabNavigation';
-import { DeviceFilter } from '../components/analytics/DeviceFilter';
-import { OverviewTab } from '../components/analytics/tabs/OverviewTab';
-import { QuestionsTab } from '../components/analytics/tabs/QuestionsTab';
-import { TimeTrendsTab } from '../components/analytics/tabs/TimeTrendsTab';
-import { DevicesTab } from '../components/analytics/tabs/DevicesTab';
+import { AnalyticsHeader } from '../Components/analytics/AnalyticsHeader';
+import { TabNavigation } from '../Components/analytics/TabNavigation';
+import { DeviceFilter } from '../Components/analytics/DeviceFilter';
+import { OverviewTab } from '../Components/analytics/tabs/OverviewTab';
+import { QuestionsTab } from '../Components/analytics/tabs/QuestionsTab';
+import { TimeTrendsTab } from '../Components/analytics/tabs/TimeTrendsTab';
+import { DevicesTab } from '../Components/analytics/tabs/DevicesTab';
 import type { AnalyticsTab } from '../types/analytics';
 import loadingAnimation from '../assests/Loding.json';
 

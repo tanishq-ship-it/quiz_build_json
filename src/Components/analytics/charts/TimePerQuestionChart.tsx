@@ -22,12 +22,6 @@ const DEVICE_COLORS = {
   desktop: '#F59E0B',
 };
 
-const DEVICE_LABELS = {
-  iphone: 'iPhone',
-  android: 'Android',
-  desktop: 'Desktop',
-};
-
 export function TimePerQuestionChart({ data, activeDevices }: TimePerQuestionChartProps) {
   if (data.length === 0) {
     return (
