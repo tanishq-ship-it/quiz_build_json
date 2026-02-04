@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Check, Globe, BarChart3 } from "lucide-react";
+import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Check, Globe, BarChart3, MoreVertical } from "lucide-react";
 import Lottie from "lottie-react";
 import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive, getWebQuiz, setWebQuiz, unsetWebQuiz } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -29,6 +29,18 @@ function QuizCreator() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [webQuizId, setWebQuizId] = useState<string | null>(null);
   const [updatingWebQuizId, setUpdatingWebQuizId] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openMenuId && !(event.target as Element).closest('.quiz-menu-container')) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openMenuId]);
 
   const handleToggleLive = async (quizId: string, currentLive: boolean) => {
     try {
@@ -366,114 +378,133 @@ function QuizCreator() {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap items-center justify-start gap-2">
-                    {/* Edit */}
+                  {/* Action Menu */}
+                  <div className="relative quiz-menu-container">
                     <button
                       type="button"
-                      onClick={() => navigate(`/editorion/${quiz.id}`)}
-                      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors px-2.5"
-                      title="Edit"
-                    >
-                      <Pencil className="w-4 h-4" />
-                      <span className="hidden md:inline text-[11px]">Edit</span>
-                    </button>
-
-                    {/* Preview */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const url = new URL(`/preview-play/${quiz.id}`, window.location.origin).toString();
-                        window.open(url, "_blank", "noopener,noreferrer");
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === quiz.id ? null : quiz.id);
                       }}
-                      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50/80 text-sky-700 hover:bg-sky-100 hover:border-sky-200 transition-colors px-2.5"
-                      title="Preview"
+                      className="p-2 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
+                      title="More options"
                     >
-                      <Eye className="w-4 h-4" />
-                      <span className="hidden md:inline text-[11px]">Preview</span>
+                      <MoreVertical className="w-5 h-5" />
                     </button>
 
-                    {/* Public quiz */}
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/${quiz.id}`)}
-                      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-indigo-100 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-200 transition-colors px-2.5"
-                      title="Open public quiz"
-                    >
-                      <Link2 className="w-4 h-4" />
-                      <span className="hidden md:inline text-[11px]">Public link</span>
-                    </button>
+                    {/* Dropdown Menu */}
+                    {openMenuId === quiz.id && (
+                      <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-20 flex flex-col origin-top-right">
+                        {/* Edit */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigate(`/editorion/${quiz.id}`);
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-2.5 transition-colors"
+                        >
+                          <Pencil className="w-4 h-4" />
+                          Edit Quiz
+                        </button>
 
-                    {/* Copy link */}
-                    <button
-                      type="button"
-                      onClick={() => handleCopyLink(quiz.id)}
-                      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-2.5 transition-colors ${
-                        copiedId === quiz.id
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                          : "border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
-                      }`}
-                      title="Copy public link"
-                    >
-                      {copiedId === quiz.id ? (
-                        <Check className="w-4 h-4" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                      <span className="hidden md:inline text-[11px]">
-                        {copiedId === quiz.id ? "Copied!" : "Copy"}
-                      </span>
-                    </button>
+                        {/* Preview */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const url = new URL(`/preview-play/${quiz.id}`, window.location.origin).toString();
+                            window.open(url, "_blank", "noopener,noreferrer");
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-2.5 transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          Preview
+                        </button>
 
-                    {/* Live */}
-                    <button
-                      type="button"
-                      onClick={() => handleToggleLive(quiz.id, quiz.status.live)}
-                      disabled={updatingLiveId === quiz.id}
-                      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-inter-medium transition-colors ${
-                        quiz.status.live
-                          ? "border-emerald-100 bg-emerald-50/90 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-200"
-                          : "border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
-                      } disabled:opacity-60 disabled:cursor-not-allowed`}
-                      title={quiz.status.live ? "Set as not live" : "Make live"}
-                    >
-                      <Radio className="w-4 h-4" />
-                      <span className="hidden md:inline text-[11px]">
-                        {quiz.status.live ? "Unlive" : "Make live"}
-                      </span>
-                    </button>
+                        <div className="h-px bg-slate-100 my-1" />
 
-                    {/* Website Quiz Toggle - Only show for live quizzes */}
-                    {quiz.status.live && (
-                      <button
-                        type="button"
-                        onClick={() => handleToggleWebQuiz(quiz.id, webQuizId === quiz.id)}
-                        disabled={updatingWebQuizId === quiz.id}
-                        className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-inter-medium transition-colors ${
-                          webQuizId === quiz.id
-                            ? "border-violet-200 bg-violet-100 text-violet-700 hover:bg-violet-150 hover:border-violet-300"
-                            : "border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
-                        } disabled:opacity-60 disabled:cursor-not-allowed`}
-                        title={webQuizId === quiz.id ? "Remove from website" : "Set as website quiz"}
-                      >
-                        <Globe className="w-4 h-4" />
-                        <span className="hidden md:inline text-[11px]">
-                          {webQuizId === quiz.id ? "On Website" : "Website"}
-                        </span>
-                      </button>
+                        {/* Public Link */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigate(`/${quiz.id}`);
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-2.5 transition-colors"
+                        >
+                          <Link2 className="w-4 h-4" />
+                          Open Public Link
+                        </button>
+
+                        {/* Copy Link */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleCopyLink(quiz.id);
+                            // Don't close immediately so user sees "Copied!" feedback if we added it, 
+                            // but since feedback is on state, we can keep menu open or close it. 
+                            // Let's close it for cleaner feel or maybe keep it? 
+                            // The previous implementation had a "Copied" text state.
+                            // Let's rely on toast if we had one, but here we just have button text.
+                            // I'll keep the menu open for a moment or just close it.
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-2.5 transition-colors"
+                        >
+                          <Copy className="w-4 h-4" />
+                          Copy Link
+                        </button>
+
+                        <div className="h-px bg-slate-100 my-1" />
+
+                        {/* Live Toggle */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleToggleLive(quiz.id, quiz.status.live);
+                            setOpenMenuId(null);
+                          }}
+                          disabled={updatingLiveId === quiz.id}
+                          className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-2.5 transition-colors disabled:opacity-50"
+                        >
+                          <Radio className={`w-4 h-4 ${quiz.status.live ? "text-emerald-500" : "text-slate-400"}`} />
+                          {quiz.status.live ? "Set as Draft" : "Make Live"}
+                        </button>
+
+                        {/* Website Toggle */}
+                        {quiz.status.live && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleToggleWebQuiz(quiz.id, webQuizId === quiz.id);
+                              setOpenMenuId(null);
+                            }}
+                            disabled={updatingWebQuizId === quiz.id}
+                            className="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-2.5 transition-colors disabled:opacity-50"
+                          >
+                            <Globe className={`w-4 h-4 ${webQuizId === quiz.id ? "text-violet-500" : "text-slate-400"}`} />
+                            {webQuizId === quiz.id ? "Remove from Website" : "Set as Website Quiz"}
+                          </button>
+                        )}
+
+                        <div className="h-px bg-slate-100 my-1" />
+
+                        {/* Delete */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleDeleteQuiz(quiz.id);
+                            setOpenMenuId(null);
+                          }}
+                          disabled={deletingId === quiz.id}
+                          className="w-full text-left px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete Quiz
+                        </button>
+                      </div>
                     )}
-
-                    {/* Delete (soft delete) */}
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteQuiz(quiz.id)}
-                      disabled={deletingId === quiz.id}
-                      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-rose-100 bg-rose-50/90 text-rose-600 hover:bg-rose-100 hover:border-rose-200 transition-colors px-2.5 disabled:opacity-60 disabled:cursor-not-allowed"
-                      title="Delete quiz"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span className="hidden md:inline text-[11px]">Delete</span>
-                    </button>
                   </div>
                 </div>
               ))}
