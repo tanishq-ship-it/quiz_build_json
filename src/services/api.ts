@@ -300,17 +300,33 @@ export const detectDeviceType = (): 'iphone' | 'android' | 'desktop' => {
   return 'desktop';
 };
 
+// Geo location from user's real IP (browser fetches from real public IP)
+let geoCache: { country?: string; city?: string } | null = null;
+
+const fetchGeo = async (): Promise<{ country?: string; city?: string }> => {
+  if (geoCache) return geoCache;
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    geoCache = { country: data.country_code, city: data.city };
+    return geoCache;
+  } catch {
+    return {};
+  }
+};
+
 // Public Quiz Response API (for customers - no auth)
 export const createPublicQuizResponse = async (
   quizId: string,
   deviceType?: 'iphone' | 'android' | 'desktop'
 ): Promise<QuizResponseDto> => {
+  const geo = await fetchGeo();
   const response = await fetch(`${API_BASE_URL}/public/quiz-responses`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ quizId, deviceType: deviceType ?? detectDeviceType() }),
+    body: JSON.stringify({ quizId, deviceType: deviceType ?? detectDeviceType(), country: geo.country, city: geo.city }),
   });
 
   if (!response.ok) {
@@ -351,6 +367,9 @@ export interface PaymentLeadDto {
   clerkUserId: string | null;
   subscriptionStatus: string | null;
   subscriptionExpiresAt: string | null;
+  deviceType: string | null;
+  country: string | null;
+  city: string | null;
   createdAt: string;
 }
 
@@ -394,12 +413,13 @@ export interface SubscriptionStatus {
 
 // Create lead (Email Page 1 - before payment)
 export const createPaymentLead = async (payload: CreateLeadPayload): Promise<CreateLeadResponse> => {
+  const geo = await fetchGeo();
   const response = await fetch(`${API_BASE_URL}/public/payments/leads`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...payload, country: geo.country, city: geo.city }),
   });
 
   if (!response.ok) {

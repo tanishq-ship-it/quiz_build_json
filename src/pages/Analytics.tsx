@@ -11,6 +11,8 @@ import { OverviewTab } from '../Components/analytics/tabs/OverviewTab';
 import { QuestionsTab } from '../Components/analytics/tabs/QuestionsTab';
 import { TimeTrendsTab } from '../Components/analytics/tabs/TimeTrendsTab';
 import { DevicesTab } from '../Components/analytics/tabs/DevicesTab';
+import { CountriesTab } from '../Components/analytics/tabs/CountriesTab';
+import { EmailsTab } from '../Components/analytics/tabs/EmailsTab';
 import type { AnalyticsTab } from '../types/analytics';
 import loadingAnimation from '../assests/Loding.json';
 
@@ -38,7 +40,7 @@ export default function Analytics() {
   // Sync tab with URL
   useEffect(() => {
     const tabParam = searchParams.get('tab') as AnalyticsTab | null;
-    if (tabParam && ['overview', 'questions', 'time-trends', 'devices'].includes(tabParam)) {
+    if (tabParam && ['overview', 'questions', 'time-trends', 'devices', 'countries', 'emails'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [searchParams, setActiveTab]);
@@ -49,6 +51,10 @@ export default function Analytics() {
   };
 
   const renderTabContent = () => {
+    if (activeTab === 'emails') {
+      return selectedQuizId ? <EmailsTab quizId={selectedQuizId} /> : null;
+    }
+
     if (!analytics) return null;
 
     switch (activeTab) {
@@ -60,6 +66,8 @@ export default function Analytics() {
         return <TimeTrendsTab analytics={analytics} />;
       case 'devices':
         return <DevicesTab analytics={analytics} />;
+      case 'countries':
+        return <CountriesTab analytics={analytics} />;
       default:
         return <OverviewTab analytics={analytics} />;
     }
@@ -111,7 +119,7 @@ export default function Analytics() {
         )}
 
         {/* Analytics content */}
-        {!isLoadingAnalytics && analytics && (
+        {!isLoadingAnalytics && (analytics || selectedQuizId) && (
           <div className="animate-fade-in">
             {/* Tab Navigation + Device Filter Row */}
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -121,19 +129,18 @@ export default function Analytics() {
 
             {/* Tab Content */}
             <div className="animate-fade-in" key={activeTab}>
-              {renderTabContent()}
+              {activeTab !== 'emails' && !analytics ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <BarChart3 className="mb-4 h-16 w-16 text-zinc-700" />
+                  <h3 className="mb-2 text-lg font-medium text-zinc-300">No analytics data</h3>
+                  <p className="text-sm text-zinc-500">
+                    This quiz doesn't have any responses yet.
+                  </p>
+                </div>
+              ) : (
+                renderTabContent()
+              )}
             </div>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!isLoadingAnalytics && !analytics && selectedQuizId && (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <BarChart3 className="mb-4 h-16 w-16 text-zinc-700" />
-            <h3 className="mb-2 text-lg font-medium text-zinc-300">No analytics data</h3>
-            <p className="text-sm text-zinc-500">
-              This quiz doesn't have any responses yet.
-            </p>
           </div>
         )}
 

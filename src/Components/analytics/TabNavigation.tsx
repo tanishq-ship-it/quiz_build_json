@@ -1,5 +1,5 @@
 import type { AnalyticsTab } from '../../types/analytics';
-import { BarChart3, HelpCircle, Clock, Smartphone } from 'lucide-react';
+import { BarChart3, HelpCircle, Clock, Smartphone, Globe, Mail } from 'lucide-react';
 
 interface TabNavigationProps {
   activeTab: AnalyticsTab;
@@ -11,6 +11,8 @@ const TABS: { id: AnalyticsTab; label: string; icon: typeof BarChart3 }[] = [
   { id: 'questions', label: 'Questions', icon: HelpCircle },
   { id: 'time-trends', label: 'Time Trends', icon: Clock },
   { id: 'devices', label: 'Devices', icon: Smartphone },
+  { id: 'countries', label: 'Countries', icon: Globe },
+  { id: 'emails', label: 'Emails', icon: Mail },
 ];
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
