@@ -18,6 +18,10 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import Analytics from "./pages/Analytics";
 import { trackPageView } from "./services/analytics";
+import Blog from "./pages/blog";
+import BlogPost from "./pages/BlogPost";
+import BlogAdmin from "./pages/BlogAdmin";
+import BlogEditor from "./pages/BlogEditor";
 
 function App() {
   const location = useLocation();
@@ -35,6 +39,9 @@ function App() {
 
         {/* Public routes - for customers */}
         <Route path="/login" element={<Login />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+
 
         {/* Payment flow routes (must be before /:quizId catch-all) */}
         <Route path="/email/:quizId" element={<EmailCollection />} />
@@ -97,6 +104,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Analytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/blogs"
+          element={
+            <ProtectedRoute>
+              <BlogAdmin />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/blogs/:id/edit"
+          element={
+            <ProtectedRoute>
+              <BlogEditor />
             </ProtectedRoute>
           }
         />

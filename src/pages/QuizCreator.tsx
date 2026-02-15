@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Globe, BarChart3, MoreVertical } from "lucide-react";
+import { Plus, Pencil, Eye, Radio, Trash2, Zap, Link2, Users, LogOut, Copy, Globe, BarChart3, MoreVertical, FileText } from "lucide-react";
 import Lottie from "lottie-react";
 import { createQuiz, getQuizzes, updateQuizDeletion, updateQuizLive, getWebQuiz, setWebQuiz, unsetWebQuiz } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -285,6 +285,15 @@ function QuizCreator() {
             >
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Users</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/blogs')}
+              className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md text-sm font-inter-medium border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all"
+              title="Manage Blogs"
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Blogs</span>
             </button>
             <button
               type="button"

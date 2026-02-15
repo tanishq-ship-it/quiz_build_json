@@ -619,3 +619,122 @@ export const getQuizAnalytics = async (
   });
   return handleResponse<QuizAnalyticsDto>(response);
 };
+
+// ========== BLOG API ==========
+
+export interface BlogDto {
+  id: string;
+  title: string;
+  slug: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  content: any;
+  published: boolean;
+  deletion: boolean;
+  readTime: string | null;
+  excerpt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BlogListItemDto {
+  id: string;
+  title: string;
+  slug: string;
+  published: boolean;
+  readTime: string | null;
+  excerpt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBlogPayload {
+  title: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  content?: any;
+  readTime?: string;
+  excerpt?: string;
+}
+
+export interface UpdateBlogPayload {
+  title?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  content?: any;
+  readTime?: string;
+  excerpt?: string;
+}
+
+// ── Admin (protected) ──
+
+export const createBlog = async (payload: CreateBlogPayload): Promise<BlogDto> => {
+  const response = await fetch(`${API_BASE_URL}/blogs`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<BlogDto>(response);
+};
+
+export const getBlogs = async (): Promise<BlogDto[]> => {
+  const response = await fetch(`${API_BASE_URL}/blogs`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<BlogDto[]>(response);
+};
+
+export const getBlog = async (id: string): Promise<BlogDto> => {
+  const response = await fetch(`${API_BASE_URL}/blogs/${encodeURIComponent(id)}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse<BlogDto>(response);
+};
+
+export const updateBlog = async (id: string, payload: UpdateBlogPayload): Promise<BlogDto> => {
+  const response = await fetch(`${API_BASE_URL}/blogs/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<BlogDto>(response);
+};
+
+export const updateBlogPublished = async (id: string, published: boolean): Promise<BlogDto> => {
+  const response = await fetch(`${API_BASE_URL}/blogs/${encodeURIComponent(id)}/published`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ published }),
+  });
+  return handleResponse<BlogDto>(response);
+};
+
+export const deleteBlogApi = async (id: string): Promise<BlogDto> => {
+  const response = await fetch(`${API_BASE_URL}/blogs/${encodeURIComponent(id)}/deletion`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ deletion: true }),
+  });
+  return handleResponse<BlogDto>(response);
+};
+
+// ── Public (no auth) ──
+
+export const getPublishedBlogs = async (): Promise<BlogListItemDto[]> => {
+  const response = await fetch(`${API_BASE_URL}/public/blogs`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to load blogs');
+  }
+  return response.json() as Promise<BlogListItemDto[]>;
+};
+
+export const getPublishedBlogBySlug = async (slug: string): Promise<BlogDto> => {
+  const response = await fetch(`${API_BASE_URL}/public/blogs/${encodeURIComponent(slug)}`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to load blog');
+  }
+  return response.json() as Promise<BlogDto>;
+};

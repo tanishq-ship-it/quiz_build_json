@@ -2,9 +2,10 @@ import logo from "../../assests/logo.png";
 
 interface NavigationProps {
   quizId: string | null;
+  showHowItWorks?: boolean;
 }
 
-export default function Navigation({ quizId }: NavigationProps) {
+export default function Navigation({ quizId, showHowItWorks = true }: NavigationProps) {
   const handleTakeQuiz = () => {
     if (quizId) {
       window.location.href = `/${quizId}`;
@@ -25,12 +26,14 @@ export default function Navigation({ quizId }: NavigationProps) {
           Mindsnack
         </a>
         <div className="flex items-center gap-6">
-          <a
-            href="#features"
-            className="hidden sm:inline-flex text-sm font-medium text-neutral-600 hover:text-black transition-colors"
-          >
-            How it works
-          </a>
+          {showHowItWorks && (
+            <a
+              href="#features"
+              className="hidden sm:inline-flex text-sm font-medium text-neutral-600 hover:text-black transition-colors"
+            >
+              How it works
+            </a>
+          )}
           <button
             onClick={handleTakeQuiz}
             className="text-sm font-medium transition-colors text-white bg-black hover:bg-neutral-800 rounded-full px-4 py-2"
