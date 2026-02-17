@@ -107,9 +107,10 @@ interface LessonRendererProps {
   lesson: Lesson;
   onBack?: () => void;
   showNav?: boolean;
+  onButtonClick?: (url: string) => void;
 }
 
-export default function LessonRenderer({ lesson, onBack, showNav = true }: LessonRendererProps) {
+export default function LessonRenderer({ lesson, onBack, showNav = true, onButtonClick }: LessonRendererProps) {
   const [dark, setDark] = useState<boolean>(false);
   const [serif, setSerif] = useState<boolean>(true);
   const [large, setLarge] = useState<boolean>(false);
@@ -473,7 +474,7 @@ export default function LessonRenderer({ lesson, onBack, showNav = true }: Lesso
             <p style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: c.nextLabel, margin: "0 0 14px 0", fontFamily: uf }}>Up next in {lesson.nextLesson.course}</p>
             <p style={{ fontSize: bp === "desktop" ? (large ? "22px" : "20px") : (large ? "20px" : "18px"), fontWeight: serif ? 600 : 700, color: c.nextTitle, margin: "0 0 8px 0", fontFamily: bf, letterSpacing: "-0.015em", lineHeight: 1.3 }}>{lesson.nextLesson.title}</p>
             <p style={{ fontSize: `${(bp === "desktop" ? 16.5 : bp === "tablet" ? 15.5 : 14.5) + (large ? 1 : 0)}px`, lineHeight: 1.6, color: c.nextHook, margin: "0 0 20px 0", fontFamily: bf }}>{lesson.nextLesson.hook}</p>
-            <button onClick={() => { if (lesson.nextLesson?.url) window.location.href = lesson.nextLesson.url; }} style={{ width: bp === "desktop" ? "auto" : "100%", padding: bp === "desktop" ? "14px 40px" : "14px", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 700, fontFamily: uf, background: c.nextBtnBg, color: c.nextBtnText, cursor: "pointer", letterSpacing: "-0.01em" }}>
+            <button onClick={() => { if (lesson.nextLesson?.url) { onButtonClick?.(lesson.nextLesson.url); window.location.href = lesson.nextLesson.url; } }} style={{ width: bp === "desktop" ? "auto" : "100%", padding: bp === "desktop" ? "14px 40px" : "14px", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 700, fontFamily: uf, background: c.nextBtnBg, color: c.nextBtnText, cursor: "pointer", letterSpacing: "-0.01em" }}>
               Start next lesson →
             </button>
           </div>

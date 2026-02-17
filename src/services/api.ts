@@ -632,6 +632,10 @@ export interface BlogDto {
   deletion: boolean;
   readTime: string | null;
   excerpt: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  buttonClicks: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  countryViews: any;
   createdAt: string;
   updatedAt: string;
 }
@@ -737,4 +741,31 @@ export const getPublishedBlogBySlug = async (slug: string): Promise<BlogDto> => 
     throw new Error(message || 'Failed to load blog');
   }
   return response.json() as Promise<BlogDto>;
+};
+
+// Track a button click on a blog post (public, fire-and-forget)
+export const trackBlogButtonClick = async (slug: string, url: string): Promise<void> => {
+  try {
+    await fetch(`${API_BASE_URL}/public/blogs/${encodeURIComponent(slug)}/track-click`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+  } catch {
+    // Fire-and-forget: ignore errors
+  }
+};
+
+// Track a country view on a blog post (public, fire-and-forget)
+export const trackBlogCountryView = async (slug: string): Promise<void> => {
+  try {
+    const geo = await fetchGeo();
+    await fetch(`${API_BASE_URL}/public/blogs/${encodeURIComponent(slug)}/track-view`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country: geo.country }),
+    });
+  } catch {
+    // Fire-and-forget: ignore errors
+  }
 };

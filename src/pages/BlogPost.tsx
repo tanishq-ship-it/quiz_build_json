@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getPublishedBlogBySlug } from "../services/api";
+import { getPublishedBlogBySlug, trackBlogButtonClick, trackBlogCountryView } from "../services/api";
 import type { BlogDto } from "../services/api";
 import LessonRenderer from "../Components/LessonRenderer";
 import type { Lesson } from "../types/blog";
@@ -27,6 +27,19 @@ export default function BlogPost() {
     };
     void load();
   }, [slug]);
+
+  // Track country view once when blog loads
+  useEffect(() => {
+    if (slug && blog) {
+      void trackBlogCountryView(slug);
+    }
+  }, [slug, blog]);
+
+  const handleButtonClick = (url: string) => {
+    if (slug) {
+      void trackBlogButtonClick(slug, url);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -59,6 +72,7 @@ export default function BlogPost() {
         lesson={lesson}
         onBack={() => navigate("/blog")}
         showNav={false}
+        onButtonClick={handleButtonClick}
       />
     </>
   );

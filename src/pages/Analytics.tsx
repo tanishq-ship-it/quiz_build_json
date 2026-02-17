@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Lottie from 'lottie-react';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, BookOpen } from 'lucide-react';
 
 import { useAnalytics } from '../hooks/useAnalytics';
 import { AnalyticsHeader } from '../Components/analytics/AnalyticsHeader';
@@ -13,11 +13,18 @@ import { TimeTrendsTab } from '../Components/analytics/tabs/TimeTrendsTab';
 import { DevicesTab } from '../Components/analytics/tabs/DevicesTab';
 import { CountriesTab } from '../Components/analytics/tabs/CountriesTab';
 import { EmailsTab } from '../Components/analytics/tabs/EmailsTab';
+import { BlogAnalyticsTab } from '../Components/analytics/tabs/BlogAnalyticsTab';
 import type { AnalyticsTab } from '../types/analytics';
 import loadingAnimation from '../assests/Loding.json';
 
+type AnalyticsSection = 'quiz' | 'blog';
+
 export default function Analytics() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [section, setSection] = useState<AnalyticsSection>(() => {
+    const s = searchParams.get('section');
+    return s === 'blog' ? 'blog' : 'quiz';
+  });
   const {
     quizzes,
     selectedQuizId,
@@ -47,7 +54,12 @@ export default function Analytics() {
 
   const handleTabChange = (tab: AnalyticsTab) => {
     setActiveTab(tab);
-    setSearchParams({ tab });
+    setSearchParams({ section, tab });
+  };
+
+  const handleSectionChange = (s: AnalyticsSection) => {
+    setSection(s);
+    setSearchParams(s === 'blog' ? { section: 'blog' } : {});
   };
 
   const renderTabContent = () => {
@@ -73,6 +85,11 @@ export default function Analytics() {
     }
   };
 
+  const sectionButtons: { id: AnalyticsSection; label: string; icon: typeof BarChart3 }[] = [
+    { id: 'quiz', label: 'Quiz Analytics', icon: BarChart3 },
+    { id: 'blog', label: 'Blog Analytics', icon: BookOpen },
+  ];
+
   return (
     <div className="min-h-screen bg-[#09090b]">
       {/* Background decorations */}
@@ -89,69 +106,108 @@ export default function Analytics() {
 
       {/* Main content */}
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header with quiz selector and date filter */}
-        <AnalyticsHeader
-          quizzes={quizzes}
-          selectedQuizId={selectedQuizId}
-          onQuizSelect={setSelectedQuizId}
-          isLoadingQuizzes={isLoadingQuizzes}
-          dateRange={dateRange}
-          onDateRangeChange={setDateRange}
-          customDateRange={customDateRange}
-          onCustomDateRangeChange={setCustomDateRange}
-          onRefresh={refreshAnalytics}
-        />
-
-        {/* Error state */}
-        {error && (
-          <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
-            {error}
+        {/* Section Toggle (Quiz / Blog) */}
+        <div className="mb-6 flex justify-center">
+          <div className="inline-flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-900/80 p-1 backdrop-blur-sm">
+            {sectionButtons.map((btn) => {
+              const Icon = btn.icon;
+              const isActive = section === btn.id;
+              return (
+                <button
+                  key={btn.id}
+                  onClick={() => handleSectionChange(btn.id)}
+                  className={`relative flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-all duration-300 ${
+                    isActive
+                      ? 'bg-violet-500/15 text-violet-300 shadow-sm shadow-violet-500/10'
+                      : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-300'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {btn.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-violet-400/60" />
+                  )}
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
 
-        {/* Loading state */}
-        {isLoadingAnalytics && (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-40 w-40">
-              <Lottie animationData={loadingAnimation} loop autoplay />
-            </div>
-          </div>
-        )}
+        {/* Quiz Analytics Section */}
+        {section === 'quiz' && (
+          <>
+            {/* Header with quiz selector and date filter */}
+            <AnalyticsHeader
+              quizzes={quizzes}
+              selectedQuizId={selectedQuizId}
+              onQuizSelect={setSelectedQuizId}
+              isLoadingQuizzes={isLoadingQuizzes}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              customDateRange={customDateRange}
+              onCustomDateRangeChange={setCustomDateRange}
+              onRefresh={refreshAnalytics}
+            />
 
-        {/* Analytics content */}
-        {!isLoadingAnalytics && (analytics || selectedQuizId) && (
-          <div className="animate-fade-in">
-            {/* Tab Navigation + Device Filter Row */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-              <DeviceFilter activeDevices={activeDevices} onToggle={toggleDevice} />
-            </div>
+            {/* Error state */}
+            {error && (
+              <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+                {error}
+              </div>
+            )}
 
-            {/* Tab Content */}
-            <div className="animate-fade-in" key={activeTab}>
-              {activeTab !== 'emails' && !analytics ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <BarChart3 className="mb-4 h-16 w-16 text-zinc-700" />
-                  <h3 className="mb-2 text-lg font-medium text-zinc-300">No analytics data</h3>
-                  <p className="text-sm text-zinc-500">
-                    This quiz doesn't have any responses yet.
-                  </p>
+            {/* Loading state */}
+            {isLoadingAnalytics && (
+              <div className="flex items-center justify-center py-20">
+                <div className="h-40 w-40">
+                  <Lottie animationData={loadingAnimation} loop autoplay />
                 </div>
-              ) : (
-                renderTabContent()
-              )}
-            </div>
-          </div>
+              </div>
+            )}
+
+            {/* Analytics content */}
+            {!isLoadingAnalytics && (analytics || selectedQuizId) && (
+              <div className="animate-fade-in">
+                {/* Tab Navigation + Device Filter Row */}
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+                  <DeviceFilter activeDevices={activeDevices} onToggle={toggleDevice} />
+                </div>
+
+                {/* Tab Content */}
+                <div className="animate-fade-in" key={activeTab}>
+                  {activeTab !== 'emails' && !analytics ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                      <BarChart3 className="mb-4 h-16 w-16 text-zinc-700" />
+                      <h3 className="mb-2 text-lg font-medium text-zinc-300">No analytics data</h3>
+                      <p className="text-sm text-zinc-500">
+                        This quiz doesn't have any responses yet.
+                      </p>
+                    </div>
+                  ) : (
+                    renderTabContent()
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* No quiz selected */}
+            {!isLoadingQuizzes && !selectedQuizId && quizzes.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <BarChart3 className="mb-4 h-16 w-16 text-zinc-700" />
+                <h3 className="mb-2 text-lg font-medium text-zinc-300">No quizzes found</h3>
+                <p className="text-sm text-zinc-500">
+                  Create a quiz first to see analytics.
+                </p>
+              </div>
+            )}
+          </>
         )}
 
-        {/* No quiz selected */}
-        {!isLoadingQuizzes && !selectedQuizId && quizzes.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <BarChart3 className="mb-4 h-16 w-16 text-zinc-700" />
-            <h3 className="mb-2 text-lg font-medium text-zinc-300">No quizzes found</h3>
-            <p className="text-sm text-zinc-500">
-              Create a quiz first to see analytics.
-            </p>
+        {/* Blog Analytics Section */}
+        {section === 'blog' && (
+          <div className="animate-fade-in">
+            <BlogAnalyticsTab />
           </div>
         )}
       </main>
