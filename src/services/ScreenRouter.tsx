@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Screens from "../Screens/Screens";
 import logoImage from "../assests/logo.svg";
@@ -118,6 +118,73 @@ function preloadImages(urls: string[]): void {
 // ============================================================
 // TYPES
 // ============================================================
+export type ScreenBackground =
+  | { type: "solid"; color: string }
+  | {
+      type: "linear-gradient";
+      angle?: number; // degrees, default 180 (top to bottom)
+      colors: string[];
+      stops?: number[]; // percentage positions
+    }
+  | {
+      type: "radial-gradient";
+      shape?: "circle" | "ellipse"; // default "circle"
+      position?: string; // CSS position, default "center"
+      colors: string[];
+      stops?: number[];
+    }
+  | {
+      type: "conic-gradient";
+      fromAngle?: number; // degrees, default 0
+      position?: string; // CSS position, default "center"
+      colors: string[];
+      stops?: number[]; // in degrees
+    };
+
+function screenBackgroundToCSS(bg?: ScreenBackground): React.CSSProperties {
+  if (!bg) return {};
+
+  switch (bg.type) {
+    case "solid":
+      return { backgroundColor: bg.color };
+
+    case "linear-gradient": {
+      const angle = bg.angle ?? 180;
+      const colorStops = bg.colors
+        .map((c, i) =>
+          bg.stops?.[i] != null ? `${c} ${bg.stops[i]}%` : c
+        )
+        .join(", ");
+      return { background: `linear-gradient(${angle}deg, ${colorStops})` };
+    }
+
+    case "radial-gradient": {
+      const shape = bg.shape ?? "circle";
+      const position = bg.position ?? "center";
+      const colorStops = bg.colors
+        .map((c, i) =>
+          bg.stops?.[i] != null ? `${c} ${bg.stops[i]}%` : c
+        )
+        .join(", ");
+      return { background: `radial-gradient(${shape} at ${position}, ${colorStops})` };
+    }
+
+    case "conic-gradient": {
+      const fromAngle = bg.fromAngle ?? 0;
+      const position = bg.position ?? "center";
+      const colorStops = bg.colors
+        .map((c, i) =>
+          bg.stops?.[i] != null ? `${c} ${bg.stops[i]}deg` : c
+        )
+        .join(", ");
+      return { background: `conic-gradient(from ${fromAngle}deg at ${position}, ${colorStops})` };
+    }
+
+    default:
+      return {};
+  }
+}
+
 export interface ScreenData {
   id: string;
   /**
@@ -131,6 +198,11 @@ export interface ScreenData {
    * the category progress bar/label for this screen (even if `category` exists).
    */
   hideCategoryBar?: boolean;
+  /**
+   * Optional background for this screen.
+   * Supports solid colors, linear/radial/conic gradients.
+   */
+  background?: ScreenBackground;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: any[];
 }
@@ -579,7 +651,10 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({ config }) => {
 
   return (
     <div className="app-container">
-      <section className="screen-section">
+      <section
+        className="screen-section"
+        style={screenBackgroundToCSS(currentScreen.background)}
+      >
         <div
           className="mobile-frame"
           style={{
