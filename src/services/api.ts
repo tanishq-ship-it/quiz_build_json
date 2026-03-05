@@ -352,6 +352,37 @@ export const appendPublicQuizScreenResponse = async (id: string, screen: ScreenR
   }
 };
 
+// ========== PREVIEW RESPONSE API (Protected - admin preview, isLive=false) ==========
+
+export const createPreviewResponse = async (quizId: string): Promise<QuizResponseDto> => {
+  const response = await fetch(`${API_BASE_URL}/quiz-responses`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ quizId, deviceType: detectDeviceType() }),
+  });
+  return handleResponse<QuizResponseDto>(response);
+};
+
+export const appendPreviewScreenResponse = async (id: string, screen: ScreenResponseItem): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/quiz-responses/${encodeURIComponent(id)}/screens`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ screen }),
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('quiz_builder_user');
+    window.location.href = '/login';
+    throw new Error('Session expired. Please log in again.');
+  }
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to append preview screen response');
+  }
+};
+
 // ========== PAYMENT LEAD API (Public) ==========
 
 export type PlanType = '1_month' | '1_year';

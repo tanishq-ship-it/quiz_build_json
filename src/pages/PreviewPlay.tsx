@@ -1,9 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import ScreenRouter, { type ScreenData } from "../services/ScreenRouter";
 import qtLogo from "../assests/qt.svg";
-import { getQuiz } from "../services/api";
+import {
+  getQuiz,
+  createPreviewResponse,
+  appendPreviewScreenResponse,
+  type ScreenResponseItem,
+} from "../services/api";
 
 type InputMode = "single" | "array" | "config";
 
@@ -108,13 +113,35 @@ const PreviewPlay: React.FC = () => {
   const [screens, setScreens] = useState<ScreenData[]>(DEFAULT_SCREENS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const previewResponseIdRef = useRef<string | null>(null);
 
   const handleComplete = (): void => {
-    // Navigate to email collection page after quiz completion
     if (quizId) {
       navigate(`/email/${quizId}`);
     }
   };
+
+  const handleScreenResponse = useCallback(
+    ({ screenId, index, response }: { index: number; screenId: string; response: unknown }) => {
+      const responseId = previewResponseIdRef.current;
+      if (!responseId) return;
+
+      const screenItem: ScreenResponseItem = {
+        screenId,
+        index,
+        response: response ?? null,
+        timeTakenMs: 0,
+        enteredAt: new Date().toISOString(),
+        exitedAt: new Date().toISOString(),
+      };
+
+      appendPreviewScreenResponse(responseId, screenItem).catch(() => {
+        // eslint-disable-next-line no-console
+        console.warn("Failed to save preview screen response");
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!quizId) {
@@ -134,6 +161,17 @@ const PreviewPlay: React.FC = () => {
         const rawContent = quiz.content ?? DEFAULT_SCREENS;
 
         if (cancelled) return;
+
+        // Create a preview response to track admin testing
+        try {
+          const previewResp = await createPreviewResponse(quizId);
+          if (!cancelled) {
+            previewResponseIdRef.current = previewResp.id;
+          }
+        } catch {
+          // eslint-disable-next-line no-console
+          console.warn("Could not create preview response — responses won't be tracked");
+        }
 
         try {
           const { screens: parsedScreens } = normalizeScreensInput(rawContent);
@@ -191,6 +229,7 @@ const PreviewPlay: React.FC = () => {
               placeholders: PLACEHOLDERS,
               hashHistory: "push",
               onComplete: handleComplete,
+              onScreenResponse: handleScreenResponse,
             }}
           />
         )}
