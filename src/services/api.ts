@@ -627,12 +627,17 @@ export const getQuizAnalytics = async (
     dateRange?: DateRangePreset;
     startDate?: string;
     endDate?: string;
+    country?: string;
   }
 ): Promise<QuizAnalyticsDto> => {
   const params = new URLSearchParams();
 
   if (options?.deviceFilter && options.deviceFilter.length > 0) {
     params.set('devices', options.deviceFilter.join(','));
+  }
+
+  if (options?.country) {
+    params.set('country', options.country);
   }
 
   if (options?.dateRange && options.dateRange !== 'custom') {

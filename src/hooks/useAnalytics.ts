@@ -24,6 +24,9 @@ export interface UseAnalyticsReturn {
   setDateRange: (range: DateRangePreset) => void;
   customDateRange: { start: Date; end: Date } | null;
   setCustomDateRange: (range: { start: Date; end: Date } | null) => void;
+  selectedCountry: string | null;
+  setSelectedCountry: (country: string | null) => void;
+  availableCountries: string[];
 
   // Tab navigation
   activeTab: AnalyticsTab;
@@ -52,6 +55,8 @@ export function useAnalytics(): UseAnalyticsReturn {
   );
   const [dateRange, setDateRange] = useState<DateRangePreset>('30d');
   const [customDateRange, setCustomDateRange] = useState<{ start: Date; end: Date } | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [availableCountries, setAvailableCountries] = useState<string[]>([]);
 
   // Tab navigation
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('overview');
@@ -114,6 +119,7 @@ export function useAnalytics(): UseAnalyticsReturn {
 
         const options: Parameters<typeof getQuizAnalytics>[1] = {
           deviceFilter,
+          country: selectedCountry || undefined,
         };
 
         if (dateRange === 'custom' && customDateRange) {
@@ -126,6 +132,10 @@ export function useAnalytics(): UseAnalyticsReturn {
         const data = await getQuizAnalytics(selectedQuizId, options);
         if (!cancelled) {
           setAnalytics(data);
+          // Update available countries from unfiltered data (only when no country filter active)
+          if (!selectedCountry && data.countryDistribution) {
+            setAvailableCountries(data.countryDistribution.map((c) => c.country));
+          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -142,7 +152,13 @@ export function useAnalytics(): UseAnalyticsReturn {
     return () => {
       cancelled = true;
     };
-  }, [selectedQuizId, activeDevices, dateRange, customDateRange]);
+  }, [selectedQuizId, activeDevices, dateRange, customDateRange, selectedCountry]);
+
+  const handleQuizSelect = useCallback((id: string | null) => {
+    setSelectedQuizId(id);
+    setSelectedCountry(null);
+    setAvailableCountries([]);
+  }, []);
 
   const toggleDevice = useCallback((device: DeviceType) => {
     setActiveDevices((prev) => {
@@ -173,7 +189,7 @@ export function useAnalytics(): UseAnalyticsReturn {
   return {
     quizzes,
     selectedQuizId,
-    setSelectedQuizId,
+    setSelectedQuizId: handleQuizSelect,
     analytics,
     activeDevices,
     toggleDevice,
@@ -181,6 +197,9 @@ export function useAnalytics(): UseAnalyticsReturn {
     setDateRange,
     customDateRange,
     setCustomDateRange,
+    selectedCountry,
+    setSelectedCountry,
+    availableCountries,
     activeTab,
     setActiveTab,
     isLoadingQuizzes,

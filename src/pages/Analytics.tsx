@@ -7,6 +7,7 @@ import { useAnalytics } from '../hooks/useAnalytics';
 import { AnalyticsHeader } from '../Components/analytics/AnalyticsHeader';
 import { TabNavigation } from '../Components/analytics/TabNavigation';
 import { DeviceFilter } from '../Components/analytics/DeviceFilter';
+import { CountryFilter } from '../Components/analytics/CountryFilter';
 import { OverviewTab } from '../Components/analytics/tabs/OverviewTab';
 import { QuestionsTab } from '../Components/analytics/tabs/QuestionsTab';
 import { TimeTrendsTab } from '../Components/analytics/tabs/TimeTrendsTab';
@@ -36,6 +37,9 @@ export default function Analytics() {
     setDateRange,
     customDateRange,
     setCustomDateRange,
+    selectedCountry,
+    setSelectedCountry,
+    availableCountries,
     activeTab,
     setActiveTab,
     isLoadingQuizzes,
@@ -171,7 +175,14 @@ export default function Analytics() {
                 {/* Tab Navigation + Device Filter Row */}
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-                  <DeviceFilter activeDevices={activeDevices} onToggle={toggleDevice} />
+                  <div className="flex flex-wrap items-center gap-4">
+                    <CountryFilter
+                      countries={availableCountries}
+                      selectedCountry={selectedCountry}
+                      onSelect={setSelectedCountry}
+                    />
+                    <DeviceFilter activeDevices={activeDevices} onToggle={toggleDevice} />
+                  </div>
                 </div>
 
                 {/* Tab Content */}
